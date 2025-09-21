@@ -8,6 +8,9 @@ import Login from "./pages/Login";
 import PatientDirectory from "./pages/patients/PatientDirectory";
 import RegisterPatient from "./pages/patients/RegisterPatient";
 import PatientRecords from "./pages/patients/PatientRecords";
+import Appointments from "./pages/appointments/Appointments";
+import AppointmentCalendar from "./pages/appointments/AppointmentCalendar";
+import CheckinQueue from "./pages/appointments/CheckinQueue";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +28,9 @@ const App = () => (
           <Route path="/patients" element={<PatientDirectory />} />
           <Route path="/patients/register" element={<RegisterPatient />} />
           <Route path="/patients/records/:patientId" element={<PatientRecords />} />
+          <Route path="/appointments" element={<Appointments />} />
+          <Route path="/appointments/calendar" element={<AppointmentCalendar />} />
+          <Route path="/appointments/checkin" element={<CheckinQueue />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
