@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const navigationItems = [
   {
@@ -123,6 +124,7 @@ interface SidebarProps {
 
 export function Sidebar({ className }: SidebarProps) {
   const [expandedItems, setExpandedItems] = useState<string[]>([]);
+  const navigate = useNavigate();
 
   const toggleExpanded = (title: string) => {
     setExpandedItems(prev => 
@@ -130,6 +132,14 @@ export function Sidebar({ className }: SidebarProps) {
         ? prev.filter(item => item !== title)
         : [...prev, title]
     );
+  };
+
+  const handleNavigation = (item: any) => {
+    if (item.children) {
+      toggleExpanded(item.title);
+    } else {
+      navigate(item.href);
+    }
   };
 
   return (
@@ -155,7 +165,7 @@ export function Sidebar({ className }: SidebarProps) {
                     "w-full justify-start gap-2",
                     item.active && "bg-primary/10 text-primary hover:bg-primary/15"
                   )}
-                  onClick={() => item.children && toggleExpanded(item.title)}
+                  onClick={() => handleNavigation(item)}
                 >
                   <item.icon className="h-4 w-4" />
                   <span className="flex-1 text-left">{item.title}</span>
@@ -177,6 +187,7 @@ export function Sidebar({ className }: SidebarProps) {
                         variant="ghost"
                         size="sm"
                         className="w-full justify-start text-sm text-muted-foreground hover:text-foreground"
+                        onClick={() => navigate(child.href)}
                       >
                         {child.title}
                       </Button>
