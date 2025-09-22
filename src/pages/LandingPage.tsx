@@ -170,7 +170,7 @@ export default function LandingPage() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
                 <Heart className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold">CuraCloud HMS</span>
+              <span className="text-xl font-bold">CuraCloud</span>
             </div>
 
             <div className="hidden md:flex items-center space-x-8">
@@ -760,7 +760,7 @@ export default function LandingPage() {
             Ready to Transform Your Hospital?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join thousands of healthcare facilities already using CuraCloud HMS.
+            Join thousands of healthcare facilities already using CuraCloud.
             Start your free trial today and see the difference.
           </p>
 
@@ -798,7 +798,7 @@ export default function LandingPage() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
                   <Heart className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <span className="text-xl font-bold">CuraCloud HMS</span>
+                <span className="text-xl font-bold">CuraCloud</span>
               </div>
               <p className="text-muted-foreground mb-4">
                 Modern healthcare management solution trusted by healthcare
@@ -937,7 +937,7 @@ export default function LandingPage() {
 
           <div className="pt-8 border-t text-center text-sm text-muted-foreground">
             <p>
-              &copy; {new Date().getFullYear()} CuraCloud HMS. All rights
+              &copy; {new Date().getFullYear()} CuraCloud. All rights
               reserved. Built with ❤️ for healthcare professionals.
             </p>
           </div>

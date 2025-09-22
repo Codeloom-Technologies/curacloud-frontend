@@ -151,7 +151,7 @@ export function Sidebar({ className }: SidebarProps) {
               <Heart className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold">CuraCloud HMS</h2>
+              <h2 className="text-lg font-semibold">CuraCloud</h2>
               <p className="text-xs text-muted-foreground">
                 Healthcare Management
               </p>

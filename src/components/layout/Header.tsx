@@ -28,11 +28,15 @@ export function Header({ onMenuClick }: HeaderProps) {
           </Button>
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary">
-              <span className="text-sm font-bold text-primary-foreground">HMS</span>
+              <span className="text-sm font-bold text-primary-foreground">
+                HMS
+              </span>
             </div>
             <div>
-              <h1 className="text-lg font-semibold">CuraCloud Hospital</h1>
-              <p className="text-xs text-muted-foreground">Management System</p>
+              <h1 className="text-lg font-semibold">CuraCloud</h1>
+              <p className="text-xs text-muted-foreground">
+                Healthcare Management
+              </p>
             </div>
           </div>
         </div>
@@ -40,8 +44,8 @@ export function Header({ onMenuClick }: HeaderProps) {
         <div className="flex items-center gap-4">
           <Button variant="ghost" size="sm" className="relative">
             <Bell className="h-5 w-5" />
-            <Badge 
-              variant="destructive" 
+            <Badge
+              variant="destructive"
               className="absolute -right-1 -top-1 h-5 w-5 rounded-full p-0 text-xs"
             >
               3
@@ -50,7 +54,10 @@ export function Header({ onMenuClick }: HeaderProps) {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+              <Button
+                variant="ghost"
+                className="relative h-10 w-10 rounded-full"
+              >
                 <User className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
