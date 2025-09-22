@@ -31,7 +31,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               <span className="text-sm font-bold text-primary-foreground">HMS</span>
             </div>
             <div>
-              <h1 className="text-lg font-semibold">MedCore Hospital</h1>
+              <h1 className="text-lg font-semibold">CuraCloud Hospital</h1>
               <p className="text-xs text-muted-foreground">Management System</p>
             </div>
           </div>

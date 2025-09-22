@@ -2,7 +2,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Heart, Eye, EyeOff, Shield, Users, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -15,13 +21,13 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     // Simulate login process
     setTimeout(() => {
       setIsLoading(false);
       toast({
         title: "Login Successful",
-        description: "Welcome back to MedCore HMS",
+        description: "Welcome back to CuraCloud HMS",
       });
       // In real app, this would redirect to dashboard
       window.location.href = "/dashboard";
@@ -32,18 +38,21 @@ export default function Login() {
     {
       icon: Shield,
       title: "Secure & HIPAA Compliant",
-      description: "Your patient data is protected with enterprise-grade security"
+      description:
+        "Your patient data is protected with enterprise-grade security",
     },
     {
       icon: Users,
       title: "Multi-Role Access",
-      description: "Doctors, nurses, admin staff - everyone has their custom interface"
+      description:
+        "Doctors, nurses, admin staff - everyone has their custom interface",
     },
     {
       icon: BarChart3,
       title: "Real-time Analytics",
-      description: "Monitor hospital operations with live dashboards and reports"
-    }
+      description:
+        "Monitor hospital operations with live dashboards and reports",
+    },
   ];
 
   return (
@@ -56,7 +65,7 @@ export default function Login() {
               <Heart className="h-7 w-7" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">MedCore HMS</h1>
+              <h1 className="text-3xl font-bold">CuraCloud HMS</h1>
               <p className="text-lg opacity-90">Hospital Management System</p>
             </div>
           </div>
@@ -66,13 +75,17 @@ export default function Login() {
               Transform Your Healthcare Operations
             </h2>
             <p className="text-lg opacity-90 leading-relaxed">
-              Streamline patient care, optimize workflows, and improve outcomes with our 
-              comprehensive hospital management platform trusted by healthcare providers worldwide.
+              Streamline patient care, optimize workflows, and improve outcomes
+              with our comprehensive hospital management platform trusted by
+              healthcare providers worldwide.
             </p>
 
             <div className="space-y-4">
               {features.map((feature, index) => (
-                <div key={index} className="flex items-start gap-4 p-4 rounded-lg bg-white/10 backdrop-blur-sm">
+                <div
+                  key={index}
+                  className="flex items-start gap-4 p-4 rounded-lg bg-white/10 backdrop-blur-sm"
+                >
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white/20">
                     <feature.icon className="h-5 w-5" />
                   </div>
@@ -92,7 +105,7 @@ export default function Login() {
             <CardHeader className="space-y-1 text-center">
               <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
               <CardDescription>
-                Sign in to your MedCore HMS account
+                Sign in to your CuraCloud HMS account
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -102,12 +115,12 @@ export default function Login() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="doctor@medcore.com"
+                    placeholder="doctor@curacloud.com"
                     required
                     className="h-11"
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
@@ -144,8 +157,8 @@ export default function Login() {
                   </Button>
                 </div>
 
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="w-full h-11 bg-gradient-primary hover:shadow-glow transition-all"
                   disabled={isLoading}
                 >
@@ -158,7 +171,9 @@ export default function Login() {
                   <Separator />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">Demo Accounts</span>
+                  <span className="bg-card px-2 text-muted-foreground">
+                    Demo Accounts
+                  </span>
                 </div>
               </div>
 

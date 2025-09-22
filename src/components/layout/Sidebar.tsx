@@ -1,8 +1,8 @@
-import { 
-  LayoutDashboard, 
-  Users, 
-  Calendar, 
-  FileText, 
+import {
+  LayoutDashboard,
+  Users,
+  Calendar,
+  FileText,
   TestTube,
   Scan,
   Pill,
@@ -12,7 +12,7 @@ import {
   BarChart3,
   Settings,
   ChevronDown,
-  Heart
+  Heart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -34,7 +34,7 @@ const navigationItems = [
       { title: "Patient Directory", href: "/patients" },
       { title: "Register Patient", href: "/patients/register" },
       { title: "Patient Records", href: "/patients/records" },
-    ]
+    ],
   },
   {
     title: "Appointments",
@@ -44,7 +44,7 @@ const navigationItems = [
       { title: "Schedule", href: "/appointments" },
       { title: "Calendar View", href: "/appointments/calendar" },
       { title: "Check-in Queue", href: "/appointments/checkin" },
-    ]
+    ],
   },
   {
     title: "Medical Records",
@@ -54,7 +54,7 @@ const navigationItems = [
       { title: "Consultations", href: "/consultations" },
       { title: "Prescriptions", href: "/prescriptions" },
       { title: "Medical History", href: "/medical-history" },
-    ]
+    ],
   },
   {
     title: "Laboratory",
@@ -64,7 +64,7 @@ const navigationItems = [
       { title: "Lab Orders", href: "/lab/orders" },
       { title: "Results Entry", href: "/lab/results" },
       { title: "Lab Reports", href: "/lab/reports" },
-    ]
+    ],
   },
   {
     title: "Radiology",
@@ -74,7 +74,7 @@ const navigationItems = [
       { title: "Imaging Orders", href: "/radiology/orders" },
       { title: "Image Upload", href: "/radiology/upload" },
       { title: "Reports", href: "/radiology/reports" },
-    ]
+    ],
   },
   {
     title: "Pharmacy",
@@ -84,7 +84,7 @@ const navigationItems = [
       { title: "Prescriptions", href: "/pharmacy/prescriptions" },
       { title: "Inventory", href: "/pharmacy/inventory" },
       { title: "Dispensing", href: "/pharmacy/dispense" },
-    ]
+    ],
   },
   {
     title: "Inventory",
@@ -99,7 +99,7 @@ const navigationItems = [
       { title: "Invoices", href: "/billing/invoices" },
       { title: "Payments", href: "/billing/payments" },
       { title: "Insurance", href: "/billing/insurance" },
-    ]
+    ],
   },
   {
     title: "HR & Staff",
@@ -127,9 +127,9 @@ export function Sidebar({ className }: SidebarProps) {
   const navigate = useNavigate();
 
   const toggleExpanded = (title: string) => {
-    setExpandedItems(prev => 
-      prev.includes(title) 
-        ? prev.filter(item => item !== title)
+    setExpandedItems((prev) =>
+      prev.includes(title)
+        ? prev.filter((item) => item !== title)
         : [...prev, title]
     );
   };
@@ -151,11 +151,13 @@ export function Sidebar({ className }: SidebarProps) {
               <Heart className="h-6 w-6 text-primary-foreground" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold">MedCore HMS</h2>
-              <p className="text-xs text-muted-foreground">Healthcare Management</p>
+              <h2 className="text-lg font-semibold">CuraCloud HMS</h2>
+              <p className="text-xs text-muted-foreground">
+                Healthcare Management
+              </p>
             </div>
           </div>
-          
+
           <div className="space-y-1">
             {navigationItems.map((item) => (
               <div key={item.title}>
@@ -163,22 +165,23 @@ export function Sidebar({ className }: SidebarProps) {
                   variant={item.active ? "secondary" : "ghost"}
                   className={cn(
                     "w-full justify-start gap-2",
-                    item.active && "bg-primary/10 text-primary hover:bg-primary/15"
+                    item.active &&
+                      "bg-primary/10 text-primary hover:bg-primary/15"
                   )}
                   onClick={() => handleNavigation(item)}
                 >
                   <item.icon className="h-4 w-4" />
                   <span className="flex-1 text-left">{item.title}</span>
                   {item.children && (
-                    <ChevronDown 
+                    <ChevronDown
                       className={cn(
                         "h-4 w-4 transition-transform",
                         expandedItems.includes(item.title) && "rotate-180"
-                      )} 
+                      )}
                     />
                   )}
                 </Button>
-                
+
                 {item.children && expandedItems.includes(item.title) && (
                   <div className="ml-6 mt-1 space-y-1">
                     {item.children.map((child) => (

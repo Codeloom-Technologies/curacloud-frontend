@@ -3,12 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Users, 
-  Calendar, 
-  FileText, 
-  CreditCard, 
-  Pill, 
+import {
+  Users,
+  Calendar,
+  FileText,
+  CreditCard,
+  Pill,
   BarChart3,
   ArrowRight,
   Check,
@@ -27,7 +27,7 @@ import {
   Linkedin,
   Instagram,
   Play,
-  ChevronRight
+  ChevronRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import dashboardPreview from "@/assets/hms-dashboard-preview.jpg";
@@ -38,33 +38,39 @@ const features = [
   {
     icon: Users,
     title: "Patient Management",
-    description: "Comprehensive patient records, medical history, and care coordination in one place."
+    description:
+      "Comprehensive patient records, medical history, and care coordination in one place.",
   },
   {
     icon: Calendar,
     title: "Appointment Scheduling",
-    description: "Smart scheduling system with automated reminders and real-time availability."
+    description:
+      "Smart scheduling system with automated reminders and real-time availability.",
   },
   {
     icon: FileText,
     title: "Medical Records",
-    description: "Digital EMR/EHR system with secure access and seamless data sharing."
+    description:
+      "Digital EMR/EHR system with secure access and seamless data sharing.",
   },
   {
     icon: CreditCard,
     title: "Billing & Insurance",
-    description: "Automated billing, insurance claims processing, and payment tracking."
+    description:
+      "Automated billing, insurance claims processing, and payment tracking.",
   },
   {
     icon: Pill,
     title: "Pharmacy & Inventory",
-    description: "Medication management, prescription tracking, and inventory control."
+    description:
+      "Medication management, prescription tracking, and inventory control.",
   },
   {
     icon: BarChart3,
     title: "Analytics & Reports",
-    description: "Real-time insights, performance metrics, and compliance reporting."
-  }
+    description:
+      "Real-time insights, performance metrics, and compliance reporting.",
+  },
 ];
 
 const testimonials = [
@@ -74,7 +80,8 @@ const testimonials = [
     hospital: "Metro General Hospital",
     image: doctorTestimonial,
     rating: 5,
-    quote: "MedCore HMS has transformed how we manage patient care. The intuitive interface and comprehensive features have improved our efficiency by 40%."
+    quote:
+      "CuraCloud HMS has transformed how we manage patient care. The intuitive interface and comprehensive features have improved our efficiency by 40%.",
   },
   {
     name: "Michael Rodriguez",
@@ -82,7 +89,8 @@ const testimonials = [
     hospital: "City Medical Center",
     image: nurseTestimonial,
     rating: 5,
-    quote: "The scheduling system is a game-changer. We've reduced patient wait times significantly and our staff coordination has never been better."
+    quote:
+      "The scheduling system is a game-changer. We've reduced patient wait times significantly and our staff coordination has never been better.",
   },
   {
     name: "Lisa Chen",
@@ -90,8 +98,9 @@ const testimonials = [
     hospital: "St. Mary's Hospital",
     image: "/placeholder.svg",
     rating: 5,
-    quote: "The analytics dashboard gives us insights we never had before. Decision-making is now data-driven and our operational costs have decreased by 25%."
-  }
+    quote:
+      "The analytics dashboard gives us insights we never had before. Decision-making is now data-driven and our operational costs have decreased by 25%.",
+  },
 ];
 
 const pricingPlans = [
@@ -102,12 +111,12 @@ const pricingPlans = [
     description: "Perfect for small clinics and practices",
     features: [
       "Up to 500 patients",
-      "Basic appointment scheduling", 
+      "Basic appointment scheduling",
       "Digital medical records",
       "Email support",
-      "Mobile app access"
+      "Mobile app access",
     ],
-    popular: false
+    popular: false,
   },
   {
     name: "Professional",
@@ -121,9 +130,9 @@ const pricingPlans = [
       "Billing & insurance integration",
       "Pharmacy management",
       "24/7 phone support",
-      "Custom reporting"
+      "Custom reporting",
     ],
-    popular: true
+    popular: true,
   },
   {
     name: "Enterprise",
@@ -137,10 +146,10 @@ const pricingPlans = [
       "Custom integrations",
       "Dedicated account manager",
       "On-site training",
-      "99.9% uptime SLA"
+      "99.9% uptime SLA",
     ],
-    popular: false
-  }
+    popular: false,
+  },
 ];
 
 export default function LandingPage() {
@@ -161,17 +170,39 @@ export default function LandingPage() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
                 <Heart className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold">MedCore HMS</span>
+              <span className="text-xl font-bold">CuraCloud HMS</span>
             </div>
-            
+
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-sm font-medium hover:text-primary transition-colors">Features</a>
-              <a href="#pricing" className="text-sm font-medium hover:text-primary transition-colors">Pricing</a>
-              <a href="#testimonials" className="text-sm font-medium hover:text-primary transition-colors">Reviews</a>
-              <Button variant="outline" size="sm" onClick={() => navigate("/login")}>
+              <a
+                href="#features"
+                className="text-sm font-medium hover:text-primary transition-colors"
+              >
+                Features
+              </a>
+              <a
+                href="#pricing"
+                className="text-sm font-medium hover:text-primary transition-colors"
+              >
+                Pricing
+              </a>
+              <a
+                href="#testimonials"
+                className="text-sm font-medium hover:text-primary transition-colors"
+              >
+                Reviews
+              </a>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate("/login")}
+              >
                 Sign In
               </Button>
-              <Button size="sm" className="bg-gradient-primary hover:shadow-glow transition-all">
+              <Button
+                size="sm"
+                className="bg-gradient-primary hover:shadow-glow transition-all"
+              >
                 Get Started
               </Button>
             </div>
@@ -187,22 +218,23 @@ export default function LandingPage() {
               <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
                 🚀 Trusted by 500+ Healthcare Facilities
               </Badge>
-              
+
               <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
                 Modern Healthcare Management{" "}
                 <span className="bg-gradient-primary bg-clip-text text-transparent">
                   Made Simple
                 </span>
               </h1>
-              
+
               <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                Streamline patient care, appointments, billing, and medical records in one platform. 
-                Transform your healthcare facility with our comprehensive HMS solution.
+                Streamline patient care, appointments, billing, and medical
+                records in one platform. Transform your healthcare facility with
+                our comprehensive HMS solution.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   className="bg-gradient-primary hover:shadow-glow transition-all text-lg px-8"
                   onClick={handleGetStarted}
                 >
@@ -214,7 +246,7 @@ export default function LandingPage() {
                   Book a Demo
                 </Button>
               </div>
-              
+
               <div className="flex items-center gap-8 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-green-500" />
@@ -230,13 +262,13 @@ export default function LandingPage() {
                 </div>
               </div>
             </div>
-            
+
             <div className="animate-scale-in">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-primary rounded-3xl blur-3xl opacity-20"></div>
-                <img 
-                  src={dashboardPreview} 
-                  alt="MedCore HMS Dashboard Preview" 
+                <img
+                  src={dashboardPreview}
+                  alt="CuraCloud HMS Dashboard Preview"
                   className="relative rounded-3xl shadow-2xl w-full hover-scale transition-transform duration-500"
                 />
               </div>
@@ -256,14 +288,18 @@ export default function LandingPage() {
               Everything Your Hospital Needs
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              From patient registration to discharge, manage every aspect of healthcare delivery 
-              with our integrated platform designed for modern healthcare facilities.
+              From patient registration to discharge, manage every aspect of
+              healthcare delivery with our integrated platform designed for
+              modern healthcare facilities.
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="hover:shadow-lg transition-all duration-300 hover-scale group">
+              <Card
+                key={index}
+                className="hover:shadow-lg transition-all duration-300 hover-scale group"
+              >
                 <CardHeader>
                   <div className="flex items-center gap-4">
                     <div className="p-3 rounded-xl bg-gradient-primary shadow-glow group-hover:shadow-lg transition-shadow">
@@ -292,38 +328,56 @@ export default function LandingPage() {
               Get Started in 3 Easy Steps
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Our streamlined onboarding process gets your healthcare facility up and running quickly.
+              Our streamlined onboarding process gets your healthcare facility
+              up and running quickly.
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-12">
             <div className="text-center animate-fade-in">
               <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-6 shadow-glow">
-                <span className="text-2xl font-bold text-primary-foreground">1</span>
+                <span className="text-2xl font-bold text-primary-foreground">
+                  1
+                </span>
               </div>
-              <h3 className="text-xl font-semibold mb-4">Register Your Facility</h3>
+              <h3 className="text-xl font-semibold mb-4">
+                Register Your Facility
+              </h3>
               <p className="text-muted-foreground">
-                Sign up with your hospital details and get instant access to your HMS dashboard.
+                Sign up with your hospital details and get instant access to
+                your HMS dashboard.
               </p>
             </div>
-            
-            <div className="text-center animate-fade-in" style={{ animationDelay: '0.2s' }}>
+
+            <div
+              className="text-center animate-fade-in"
+              style={{ animationDelay: "0.2s" }}
+            >
               <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-6 shadow-glow">
-                <span className="text-2xl font-bold text-primary-foreground">2</span>
+                <span className="text-2xl font-bold text-primary-foreground">
+                  2
+                </span>
               </div>
               <h3 className="text-xl font-semibold mb-4">Import & Configure</h3>
               <p className="text-muted-foreground">
-                Import existing patient data and configure the system according to your workflow.
+                Import existing patient data and configure the system according
+                to your workflow.
               </p>
             </div>
-            
-            <div className="text-center animate-fade-in" style={{ animationDelay: '0.4s' }}>
+
+            <div
+              className="text-center animate-fade-in"
+              style={{ animationDelay: "0.4s" }}
+            >
               <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-6 shadow-glow">
-                <span className="text-2xl font-bold text-primary-foreground">3</span>
+                <span className="text-2xl font-bold text-primary-foreground">
+                  3
+                </span>
               </div>
               <h3 className="text-xl font-semibold mb-4">Start Managing</h3>
               <p className="text-muted-foreground">
-                Begin managing patients, scheduling appointments, and tracking all healthcare operations.
+                Begin managing patients, scheduling appointments, and tracking
+                all healthcare operations.
               </p>
             </div>
           </div>
@@ -341,11 +395,16 @@ export default function LandingPage() {
               Designed for Every Healthcare Role
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Tailored interfaces and features for different healthcare professionals and patients.
+              Tailored interfaces and features for different healthcare
+              professionals and patients.
             </p>
           </div>
-          
-          <Tabs value={activeRole} onValueChange={setActiveRole} className="w-full">
+
+          <Tabs
+            value={activeRole}
+            onValueChange={setActiveRole}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-4 mb-12">
               <TabsTrigger value="doctors" className="flex items-center gap-2">
                 <Stethoscope className="h-4 w-4" />
@@ -364,7 +423,7 @@ export default function LandingPage() {
                 Patients
               </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="doctors" className="animate-fade-in">
               <div className="grid md:grid-cols-3 gap-8">
                 <Card className="hover:shadow-lg transition-shadow">
@@ -374,11 +433,12 @@ export default function LandingPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      Access complete patient histories, lab results, and medical imaging in one place.
+                      Access complete patient histories, lab results, and
+                      medical imaging in one place.
                     </p>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <Clock className="h-8 w-8 text-primary mb-2" />
@@ -386,11 +446,12 @@ export default function LandingPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      Manage appointments, view daily schedules, and optimize patient consultation time.
+                      Manage appointments, view daily schedules, and optimize
+                      patient consultation time.
                     </p>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <Pill className="h-8 w-8 text-primary mb-2" />
@@ -398,13 +459,14 @@ export default function LandingPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      Digital prescriptions with drug interaction checks and pharmacy integration.
+                      Digital prescriptions with drug interaction checks and
+                      pharmacy integration.
                     </p>
                   </CardContent>
                 </Card>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="nurses" className="animate-fade-in">
               <div className="grid md:grid-cols-3 gap-8">
                 <Card className="hover:shadow-lg transition-shadow">
@@ -414,11 +476,12 @@ export default function LandingPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      Track patient vitals, medication schedules, and care plans efficiently.
+                      Track patient vitals, medication schedules, and care plans
+                      efficiently.
                     </p>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <Calendar className="h-8 w-8 text-primary mb-2" />
@@ -426,11 +489,12 @@ export default function LandingPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      Manage work schedules, patient assignments, and handover notes seamlessly.
+                      Manage work schedules, patient assignments, and handover
+                      notes seamlessly.
                     </p>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <Shield className="h-8 w-8 text-primary mb-2" />
@@ -438,13 +502,14 @@ export default function LandingPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      Access patient information and update records on-the-go with mobile app.
+                      Access patient information and update records on-the-go
+                      with mobile app.
                     </p>
                   </CardContent>
                 </Card>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="admins" className="animate-fade-in">
               <div className="grid md:grid-cols-3 gap-8">
                 <Card className="hover:shadow-lg transition-shadow">
@@ -454,11 +519,12 @@ export default function LandingPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      Real-time insights into hospital operations, patient flow, and financial metrics.
+                      Real-time insights into hospital operations, patient flow,
+                      and financial metrics.
                     </p>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <CreditCard className="h-8 w-8 text-primary mb-2" />
@@ -466,11 +532,12 @@ export default function LandingPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      Complete billing, insurance processing, and revenue cycle management tools.
+                      Complete billing, insurance processing, and revenue cycle
+                      management tools.
                     </p>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <UserCheck className="h-8 w-8 text-primary mb-2" />
@@ -478,13 +545,14 @@ export default function LandingPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      Manage staff schedules, roles, permissions, and performance tracking.
+                      Manage staff schedules, roles, permissions, and
+                      performance tracking.
                     </p>
                   </CardContent>
                 </Card>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="patients" className="animate-fade-in">
               <div className="grid md:grid-cols-3 gap-8">
                 <Card className="hover:shadow-lg transition-shadow">
@@ -494,11 +562,12 @@ export default function LandingPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      Book appointments online, view available slots, and receive automated reminders.
+                      Book appointments online, view available slots, and
+                      receive automated reminders.
                     </p>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <FileText className="h-8 w-8 text-primary mb-2" />
@@ -506,11 +575,12 @@ export default function LandingPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      Secure access to medical records, test results, and treatment history.
+                      Secure access to medical records, test results, and
+                      treatment history.
                     </p>
                   </CardContent>
                 </Card>
-                
+
                 <Card className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <CreditCard className="h-8 w-8 text-primary mb-2" />
@@ -518,7 +588,8 @@ export default function LandingPage() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      View bills, make payments online, and track insurance claims status.
+                      View bills, make payments online, and track insurance
+                      claims status.
                     </p>
                   </CardContent>
                 </Card>
@@ -539,34 +610,45 @@ export default function LandingPage() {
               What Our Customers Say
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Join thousands of healthcare professionals who trust MedCore HMS for their daily operations.
+              Join thousands of healthcare professionals who trust CuraCloud HMS
+              for their daily operations.
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="hover:shadow-lg transition-all duration-300 hover-scale">
+              <Card
+                key={index}
+                className="hover:shadow-lg transition-all duration-300 hover-scale"
+              >
                 <CardContent className="p-6">
                   <div className="flex items-center gap-1 mb-4">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <Star
+                        key={i}
+                        className="h-4 w-4 fill-yellow-400 text-yellow-400"
+                      />
                     ))}
                   </div>
-                  
+
                   <p className="text-muted-foreground mb-6 italic">
                     "{testimonial.quote}"
                   </p>
-                  
+
                   <div className="flex items-center gap-4">
-                    <img 
-                      src={testimonial.image} 
+                    <img
+                      src={testimonial.image}
                       alt={testimonial.name}
                       className="w-12 h-12 rounded-full object-cover"
                     />
                     <div>
                       <p className="font-semibold">{testimonial.name}</p>
-                      <p className="text-sm text-muted-foreground">{testimonial.role}</p>
-                      <p className="text-sm text-muted-foreground">{testimonial.hospital}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {testimonial.role}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {testimonial.hospital}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -587,55 +669,71 @@ export default function LandingPage() {
               Choose Your Plan
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Scalable pricing options designed to grow with your healthcare facility.
+              Scalable pricing options designed to grow with your healthcare
+              facility.
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             {pricingPlans.map((plan, index) => (
-              <Card key={index} className={`relative hover:shadow-lg transition-all duration-300 hover-scale ${
-                plan.popular ? 'border-primary shadow-lg' : ''
-              }`}>
+              <Card
+                key={index}
+                className={`relative hover:shadow-lg transition-all duration-300 hover-scale ${
+                  plan.popular ? "border-primary shadow-lg" : ""
+                }`}
+              >
                 {plan.popular && (
                   <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-primary text-primary-foreground">
                     Most Popular
                   </Badge>
                 )}
-                
+
                 <CardHeader className="pb-4">
                   <CardTitle className="text-2xl">{plan.name}</CardTitle>
                   <div className="mb-2">
                     <span className="text-4xl font-bold">{plan.price}</span>
-                    <span className="text-muted-foreground">/{plan.period}</span>
+                    <span className="text-muted-foreground">
+                      /{plan.period}
+                    </span>
                   </div>
                   <p className="text-muted-foreground">{plan.description}</p>
                 </CardHeader>
-                
+
                 <CardContent>
                   <ul className="space-y-3 mb-6">
                     {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-center gap-2">
+                      <li
+                        key={featureIndex}
+                        className="flex items-center gap-2"
+                      >
                         <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
                         <span className="text-sm">{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  
-                  <Button 
-                    className={`w-full ${plan.popular ? 'bg-gradient-primary hover:shadow-glow' : ''}`}
-                    variant={plan.popular ? 'default' : 'outline'}
+
+                  <Button
+                    className={`w-full ${
+                      plan.popular
+                        ? "bg-gradient-primary hover:shadow-glow"
+                        : ""
+                    }`}
+                    variant={plan.popular ? "default" : "outline"}
                     onClick={handleGetStarted}
                   >
-                    {plan.price === 'Custom' ? 'Contact Sales' : 'Start Free Trial'}
+                    {plan.price === "Custom"
+                      ? "Contact Sales"
+                      : "Start Free Trial"}
                   </Button>
                 </CardContent>
               </Card>
             ))}
           </div>
-          
+
           <div className="text-center mt-12 animate-fade-in">
             <p className="text-muted-foreground mb-4">
-              All plans include 14-day free trial • No setup fees • Cancel anytime
+              All plans include 14-day free trial • No setup fees • Cancel
+              anytime
             </p>
             <div className="flex items-center justify-center gap-8 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
@@ -662,13 +760,13 @@ export default function LandingPage() {
             Ready to Transform Your Hospital?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join thousands of healthcare facilities already using MedCore HMS. 
+            Join thousands of healthcare facilities already using CuraCloud HMS.
             Start your free trial today and see the difference.
           </p>
-          
+
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               variant="secondary"
               className="text-lg px-8"
               onClick={handleGetStarted}
@@ -676,15 +774,15 @@ export default function LandingPage() {
               Start Free Trial
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               variant="outline"
               className="text-lg px-8 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
             >
               Schedule Demo
             </Button>
           </div>
-          
+
           <p className="text-sm mt-6 opacity-75">
             No credit card required • 14-day free trial • Setup in 24 hours
           </p>
@@ -700,10 +798,11 @@ export default function LandingPage() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
                   <Heart className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <span className="text-xl font-bold">MedCore HMS</span>
+                <span className="text-xl font-bold">CuraCloud HMS</span>
               </div>
               <p className="text-muted-foreground mb-4">
-                Modern healthcare management solution trusted by healthcare facilities worldwide.
+                Modern healthcare management solution trusted by healthcare
+                facilities worldwide.
               </p>
               <div className="flex gap-4">
                 <Button variant="ghost" size="sm">
@@ -720,40 +819,127 @@ export default function LandingPage() {
                 </Button>
               </div>
             </div>
-            
+
             <div>
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">Features</a></li>
-                <li><a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">API Documentation</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Integrations</a></li>
+                <li>
+                  <a
+                    href="#features"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#pricing"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    API Documentation
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Integrations
+                  </a>
+                </li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">About Us</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Careers</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Blog</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Contact</a></li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    About Us
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Careers
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Blog
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Contact
+                  </a>
+                </li>
               </ul>
             </div>
-            
+
             <div>
               <h4 className="font-semibold mb-4">Support</h4>
               <ul className="space-y-2 text-sm">
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Help Center</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">HIPAA Compliance</a></li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Help Center
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Privacy Policy
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Terms of Service
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    HIPAA Compliance
+                  </a>
+                </li>
               </ul>
             </div>
           </div>
-          
+
           <div className="pt-8 border-t text-center text-sm text-muted-foreground">
-            <p>&copy; 2024 MedCore HMS. All rights reserved. Built with ❤️ for healthcare professionals.</p>
+            <p>
+              &copy; {new Date().getFullYear()} CuraCloud HMS. All rights
+              reserved. Built with ❤️ for healthcare professionals.
+            </p>
           </div>
         </div>
       </footer>
