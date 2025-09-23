@@ -106,7 +106,7 @@ const testimonials = [
 const pricingPlans = [
   {
     name: "Starter",
-    price: "$99",
+    price: "₦150,000",
     period: "per month",
     description: "Perfect for small clinics and practices",
     features: [
@@ -120,7 +120,7 @@ const pricingPlans = [
   },
   {
     name: "Professional",
-    price: "$299",
+    price: "₦400,000",
     period: "per month",
     description: "Ideal for medium-sized hospitals",
     features: [
@@ -937,8 +937,8 @@ export default function LandingPage() {
 
           <div className="pt-8 border-t text-center text-sm text-muted-foreground">
             <p>
-              &copy; {new Date().getFullYear()} CuraCloud. All rights
-              reserved. Built with ❤️ for healthcare professionals.
+              &copy; {new Date().getFullYear()} CuraCloud. All rights reserved.
+              Built with ❤️ for healthcare professionals.
             </p>
           </div>
         </div>
