@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { Header } from "@/components/layout/Header";
 
 // Sample medical history data
 const medicalHistories = [
@@ -118,7 +119,7 @@ const medicalHistories = [
 ];
 
 export default function MedicalHistory() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [conditionFilter, setConditionFilter] = useState("all");
   const [selectedHistory, setSelectedHistory] = useState<typeof medicalHistories[0] | null>(null);
@@ -154,40 +155,37 @@ export default function MedicalHistory() {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen bg-background">
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? "w-64" : "w-0"} transition-all duration-300 overflow-hidden`}>
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform md:relative md:translate-x-0 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
         <Sidebar />
       </div>
 
       {/* Main Content */}
-      <div className="flex-1">
-        {/* Header */}
-        <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="flex h-16 items-center px-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
-              ☰
-            </Button>
-            <div className="ml-4">
-              <h1 className="text-xl font-semibold">Medical History</h1>
-              <p className="text-sm text-muted-foreground">Comprehensive patient medical records and history</p>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Page Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold">Medical History</h1>
+                <p className="text-muted-foreground">
+                  Comprehensive patient medical records and history
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Content */}
-        <div className="p-6">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
-              </CardHeader>
-              <CardContent>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
+                </CardHeader>
+                <CardContent>
                 <div className="text-2xl font-bold">1,247</div>
                 <p className="text-xs text-muted-foreground">With complete history</p>
               </CardContent>
@@ -538,7 +536,16 @@ export default function MedicalHistory() {
             ))}
           </div>
         </div>
-      </div>
+      </main>
+    </div>
+
+    {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
     </div>
   );
 }

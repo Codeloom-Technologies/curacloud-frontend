@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Search, Plus, Calendar, Clock, User, FileText, Filter, Eye, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Header } from "@/components/layout/Header";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -61,7 +62,7 @@ const consultations = [
 ];
 
 export default function Consultations() {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
@@ -96,33 +97,29 @@ export default function Consultations() {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen bg-background">
       {/* Sidebar */}
-      <div className={`${sidebarOpen ? "w-64" : "w-0"} transition-all duration-300 overflow-hidden`}>
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform md:relative md:translate-x-0 ${
+        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+      }`}>
         <Sidebar />
       </div>
 
       {/* Main Content */}
-      <div className="flex-1">
-        {/* Header */}
-        <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-          <div className="flex h-16 items-center px-6">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-            >
-              ☰
-            </Button>
-            <div className="ml-4">
-              <h1 className="text-xl font-semibold">Medical Consultations</h1>
-              <p className="text-sm text-muted-foreground">Manage patient consultations and medical visits</p>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+        
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-7xl mx-auto space-y-6">
+            {/* Page Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold">Medical Consultations</h1>
+                <p className="text-muted-foreground">
+                  Manage patient consultations and medical visits
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <Card>
@@ -327,9 +324,18 @@ export default function Consultations() {
                 </CardContent>
               </Card>
             ))}
+            </div>
           </div>
-        </div>
+        </main>
       </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
     </div>
   );
 }
