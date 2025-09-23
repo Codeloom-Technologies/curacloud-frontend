@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -123,6 +124,7 @@ export default function MedicalHistory() {
   const [searchTerm, setSearchTerm] = useState("");
   const [conditionFilter, setConditionFilter] = useState("all");
   const [selectedHistory, setSelectedHistory] = useState<typeof medicalHistories[0] | null>(null);
+  const [showNewHistoryForm, setShowNewHistoryForm] = useState(false);
 
   const filteredHistories = medicalHistories.filter(history => {
     const matchesSearch = history.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -244,7 +246,10 @@ export default function MedicalHistory() {
                 <SelectItem value="resolved">Resolved</SelectItem>
               </SelectContent>
             </Select>
-            <Button className="shrink-0">
+            <Button 
+              className="shrink-0"
+              onClick={() => setShowNewHistoryForm(true)}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Add Medical History
             </Button>
@@ -535,6 +540,143 @@ export default function MedicalHistory() {
               </Card>
             ))}
           </div>
+
+          {/* New Medical History Form Modal */}
+          {showNewHistoryForm && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+              <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                <CardHeader>
+                  <CardTitle>Add Medical History</CardTitle>
+                  <CardDescription>Add new medical history record for a patient</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="historyPatientId">Patient ID *</Label>
+                        <Input id="historyPatientId" placeholder="P001" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="historyPatientName">Patient Name *</Label>
+                        <Input id="historyPatientName" placeholder="John Smith" required />
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <Label className="text-base font-semibold">Chronic Conditions</Label>
+                      <div className="border rounded-lg p-4 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="condition">Condition *</Label>
+                            <Input id="condition" placeholder="Hypertension" required />
+                          </div>
+                          <div>
+                            <Label htmlFor="severity">Severity *</Label>
+                            <Select>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select severity" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="mild">Mild</SelectItem>
+                                <SelectItem value="moderate">Moderate</SelectItem>
+                                <SelectItem value="severe">Severe</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="diagnosedDate">Date Diagnosed</Label>
+                            <Input id="diagnosedDate" type="date" />
+                          </div>
+                          <div>
+                            <Label htmlFor="conditionStatus">Status *</Label>
+                            <Select>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select status" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="controlled">Controlled</SelectItem>
+                                <SelectItem value="managed">Managed</SelectItem>
+                                <SelectItem value="resolved">Resolved</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <Label className="text-base font-semibold">Allergies</Label>
+                      <div className="border rounded-lg p-4 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="allergen">Allergen</Label>
+                            <Input id="allergen" placeholder="Penicillin" />
+                          </div>
+                          <div>
+                            <Label htmlFor="allergySeverity">Severity</Label>
+                            <Select>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select severity" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="mild">Mild</SelectItem>
+                                <SelectItem value="moderate">Moderate</SelectItem>
+                                <SelectItem value="severe">Severe</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="reaction">Reaction</Label>
+                          <Input id="reaction" placeholder="Rash, swelling" />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="familyHistory">Family History</Label>
+                      <Textarea 
+                        id="familyHistory" 
+                        placeholder="Notable family medical history..."
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="surgicalHistory">Surgical History</Label>
+                      <Textarea 
+                        id="surgicalHistory" 
+                        placeholder="Previous surgeries and procedures..."
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="historyNotes">Additional Notes</Label>
+                      <Textarea 
+                        id="historyNotes" 
+                        placeholder="Any additional medical history notes..."
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-4 pt-4">
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        onClick={() => setShowNewHistoryForm(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit" className="bg-gradient-primary">
+                        Add Medical History
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </main>
     </div>

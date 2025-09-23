@@ -67,6 +67,7 @@ export default function Consultations() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [selectedConsultation, setSelectedConsultation] = useState<typeof consultations[0] | null>(null);
+  const [showNewConsultationForm, setShowNewConsultationForm] = useState(false);
 
   const filteredConsultations = consultations.filter(consultation => {
     const matchesSearch = consultation.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -193,7 +194,10 @@ export default function Consultations() {
                 <SelectItem value="emergency">Emergency</SelectItem>
               </SelectContent>
             </Select>
-            <Button className="shrink-0">
+            <Button 
+              className="shrink-0"
+              onClick={() => setShowNewConsultationForm(true)}
+            >
               <Plus className="h-4 w-4 mr-2" />
               New Consultation
             </Button>
@@ -324,18 +328,130 @@ export default function Consultations() {
                 </CardContent>
               </Card>
             ))}
-            </div>
           </div>
-        </main>
-      </div>
 
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" 
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+          {/* New Consultation Form Modal */}
+          {showNewConsultationForm && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+              <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                <CardHeader>
+                  <CardTitle>New Consultation</CardTitle>
+                  <CardDescription>Create a new patient consultation record</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="consultationPatientId">Patient ID *</Label>
+                        <Input id="consultationPatientId" placeholder="P001" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="consultationPatientName">Patient Name *</Label>
+                        <Input id="consultationPatientName" placeholder="John Smith" required />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="consultationDoctor">Doctor *</Label>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Doctor" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="dr-chen">Dr. Michael Chen</SelectItem>
+                            <SelectItem value="dr-rodriguez">Dr. Emily Rodriguez</SelectItem>
+                            <SelectItem value="dr-thompson">Dr. James Thompson</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="consultationType">Consultation Type *</Label>
+                        <Select>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="initial">Initial</SelectItem>
+                            <SelectItem value="follow-up">Follow-up</SelectItem>
+                            <SelectItem value="emergency">Emergency</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="consultationDate">Date *</Label>
+                        <Input id="consultationDate" type="date" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="consultationTime">Time *</Label>
+                        <Input id="consultationTime" type="time" required />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="chiefComplaint">Chief Complaint *</Label>
+                      <Textarea 
+                        id="chiefComplaint" 
+                        placeholder="Describe the patient's main complaint..."
+                        required 
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="diagnosis">Diagnosis</Label>
+                      <Textarea 
+                        id="diagnosis" 
+                        placeholder="Enter diagnosis..."
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="treatment">Treatment Plan</Label>
+                      <Textarea 
+                        id="treatment" 
+                        placeholder="Enter treatment plan..."
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="consultationNotes">Clinical Notes</Label>
+                      <Textarea 
+                        id="consultationNotes" 
+                        placeholder="Additional clinical notes..."
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-4 pt-4">
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        onClick={() => setShowNewConsultationForm(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit" className="bg-gradient-primary">
+                        Create Consultation
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
+      </main>
     </div>
+
+    {/* Mobile Sidebar Overlay */}
+    {sidebarOpen && (
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" 
+        onClick={() => setSidebarOpen(false)}
+      />
+    )}
+  </div>
   );
 }

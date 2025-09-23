@@ -101,6 +101,7 @@ export default function Prescriptions() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedPrescription, setSelectedPrescription] = useState<typeof prescriptions[0] | null>(null);
+  const [showNewPrescriptionForm, setShowNewPrescriptionForm] = useState(false);
 
   const filteredPrescriptions = prescriptions.filter(prescription => {
     const matchesSearch = prescription.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -214,7 +215,10 @@ export default function Prescriptions() {
                 <SelectItem value="expired">Expired</SelectItem>
               </SelectContent>
             </Select>
-            <Button className="shrink-0">
+            <Button 
+              className="shrink-0"
+              onClick={() => setShowNewPrescriptionForm(true)}
+            >
               <Plus className="h-4 w-4 mr-2" />
               New Prescription
             </Button>
@@ -409,18 +413,123 @@ export default function Prescriptions() {
                 </CardContent>
               </Card>
             ))}
-            </div>
           </div>
-        </main>
-      </div>
 
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" 
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+          {/* New Prescription Form Modal */}
+          {showNewPrescriptionForm && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+              <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                <CardHeader>
+                  <CardTitle>New Prescription</CardTitle>
+                  <CardDescription>Create a new prescription for a patient</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="prescriptionPatientId">Patient ID *</Label>
+                        <Input id="prescriptionPatientId" placeholder="P001" required />
+                      </div>
+                      <div>
+                        <Label htmlFor="prescriptionPatientName">Patient Name *</Label>
+                        <Input id="prescriptionPatientName" placeholder="John Smith" required />
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="prescriptionDoctor">Prescribing Doctor *</Label>
+                      <Select>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Doctor" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="dr-chen">Dr. Michael Chen</SelectItem>
+                          <SelectItem value="dr-rodriguez">Dr. Emily Rodriguez</SelectItem>
+                          <SelectItem value="dr-thompson">Dr. James Thompson</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-4">
+                      <Label className="text-base font-semibold">Medications</Label>
+                      <div className="border rounded-lg p-4 space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="medicationName">Medication Name *</Label>
+                            <Input id="medicationName" placeholder="Lisinopril" required />
+                          </div>
+                          <div>
+                            <Label htmlFor="dosage">Dosage *</Label>
+                            <Input id="dosage" placeholder="10mg" required />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="frequency">Frequency *</Label>
+                            <Select>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select frequency" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="once-daily">Once daily</SelectItem>
+                                <SelectItem value="twice-daily">Twice daily</SelectItem>
+                                <SelectItem value="three-daily">Three times daily</SelectItem>
+                                <SelectItem value="four-daily">Four times daily</SelectItem>
+                                <SelectItem value="as-needed">As needed</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label htmlFor="duration">Duration *</Label>
+                            <Input id="duration" placeholder="30 days" required />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="instructions">Instructions</Label>
+                          <Textarea 
+                            id="instructions" 
+                            placeholder="Take with food..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="prescriptionNotes">Additional Notes</Label>
+                      <Textarea 
+                        id="prescriptionNotes" 
+                        placeholder="Any additional notes or warnings..."
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-4 pt-4">
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        onClick={() => setShowNewPrescriptionForm(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit" className="bg-gradient-primary">
+                        Create Prescription
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </div>
+      </main>
     </div>
+
+    {/* Mobile Sidebar Overlay */}
+    {sidebarOpen && (
+      <div 
+        className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" 
+        onClick={() => setSidebarOpen(false)}
+      />
+    )}
+  </div>
   );
 }
