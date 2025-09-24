@@ -26,7 +26,7 @@ export function Header({ onMenuClick }: HeaderProps) {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <div className="flex items-center gap-2">
+          {/* <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary">
               <span className="text-sm font-bold text-primary-foreground">
                 HMS
@@ -38,7 +38,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 Healthcare Management
               </p>
             </div>
-          </div>
+          </div> */}
         </div>
 
         <div className="flex items-center gap-4">

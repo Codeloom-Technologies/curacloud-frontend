@@ -45,7 +45,7 @@ export default function Dashboard() {
     },
     {
       title: "Monthly Revenue",
-      value: "$284,500",
+      value: "₦284,500",
       change: "+8.2% from last month",
       changeType: "positive" as const,
       icon: DollarSign,
