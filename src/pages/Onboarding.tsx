@@ -222,23 +222,82 @@ export default function Onboarding() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="city">City</Label>
-                    <Input
-                      id="city"
-                      placeholder="e.g., Lagos"
-                      value={formData.city}
-                      onChange={(e) => updateFormData("city", e.target.value)}
-                    />
+                    <Label htmlFor="state">State</Label>
+                    <Select value={formData.state} onValueChange={(value) => updateFormData("state", value)}>
+                      <SelectTrigger id="state">
+                        <SelectValue placeholder="Select state" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Abia">Abia</SelectItem>
+                        <SelectItem value="Adamawa">Adamawa</SelectItem>
+                        <SelectItem value="Akwa Ibom">Akwa Ibom</SelectItem>
+                        <SelectItem value="Anambra">Anambra</SelectItem>
+                        <SelectItem value="Bauchi">Bauchi</SelectItem>
+                        <SelectItem value="Bayelsa">Bayelsa</SelectItem>
+                        <SelectItem value="Benue">Benue</SelectItem>
+                        <SelectItem value="Borno">Borno</SelectItem>
+                        <SelectItem value="Cross River">Cross River</SelectItem>
+                        <SelectItem value="Delta">Delta</SelectItem>
+                        <SelectItem value="Ebonyi">Ebonyi</SelectItem>
+                        <SelectItem value="Edo">Edo</SelectItem>
+                        <SelectItem value="Ekiti">Ekiti</SelectItem>
+                        <SelectItem value="Enugu">Enugu</SelectItem>
+                        <SelectItem value="FCT">FCT Abuja</SelectItem>
+                        <SelectItem value="Gombe">Gombe</SelectItem>
+                        <SelectItem value="Imo">Imo</SelectItem>
+                        <SelectItem value="Jigawa">Jigawa</SelectItem>
+                        <SelectItem value="Kaduna">Kaduna</SelectItem>
+                        <SelectItem value="Kano">Kano</SelectItem>
+                        <SelectItem value="Katsina">Katsina</SelectItem>
+                        <SelectItem value="Kebbi">Kebbi</SelectItem>
+                        <SelectItem value="Kogi">Kogi</SelectItem>
+                        <SelectItem value="Kwara">Kwara</SelectItem>
+                        <SelectItem value="Lagos">Lagos</SelectItem>
+                        <SelectItem value="Nasarawa">Nasarawa</SelectItem>
+                        <SelectItem value="Niger">Niger</SelectItem>
+                        <SelectItem value="Ogun">Ogun</SelectItem>
+                        <SelectItem value="Ondo">Ondo</SelectItem>
+                        <SelectItem value="Osun">Osun</SelectItem>
+                        <SelectItem value="Oyo">Oyo</SelectItem>
+                        <SelectItem value="Plateau">Plateau</SelectItem>
+                        <SelectItem value="Rivers">Rivers</SelectItem>
+                        <SelectItem value="Sokoto">Sokoto</SelectItem>
+                        <SelectItem value="Taraba">Taraba</SelectItem>
+                        <SelectItem value="Yobe">Yobe</SelectItem>
+                        <SelectItem value="Zamfara">Zamfara</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="state">State</Label>
-                    <Input
-                      id="state"
-                      placeholder="e.g., Lagos"
-                      value={formData.state}
-                      onChange={(e) => updateFormData("state", e.target.value)}
-                    />
+                    <Label htmlFor="city">City</Label>
+                    <Select value={formData.city} onValueChange={(value) => updateFormData("city", value)}>
+                      <SelectTrigger id="city">
+                        <SelectValue placeholder="Select city" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Lagos">Lagos</SelectItem>
+                        <SelectItem value="Abuja">Abuja</SelectItem>
+                        <SelectItem value="Kano">Kano</SelectItem>
+                        <SelectItem value="Ibadan">Ibadan</SelectItem>
+                        <SelectItem value="Port Harcourt">Port Harcourt</SelectItem>
+                        <SelectItem value="Benin City">Benin City</SelectItem>
+                        <SelectItem value="Kaduna">Kaduna</SelectItem>
+                        <SelectItem value="Enugu">Enugu</SelectItem>
+                        <SelectItem value="Aba">Aba</SelectItem>
+                        <SelectItem value="Onitsha">Onitsha</SelectItem>
+                        <SelectItem value="Warri">Warri</SelectItem>
+                        <SelectItem value="Calabar">Calabar</SelectItem>
+                        <SelectItem value="Uyo">Uyo</SelectItem>
+                        <SelectItem value="Ilorin">Ilorin</SelectItem>
+                        <SelectItem value="Jos">Jos</SelectItem>
+                        <SelectItem value="Abeokuta">Abeokuta</SelectItem>
+                        <SelectItem value="Akure">Akure</SelectItem>
+                        <SelectItem value="Owerri">Owerri</SelectItem>
+                        <SelectItem value="Maiduguri">Maiduguri</SelectItem>
+                        <SelectItem value="Sokoto">Sokoto</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
