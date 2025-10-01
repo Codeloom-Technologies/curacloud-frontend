@@ -4,6 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
 import {
   Users,
   Calendar,
@@ -158,10 +163,39 @@ const pricingPlans = [
 export default function LandingPage() {
   const [activeRole, setActiveRole] = useState("doctors");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [demoDialogOpen, setDemoDialogOpen] = useState(false);
+  const [demoForm, setDemoForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    facilityName: "",
+    message: "",
+  });
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
     navigate("/onboarding");
+  };
+
+  const handleDemoSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!demoForm.name || !demoForm.email || !demoForm.facilityName) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    // Here you would typically send the data to your backend
+    console.log("Demo request:", demoForm);
+    toast.success("Thank you! We'll contact you soon to schedule your demo.");
+    setDemoDialogOpen(false);
+    setDemoForm({
+      name: "",
+      email: "",
+      phone: "",
+      facilityName: "",
+      message: "",
+    });
   };
 
   return (
@@ -302,10 +336,83 @@ export default function LandingPage() {
                   Get Started Free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Button variant="outline" size="lg" className="text-lg px-8">
-                  <Play className="mr-2 h-5 w-5" />
-                  Book a Demo
-                </Button>
+                <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="lg" className="text-lg px-8">
+                      <Play className="mr-2 h-5 w-5" />
+                      Book a Demo
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                      <DialogTitle>Schedule a Demo</DialogTitle>
+                      <DialogDescription>
+                        Fill out the form below and our team will contact you to schedule a personalized demo.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleDemoSubmit} className="space-y-4 mt-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="demo-name">Full Name *</Label>
+                        <Input
+                          id="demo-name"
+                          placeholder="Your full name"
+                          value={demoForm.name}
+                          onChange={(e) => setDemoForm({ ...demoForm, name: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="demo-email">Email Address *</Label>
+                        <Input
+                          id="demo-email"
+                          type="email"
+                          placeholder="your.email@hospital.com"
+                          value={demoForm.email}
+                          onChange={(e) => setDemoForm({ ...demoForm, email: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="demo-phone">Phone Number</Label>
+                        <Input
+                          id="demo-phone"
+                          type="tel"
+                          placeholder="+234 xxx xxx xxxx"
+                          value={demoForm.phone}
+                          onChange={(e) => setDemoForm({ ...demoForm, phone: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="demo-facility">Facility Name *</Label>
+                        <Input
+                          id="demo-facility"
+                          placeholder="Your hospital/clinic name"
+                          value={demoForm.facilityName}
+                          onChange={(e) => setDemoForm({ ...demoForm, facilityName: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="demo-message">Message (Optional)</Label>
+                        <Textarea
+                          id="demo-message"
+                          placeholder="Tell us about your specific needs..."
+                          value={demoForm.message}
+                          onChange={(e) => setDemoForm({ ...demoForm, message: e.target.value })}
+                          rows={3}
+                        />
+                      </div>
+                      <div className="flex gap-3 justify-end pt-4">
+                        <Button type="button" variant="outline" onClick={() => setDemoDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button type="submit" className="bg-gradient-primary">
+                          Request Demo
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
               </div>
 
               <div className="flex items-center gap-8 text-sm text-muted-foreground">
@@ -839,6 +946,7 @@ export default function LandingPage() {
               size="lg"
               variant="outline"
               className="text-lg px-8 border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10"
+              onClick={() => setDemoDialogOpen(true)}
             >
               Schedule Demo
             </Button>
