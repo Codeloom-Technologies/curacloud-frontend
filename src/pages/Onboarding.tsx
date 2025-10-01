@@ -314,11 +314,33 @@ export default function Onboarding() {
 
                   <div className="space-y-2">
                     <Label htmlFor="country">Country</Label>
-                    <Input
-                      id="country"
-                      value={formData.country}
-                      onChange={(e) => updateFormData("country", e.target.value)}
-                    />
+                    <Select value={formData.country} onValueChange={(value) => updateFormData("country", value)}>
+                      <SelectTrigger id="country">
+                        <SelectValue placeholder="Select country" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Nigeria">Nigeria</SelectItem>
+                        <SelectItem value="Ghana">Ghana</SelectItem>
+                        <SelectItem value="Kenya">Kenya</SelectItem>
+                        <SelectItem value="South Africa">South Africa</SelectItem>
+                        <SelectItem value="Egypt">Egypt</SelectItem>
+                        <SelectItem value="Tanzania">Tanzania</SelectItem>
+                        <SelectItem value="Uganda">Uganda</SelectItem>
+                        <SelectItem value="Ethiopia">Ethiopia</SelectItem>
+                        <SelectItem value="Morocco">Morocco</SelectItem>
+                        <SelectItem value="Senegal">Senegal</SelectItem>
+                        <SelectItem value="Rwanda">Rwanda</SelectItem>
+                        <SelectItem value="Cameroon">Cameroon</SelectItem>
+                        <SelectItem value="Ivory Coast">Ivory Coast</SelectItem>
+                        <SelectItem value="Zambia">Zambia</SelectItem>
+                        <SelectItem value="Zimbabwe">Zimbabwe</SelectItem>
+                        <SelectItem value="Botswana">Botswana</SelectItem>
+                        <SelectItem value="Tunisia">Tunisia</SelectItem>
+                        <SelectItem value="Algeria">Algeria</SelectItem>
+                        <SelectItem value="Mozambique">Mozambique</SelectItem>
+                        <SelectItem value="Angola">Angola</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               </div>
