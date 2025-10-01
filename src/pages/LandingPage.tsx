@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
   Users,
   Calendar,
@@ -28,6 +29,8 @@ import {
   Instagram,
   Play,
   ChevronRight,
+  Menu,
+  X,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import dashboardPreview from "@/assets/hms-dashboard-preview.jpg";
@@ -154,10 +157,11 @@ const pricingPlans = [
 
 export default function LandingPage() {
   const [activeRole, setActiveRole] = useState("doctors");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
-    navigate("/login");
+    navigate("/onboarding");
   };
 
   return (
@@ -173,6 +177,7 @@ export default function LandingPage() {
               <span className="text-xl font-bold">CuraCloud</span>
             </div>
 
+            {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
               <a
                 href="#features"
@@ -202,10 +207,66 @@ export default function LandingPage() {
               <Button
                 size="sm"
                 className="bg-gradient-primary hover:shadow-glow transition-all"
+                onClick={handleGetStarted}
               >
                 Get Started
               </Button>
             </div>
+
+            {/* Mobile Menu Button */}
+            <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <SheetTrigger asChild className="md:hidden">
+                <Button variant="ghost" size="sm">
+                  <Menu className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+                <div className="flex flex-col space-y-6 mt-6">
+                  <a
+                    href="#features"
+                    className="text-lg font-medium hover:text-primary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Features
+                  </a>
+                  <a
+                    href="#pricing"
+                    className="text-lg font-medium hover:text-primary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Pricing
+                  </a>
+                  <a
+                    href="#testimonials"
+                    className="text-lg font-medium hover:text-primary transition-colors"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Reviews
+                  </a>
+                  <div className="pt-4 space-y-3">
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        navigate("/login");
+                      }}
+                    >
+                      Sign In
+                    </Button>
+                    <Button
+                      className="w-full bg-gradient-primary hover:shadow-glow transition-all"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        handleGetStarted();
+                      }}
+                    >
+                      Get Started
+                    </Button>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </nav>

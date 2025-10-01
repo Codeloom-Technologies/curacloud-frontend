@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import LandingPage from "./pages/LandingPage";
+import Onboarding from "./pages/Onboarding";
 import PatientDirectory from "./pages/patients/PatientDirectory";
 import RegisterPatient from "./pages/patients/RegisterPatient";
 import PatientRecords from "./pages/patients/PatientRecords";
@@ -30,6 +31,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/login" element={<Login />} />
           <Route path="/patients" element={<PatientDirectory />} />
