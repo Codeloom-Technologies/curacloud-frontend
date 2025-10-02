@@ -104,7 +104,11 @@ const navigationItems = [
   {
     title: "HR & Staff",
     icon: UserCheck,
-    href: "/hr",
+    href: "/staff",
+    children: [
+      { title: "Staff Directory", href: "/staff" },
+      { title: "Register Staff", href: "/staff/register" },
+    ],
   },
   {
     title: "Reports",
