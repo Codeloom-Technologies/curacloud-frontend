@@ -19,6 +19,9 @@ import MedicalHistory from "./pages/medical-records/MedicalHistory";
 import LabOrders from "./pages/laboratory/LabOrders";
 import ResultsEntry from "./pages/laboratory/ResultsEntry";
 import LabReports from "./pages/laboratory/LabReports";
+import StaffDirectory from "./pages/staff/StaffDirectory";
+import RegisterStaff from "./pages/staff/RegisterStaff";
+import StaffRecords from "./pages/staff/StaffRecords";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +51,11 @@ const App = () => (
         <Route path="/lab/orders" element={<LabOrders />} />
         <Route path="/lab/results" element={<ResultsEntry />} />
         <Route path="/lab/reports" element={<LabReports />} />
+        
+        {/* Staff/HR Routes */}
+        <Route path="/staff" element={<StaffDirectory />} />
+        <Route path="/staff/register" element={<RegisterStaff />} />
+        <Route path="/staff/records/:staffId" element={<StaffRecords />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
