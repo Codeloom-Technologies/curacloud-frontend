@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +19,7 @@ import { ArrowLeft, Mail, Phone, Calendar, MapPin, Edit } from "lucide-react";
 const StaffRecords = () => {
   const navigate = useNavigate();
   const { staffId } = useParams();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const staffData = {
     id: staffId,
@@ -52,9 +55,21 @@ const StaffRecords = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main className="container mx-auto p-6">
+    <div className="flex h-screen bg-background">
+      {/* Sidebar */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform md:relative md:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <Sidebar />
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+
+        <main className="flex-1 overflow-y-auto p-6">
         <Button
           variant="ghost"
           onClick={() => navigate("/staff")}
@@ -268,7 +283,16 @@ const StaffRecords = () => {
             </Card>
           </TabsContent>
         </Tabs>
-      </main>
+        </main>
+      </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
     </div>
   );
 };
