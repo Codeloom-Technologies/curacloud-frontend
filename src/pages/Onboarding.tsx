@@ -76,7 +76,7 @@ export default function Onboarding() {
   };
 
   const handleComplete = () => {
-    toast.success("Onboarding complete! Welcome to CuraCloud!");
+    toast.success("Onboarding complete! Welcome to Curacloud!");
     // Here you would typically save the data to your backend
     console.log("Onboarding data:", formData);
     navigate("/login");
@@ -97,7 +97,7 @@ export default function Onboarding() {
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="text-2xl">
-              {step === 1 && "Welcome to CuraCloud!"}
+              {step === 1 && "Welcome to Curacloud!"}
               {step === 2 && "Tell us about your facility"}
               {step === 3 && "Where are you located?"}
               {step === 4 && "Your contact information"}

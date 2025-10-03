@@ -27,7 +27,7 @@ export default function Login() {
       setIsLoading(false);
       toast({
         title: "Login Successful",
-        description: "Welcome back to CuraCloud",
+        description: "Welcome back to Curacloud",
       });
       // In real app, this would redirect to dashboard
       window.location.href = "/dashboard";
@@ -65,7 +65,7 @@ export default function Login() {
               <Heart className="h-7 w-7" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold">CuraCloud</h1>
+              <h1 className="text-3xl font-bold">Curacloud</h1>
               <p className="text-lg opacity-90">Hospital Management System</p>
             </div>
           </div>
@@ -105,7 +105,7 @@ export default function Login() {
             <CardHeader className="space-y-1 text-center">
               <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
               <CardDescription>
-                Sign in to your CuraCloud account
+                Sign in to your Curacloud account
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">

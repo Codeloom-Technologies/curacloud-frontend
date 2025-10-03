@@ -84,7 +84,7 @@ export default function Dashboard() {
               className="absolute inset-0 w-full h-full object-cover opacity-20"
             />
             <div className="relative p-8 text-white">
-              <h1 className="text-3xl font-bold mb-2">Welcome to CuraCloud</h1>
+              <h1 className="text-3xl font-bold mb-2">Welcome to Curacloud</h1>
               <p className="text-lg opacity-90 max-w-2xl">
                 Streamline your hospital operations with our comprehensive
                 management system. Monitor patient care, schedule appointments,

@@ -4,7 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -89,7 +96,7 @@ const testimonials = [
     image: doctorTestimonial,
     rating: 5,
     quote:
-      "CuraCloud HMS has transformed how we manage patient care. The intuitive interface and comprehensive features have improved our efficiency by 40%.",
+      "Curacloud HMS has transformed how we manage patient care. The intuitive interface and comprehensive features have improved our efficiency by 40%.",
   },
   {
     name: "Michael Rodriguez",
@@ -114,11 +121,11 @@ const testimonials = [
 const pricingPlans = [
   {
     name: "Starter",
-    price: "₦150,000",
+    price: "₦50,000",
     period: "per month",
     description: "Perfect for small clinics and practices",
     features: [
-      "Up to 500 patients",
+      "Up to 100 patients",
       "Basic appointment scheduling",
       "Digital medical records",
       "Email support",
@@ -128,7 +135,7 @@ const pricingPlans = [
   },
   {
     name: "Professional",
-    price: "₦400,000",
+    price: "₦100,000",
     period: "per month",
     description: "Ideal for medium-sized hospitals",
     features: [
@@ -137,6 +144,8 @@ const pricingPlans = [
       "Complete EMR/EHR suite",
       "Billing & insurance integration",
       "Pharmacy management",
+      "Staff management",
+      "Inventory management",
       "24/7 phone support",
       "Custom reporting",
     ],
@@ -179,7 +188,7 @@ export default function LandingPage() {
 
   const handleDemoSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!demoForm.name || !demoForm.email || !demoForm.facilityName) {
       toast.error("Please fill in all required fields");
       return;
@@ -208,7 +217,7 @@ export default function LandingPage() {
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
                 <Heart className="h-5 w-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold">CuraCloud</span>
+              <span className="text-xl font-bold">Curacloud</span>
             </div>
 
             {/* Desktop Navigation */}
@@ -311,7 +320,7 @@ export default function LandingPage() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="animate-fade-in">
               <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
-                🚀 Trusted by 500+ Healthcare Facilities
+                🚀 Trusted by 2+ Healthcare Facilities
               </Badge>
 
               <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
@@ -338,7 +347,11 @@ export default function LandingPage() {
                 </Button>
                 <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
                   <DialogTrigger asChild>
-                    <Button variant="outline" size="lg" className="text-lg px-8">
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="text-lg px-8"
+                    >
                       <Play className="mr-2 h-5 w-5" />
                       Book a Demo
                     </Button>
@@ -347,17 +360,23 @@ export default function LandingPage() {
                     <DialogHeader>
                       <DialogTitle>Schedule a Demo</DialogTitle>
                       <DialogDescription>
-                        Fill out the form below and our team will contact you to schedule a personalized demo.
+                        Fill out the form below and our team will contact you to
+                        schedule a personalized demo.
                       </DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={handleDemoSubmit} className="space-y-4 mt-4">
+                    <form
+                      onSubmit={handleDemoSubmit}
+                      className="space-y-4 mt-4"
+                    >
                       <div className="space-y-2">
                         <Label htmlFor="demo-name">Full Name *</Label>
                         <Input
                           id="demo-name"
                           placeholder="Your full name"
                           value={demoForm.name}
-                          onChange={(e) => setDemoForm({ ...demoForm, name: e.target.value })}
+                          onChange={(e) =>
+                            setDemoForm({ ...demoForm, name: e.target.value })
+                          }
                           required
                         />
                       </div>
@@ -368,7 +387,9 @@ export default function LandingPage() {
                           type="email"
                           placeholder="your.email@hospital.com"
                           value={demoForm.email}
-                          onChange={(e) => setDemoForm({ ...demoForm, email: e.target.value })}
+                          onChange={(e) =>
+                            setDemoForm({ ...demoForm, email: e.target.value })
+                          }
                           required
                         />
                       </div>
@@ -379,7 +400,9 @@ export default function LandingPage() {
                           type="tel"
                           placeholder="+234 xxx xxx xxxx"
                           value={demoForm.phone}
-                          onChange={(e) => setDemoForm({ ...demoForm, phone: e.target.value })}
+                          onChange={(e) =>
+                            setDemoForm({ ...demoForm, phone: e.target.value })
+                          }
                         />
                       </div>
                       <div className="space-y-2">
@@ -388,7 +411,12 @@ export default function LandingPage() {
                           id="demo-facility"
                           placeholder="Your hospital/clinic name"
                           value={demoForm.facilityName}
-                          onChange={(e) => setDemoForm({ ...demoForm, facilityName: e.target.value })}
+                          onChange={(e) =>
+                            setDemoForm({
+                              ...demoForm,
+                              facilityName: e.target.value,
+                            })
+                          }
                           required
                         />
                       </div>
@@ -398,12 +426,21 @@ export default function LandingPage() {
                           id="demo-message"
                           placeholder="Tell us about your specific needs..."
                           value={demoForm.message}
-                          onChange={(e) => setDemoForm({ ...demoForm, message: e.target.value })}
+                          onChange={(e) =>
+                            setDemoForm({
+                              ...demoForm,
+                              message: e.target.value,
+                            })
+                          }
                           rows={3}
                         />
                       </div>
                       <div className="flex gap-3 justify-end pt-4">
-                        <Button type="button" variant="outline" onClick={() => setDemoDialogOpen(false)}>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setDemoDialogOpen(false)}
+                        >
                           Cancel
                         </Button>
                         <Button type="submit" className="bg-gradient-primary">
@@ -436,7 +473,7 @@ export default function LandingPage() {
                 <div className="absolute inset-0 bg-gradient-primary rounded-3xl blur-3xl opacity-20"></div>
                 <img
                   src={dashboardPreview}
-                  alt="CuraCloud HMS Dashboard Preview"
+                  alt="Curacloud HMS Dashboard Preview"
                   className="relative rounded-3xl shadow-2xl w-full hover-scale transition-transform duration-500"
                 />
               </div>
@@ -778,7 +815,7 @@ export default function LandingPage() {
               What Our Customers Say
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Join thousands of healthcare professionals who trust CuraCloud HMS
+              Join thousands of healthcare professionals who trust Curacloud HMS
               for their daily operations.
             </p>
           </div>
@@ -928,7 +965,7 @@ export default function LandingPage() {
             Ready to Transform Your Hospital?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join thousands of healthcare facilities already using CuraCloud.
+            Join thousands of healthcare facilities already using Curacloud.
             Start your free trial today and see the difference.
           </p>
 
@@ -967,7 +1004,7 @@ export default function LandingPage() {
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
                   <Heart className="h-5 w-5 text-primary-foreground" />
                 </div>
-                <span className="text-xl font-bold">CuraCloud</span>
+                <span className="text-xl font-bold">Curacloud</span>
               </div>
               <p className="text-muted-foreground mb-4">
                 Modern healthcare management solution trusted by healthcare
@@ -1106,7 +1143,7 @@ export default function LandingPage() {
 
           <div className="pt-8 border-t text-center text-sm text-muted-foreground">
             <p>
-              &copy; {new Date().getFullYear()} CuraCloud. All rights reserved.
+              &copy; {new Date().getFullYear()} Curacloud. All rights reserved.
               Built with ❤️ for healthcare professionals.
             </p>
           </div>
