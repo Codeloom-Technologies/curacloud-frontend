@@ -96,9 +96,10 @@ const navigationItems = [
     icon: CreditCard,
     href: "/billing",
     children: [
+      { title: "Overview", href: "/billing" },
       { title: "Invoices", href: "/billing/invoices" },
-      { title: "Payments", href: "/billing/payments" },
-      { title: "Insurance", href: "/billing/insurance" },
+      { title: "Payment Processing", href: "/billing/payments" },
+      { title: "Reports", href: "/billing/reports" },
     ],
   },
   {

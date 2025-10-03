@@ -22,6 +22,10 @@ import LabReports from "./pages/laboratory/LabReports";
 import StaffDirectory from "./pages/staff/StaffDirectory";
 import RegisterStaff from "./pages/staff/RegisterStaff";
 import StaffRecords from "./pages/staff/StaffRecords";
+import BillingOverview from "./pages/billing/BillingOverview";
+import Invoices from "./pages/billing/Invoices";
+import PaymentProcessing from "./pages/billing/PaymentProcessing";
+import BillingReports from "./pages/billing/BillingReports";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -56,6 +60,12 @@ const App = () => (
         <Route path="/staff" element={<StaffDirectory />} />
         <Route path="/staff/register" element={<RegisterStaff />} />
         <Route path="/staff/records/:staffId" element={<StaffRecords />} />
+        
+        {/* Billing Routes */}
+        <Route path="/billing" element={<BillingOverview />} />
+        <Route path="/billing/invoices" element={<Invoices />} />
+        <Route path="/billing/payments" element={<PaymentProcessing />} />
+        <Route path="/billing/reports" element={<BillingReports />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
