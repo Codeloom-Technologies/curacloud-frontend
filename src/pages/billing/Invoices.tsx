@@ -4,12 +4,18 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, Download, Eye, Plus } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Invoices = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const invoices = [
     { id: "INV-2024001", patient: "John Doe", date: "2024-03-15", amount: "$450.00", status: "Paid" },
@@ -18,6 +24,15 @@ const Invoices = () => {
     { id: "INV-2024004", patient: "Alice Williams", date: "2024-03-12", amount: "$1,250.00", status: "Overdue" },
     { id: "INV-2024005", patient: "Charlie Brown", date: "2024-03-11", amount: "$590.00", status: "Paid" },
   ];
+
+  const handleCreateInvoice = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Invoice Created",
+      description: "New invoice has been created successfully.",
+    });
+    setDialogOpen(false);
+  };
 
   return (
     <div className="min-h-screen flex w-full bg-background">
@@ -32,10 +47,71 @@ const Invoices = () => {
               <h1 className="text-3xl font-bold text-foreground">Invoices</h1>
               <p className="text-muted-foreground">Manage patient billing and invoices</p>
             </div>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Invoice
-            </Button>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  New Invoice
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Create New Invoice</DialogTitle>
+                  <DialogDescription>
+                    Enter invoice details to create a new billing record.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleCreateInvoice}>
+                  <div className="grid gap-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="patient">Patient</Label>
+                      <Select required>
+                        <SelectTrigger id="patient">
+                          <SelectValue placeholder="Select patient" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">John Doe</SelectItem>
+                          <SelectItem value="2">Jane Smith</SelectItem>
+                          <SelectItem value="3">Bob Johnson</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="amount">Amount</Label>
+                      <Input
+                        id="amount"
+                        type="number"
+                        placeholder="0.00"
+                        step="0.01"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="service">Service/Description</Label>
+                      <Input
+                        id="service"
+                        placeholder="e.g., Consultation, Lab Test"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="due-date">Due Date</Label>
+                      <Input
+                        id="due-date"
+                        type="date"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit">Create Invoice</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <Card>
