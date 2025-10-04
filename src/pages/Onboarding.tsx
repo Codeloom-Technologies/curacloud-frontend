@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,8 +9,8 @@ import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, ArrowLeft, Building2, Users, MapPin, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
-import { submitOnboarding, mapFormToApiPayload } from "@/services/onboarding";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { submitOnboarding, mapFormToApiPayload, fetchCountries, fetchStates, fetchCities } from "@/services/onboarding";
 import { OnboardingFormData } from "@/types/onboarding";
 
 export default function Onboarding() {
@@ -30,7 +30,10 @@ export default function Onboarding() {
     city: "",
     state: "",
     postalCode: "",
-    country: "Nigeria",
+    country: "",
+    countryId: "",
+    stateId: "",
+    cityId: "",
     
     // Step 4: Contact
     fullName: "",
@@ -39,6 +42,35 @@ export default function Onboarding() {
     password: "",
     position: "",
   });
+
+  const { data: countries = [], isLoading: loadingCountries } = useQuery({
+    queryKey: ["countries"],
+    queryFn: fetchCountries,
+  });
+
+  const { data: states = [], isLoading: loadingStates } = useQuery({
+    queryKey: ["states", formData.countryId],
+    queryFn: () => fetchStates(Number(formData.countryId)),
+    enabled: !!formData.countryId,
+  });
+
+  const { data: cities = [], isLoading: loadingCities } = useQuery({
+    queryKey: ["cities", formData.stateId],
+    queryFn: () => fetchCities(Number(formData.stateId)),
+    enabled: !!formData.stateId,
+  });
+
+  useEffect(() => {
+    if (formData.countryId) {
+      setFormData(prev => ({ ...prev, stateId: "", cityId: "", state: "", city: "" }));
+    }
+  }, [formData.countryId]);
+
+  useEffect(() => {
+    if (formData.stateId) {
+      setFormData(prev => ({ ...prev, cityId: "", city: "" }));
+    }
+  }, [formData.stateId]);
 
   const mutation = useMutation({
     mutationFn: submitOnboarding,
@@ -69,7 +101,7 @@ export default function Onboarding() {
       toast.error("Please fill in all facility information");
       return;
     }
-    if (step === 3 && (!formData.address || !formData.city || !formData.state)) {
+    if (step === 3 && (!formData.address || !formData.countryId || !formData.stateId || !formData.cityId)) {
       toast.error("Please fill in location details");
       return;
     }
@@ -234,128 +266,96 @@ export default function Onboarding() {
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="country">Country</Label>
+                  <Select 
+                    value={formData.countryId} 
+                    onValueChange={(value) => {
+                      const country = countries.find(c => c.id === Number(value));
+                      setFormData(prev => ({ 
+                        ...prev, 
+                        countryId: value,
+                        country: country?.name || ""
+                      }));
+                    }}
+                  >
+                    <SelectTrigger id="country">
+                      <SelectValue placeholder={loadingCountries ? "Loading..." : "Select country"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {countries.map((country) => (
+                        <SelectItem key={country.id} value={String(country.id)}>
+                          {country.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="state">State</Label>
-                    <Select value={formData.state} onValueChange={(value) => updateFormData("state", value)}>
+                    <Select 
+                      value={formData.stateId} 
+                      onValueChange={(value) => {
+                        const state = states.find(s => s.id === Number(value));
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          stateId: value,
+                          state: state?.name || ""
+                        }));
+                      }}
+                      disabled={!formData.countryId}
+                    >
                       <SelectTrigger id="state">
-                        <SelectValue placeholder="Select state" />
+                        <SelectValue placeholder={loadingStates ? "Loading..." : "Select state"} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Abia">Abia</SelectItem>
-                        <SelectItem value="Adamawa">Adamawa</SelectItem>
-                        <SelectItem value="Akwa Ibom">Akwa Ibom</SelectItem>
-                        <SelectItem value="Anambra">Anambra</SelectItem>
-                        <SelectItem value="Bauchi">Bauchi</SelectItem>
-                        <SelectItem value="Bayelsa">Bayelsa</SelectItem>
-                        <SelectItem value="Benue">Benue</SelectItem>
-                        <SelectItem value="Borno">Borno</SelectItem>
-                        <SelectItem value="Cross River">Cross River</SelectItem>
-                        <SelectItem value="Delta">Delta</SelectItem>
-                        <SelectItem value="Ebonyi">Ebonyi</SelectItem>
-                        <SelectItem value="Edo">Edo</SelectItem>
-                        <SelectItem value="Ekiti">Ekiti</SelectItem>
-                        <SelectItem value="Enugu">Enugu</SelectItem>
-                        <SelectItem value="FCT">FCT Abuja</SelectItem>
-                        <SelectItem value="Gombe">Gombe</SelectItem>
-                        <SelectItem value="Imo">Imo</SelectItem>
-                        <SelectItem value="Jigawa">Jigawa</SelectItem>
-                        <SelectItem value="Kaduna">Kaduna</SelectItem>
-                        <SelectItem value="Kano">Kano</SelectItem>
-                        <SelectItem value="Katsina">Katsina</SelectItem>
-                        <SelectItem value="Kebbi">Kebbi</SelectItem>
-                        <SelectItem value="Kogi">Kogi</SelectItem>
-                        <SelectItem value="Kwara">Kwara</SelectItem>
-                        <SelectItem value="Lagos">Lagos</SelectItem>
-                        <SelectItem value="Nasarawa">Nasarawa</SelectItem>
-                        <SelectItem value="Niger">Niger</SelectItem>
-                        <SelectItem value="Ogun">Ogun</SelectItem>
-                        <SelectItem value="Ondo">Ondo</SelectItem>
-                        <SelectItem value="Osun">Osun</SelectItem>
-                        <SelectItem value="Oyo">Oyo</SelectItem>
-                        <SelectItem value="Plateau">Plateau</SelectItem>
-                        <SelectItem value="Rivers">Rivers</SelectItem>
-                        <SelectItem value="Sokoto">Sokoto</SelectItem>
-                        <SelectItem value="Taraba">Taraba</SelectItem>
-                        <SelectItem value="Yobe">Yobe</SelectItem>
-                        <SelectItem value="Zamfara">Zamfara</SelectItem>
+                        {states.map((state) => (
+                          <SelectItem key={state.id} value={String(state.id)}>
+                            {state.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="city">City</Label>
-                    <Select value={formData.city} onValueChange={(value) => updateFormData("city", value)}>
+                    <Select 
+                      value={formData.cityId} 
+                      onValueChange={(value) => {
+                        const city = cities.find(c => c.id === Number(value));
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          cityId: value,
+                          city: city?.name || ""
+                        }));
+                      }}
+                      disabled={!formData.stateId}
+                    >
                       <SelectTrigger id="city">
-                        <SelectValue placeholder="Select city" />
+                        <SelectValue placeholder={loadingCities ? "Loading..." : "Select city"} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Lagos">Lagos</SelectItem>
-                        <SelectItem value="Abuja">Abuja</SelectItem>
-                        <SelectItem value="Kano">Kano</SelectItem>
-                        <SelectItem value="Ibadan">Ibadan</SelectItem>
-                        <SelectItem value="Port Harcourt">Port Harcourt</SelectItem>
-                        <SelectItem value="Benin City">Benin City</SelectItem>
-                        <SelectItem value="Kaduna">Kaduna</SelectItem>
-                        <SelectItem value="Enugu">Enugu</SelectItem>
-                        <SelectItem value="Aba">Aba</SelectItem>
-                        <SelectItem value="Onitsha">Onitsha</SelectItem>
-                        <SelectItem value="Warri">Warri</SelectItem>
-                        <SelectItem value="Calabar">Calabar</SelectItem>
-                        <SelectItem value="Uyo">Uyo</SelectItem>
-                        <SelectItem value="Ilorin">Ilorin</SelectItem>
-                        <SelectItem value="Jos">Jos</SelectItem>
-                        <SelectItem value="Abeokuta">Abeokuta</SelectItem>
-                        <SelectItem value="Akure">Akure</SelectItem>
-                        <SelectItem value="Owerri">Owerri</SelectItem>
-                        <SelectItem value="Maiduguri">Maiduguri</SelectItem>
-                        <SelectItem value="Sokoto">Sokoto</SelectItem>
+                        {cities.map((city) => (
+                          <SelectItem key={city.id} value={String(city.id)}>
+                            {city.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="postalCode">Postal Code</Label>
-                    <Input
-                      id="postalCode"
-                      placeholder="e.g., 100001"
-                      value={formData.postalCode}
-                      onChange={(e) => updateFormData("postalCode", e.target.value)}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="country">Country</Label>
-                    <Select value={formData.country} onValueChange={(value) => updateFormData("country", value)}>
-                      <SelectTrigger id="country">
-                        <SelectValue placeholder="Select country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Nigeria">Nigeria</SelectItem>
-                        <SelectItem value="Ghana">Ghana</SelectItem>
-                        <SelectItem value="Kenya">Kenya</SelectItem>
-                        <SelectItem value="South Africa">South Africa</SelectItem>
-                        <SelectItem value="Egypt">Egypt</SelectItem>
-                        <SelectItem value="Tanzania">Tanzania</SelectItem>
-                        <SelectItem value="Uganda">Uganda</SelectItem>
-                        <SelectItem value="Ethiopia">Ethiopia</SelectItem>
-                        <SelectItem value="Morocco">Morocco</SelectItem>
-                        <SelectItem value="Senegal">Senegal</SelectItem>
-                        <SelectItem value="Rwanda">Rwanda</SelectItem>
-                        <SelectItem value="Cameroon">Cameroon</SelectItem>
-                        <SelectItem value="Ivory Coast">Ivory Coast</SelectItem>
-                        <SelectItem value="Zambia">Zambia</SelectItem>
-                        <SelectItem value="Zimbabwe">Zimbabwe</SelectItem>
-                        <SelectItem value="Botswana">Botswana</SelectItem>
-                        <SelectItem value="Tunisia">Tunisia</SelectItem>
-                        <SelectItem value="Algeria">Algeria</SelectItem>
-                        <SelectItem value="Mozambique">Mozambique</SelectItem>
-                        <SelectItem value="Angola">Angola</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode">Postal Code</Label>
+                  <Input
+                    id="postalCode"
+                    placeholder="e.g., 100001"
+                    value={formData.postalCode}
+                    onChange={(e) => updateFormData("postalCode", e.target.value)}
+                  />
                 </div>
               </div>
             )}

@@ -2,7 +2,6 @@ import { OnboardingApiPayload } from "@/types/onboarding";
 
 const BASE_URL = "http://localhost:3333/api/v1";
 
-// TODO: Replace these with actual mappings from your backend
 const ROLE_MAP: Record<string, number> = {
   doctor: 4,
   nurse: 3,
@@ -10,24 +9,45 @@ const ROLE_MAP: Record<string, number> = {
   other: 5,
 };
 
-const COUNTRY_MAP: Record<string, number> = {
-  Nigeria: 1,
-  Ghana: 2,
-  Kenya: 3,
-  // Add more countries as needed
+export interface Country {
+  id: number;
+  name: string;
+}
+
+export interface State {
+  id: number;
+  name: string;
+  countryId: number;
+}
+
+export interface City {
+  id: number;
+  name: string;
+  stateId: number;
+}
+
+export const fetchCountries = async (): Promise<Country[]> => {
+  const response = await fetch(`${BASE_URL}/countries`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch countries");
+  }
+  return response.json();
 };
 
-// TODO: Get actual state/city IDs from backend
-const STATE_MAP: Record<string, number> = {
-  Lagos: 2,
-  Abuja: 1,
-  // Add more states as needed
+export const fetchStates = async (countryId: number): Promise<State[]> => {
+  const response = await fetch(`${BASE_URL}/states/${countryId}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch states");
+  }
+  return response.json();
 };
 
-const CITY_MAP: Record<string, number> = {
-  Lagos: 4,
-  Abuja: 1,
-  // Add more cities as needed
+export const fetchCities = async (stateId: number): Promise<City[]> => {
+  const response = await fetch(`${BASE_URL}/cities/${stateId}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch cities");
+  }
+  return response.json();
 };
 
 export const submitOnboarding = async (payload: OnboardingApiPayload) => {
@@ -55,9 +75,9 @@ export const mapFormToApiPayload = (formData: any): OnboardingApiPayload => {
     password: formData.password,
     phoneNumber: formData.phone,
     roleId: ROLE_MAP[formData.role] || 4,
-    countryId: COUNTRY_MAP[formData.country] || 1,
-    stateId: STATE_MAP[formData.state] || 2,
-    cityId: CITY_MAP[formData.city] || 4,
+    countryId: Number(formData.countryId),
+    stateId: Number(formData.stateId),
+    cityId: Number(formData.cityId),
     role: "Health",
     facilitySize: formData.facilitySize,
     facilityType: formData.facilityType,

@@ -8,6 +8,9 @@ export interface OnboardingFormData {
   state: string;
   postalCode: string;
   country: string;
+  countryId: string;
+  stateId: string;
+  cityId: string;
   fullName: string;
   email: string;
   phone: string;
