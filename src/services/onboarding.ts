@@ -31,7 +31,8 @@ export const fetchCountries = async (): Promise<Country[]> => {
   if (!response.ok) {
     throw new Error("Failed to fetch countries");
   }
-  return response.json();
+  const countries = await response.json();
+  return countries.data;
 };
 
 export const fetchStates = async (countryId: number): Promise<State[]> => {
@@ -39,7 +40,8 @@ export const fetchStates = async (countryId: number): Promise<State[]> => {
   if (!response.ok) {
     throw new Error("Failed to fetch states");
   }
-  return response.json();
+  const states = await response.json();
+  return states.data;
 };
 
 export const fetchCities = async (stateId: number): Promise<City[]> => {
@@ -47,7 +49,8 @@ export const fetchCities = async (stateId: number): Promise<City[]> => {
   if (!response.ok) {
     throw new Error("Failed to fetch cities");
   }
-  return response.json();
+  const cities = await response.json();
+  return cities.data;
 };
 
 export const submitOnboarding = async (payload: OnboardingApiPayload) => {
