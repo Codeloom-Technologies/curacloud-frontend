@@ -3,10 +3,9 @@ import { OnboardingApiPayload } from "@/types/onboarding";
 const BASE_URL = "http://localhost:3333/api/v1";
 
 const ROLE_MAP: Record<string, number> = {
-  doctor: 4,
-  nurse: 3,
-  admin: 2,
-  other: 5,
+  doctor: 9,
+  nurse: 12,
+  healthcare: 4,
 };
 
 export interface Country {
@@ -83,7 +82,7 @@ export const mapFormToApiPayload = (formData: any): OnboardingApiPayload => {
     password: formData.password,
     phoneNumber: formData.phoneCode + formData.phone.replace(/^0+/, ""),
     phoneCode: formData.phoneCode,
-    roleId: ROLE_MAP[formData.role] || 4,
+    roleId: 4, // TODO Health care
     countryId: Number(formData.countryId),
     stateId: Number(formData.stateId),
     cityId: Number(formData.cityId),
