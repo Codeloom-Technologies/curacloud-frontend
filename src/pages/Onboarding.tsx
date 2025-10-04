@@ -27,6 +27,8 @@ import {
   MapPin,
   Check,
   Loader2,
+  EyeOff,
+  Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -42,6 +44,9 @@ import { OnboardingFormData } from "@/types/onboarding";
 export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [showPassword, setShowPassword] = useState(false);
+  const [phoneCode, setPhoneCode] = useState("+--");
+
   const [formData, setFormData] = useState<OnboardingFormData>({
     // Step 1: Role
     role: "",
@@ -65,6 +70,7 @@ export default function Onboarding() {
     fullName: "",
     email: "",
     phone: "",
+    phoneCode: "",
     password: "",
     position: "",
   });
@@ -104,10 +110,27 @@ export default function Onboarding() {
     }
   }, [formData.stateId]);
 
+  // Automatically update phone code when country changes
+  useEffect(() => {
+    if (formData.countryId && countries.length > 0) {
+      const selectedCountry = countries.find(
+        (c) => c.id === Number(formData.countryId)
+      );
+
+      const code = selectedCountry?.phoneCode || "+--";
+      setPhoneCode(code);
+      setFormData((prev) => ({ ...prev, phoneCode: code }));
+    } else {
+      setPhoneCode("+--");
+      setFormData((prev) => ({ ...prev, phoneCode: "+--" }));
+    }
+  }, [formData.countryId, countries]);
+
   const mutation = useMutation({
     mutationFn: submitOnboarding,
     onSuccess: (data) => {
-      toast.success("Onboarding complete! Welcome to Curacloud!");
+      // toast.success("Onboarding complete! Welcome to Curacloud!");
+      toast.success("Onboarding complete! Please check your mailbox!");
       console.log("Onboarding response:", data);
       navigate("/login");
     },
@@ -153,6 +176,7 @@ export default function Onboarding() {
       (!formData.fullName ||
         !formData.email ||
         !formData.phone ||
+        !formData.phoneCode ||
         !formData.password)
     ) {
       toast.error("Please fill in all contact information");
@@ -277,6 +301,7 @@ export default function Onboarding() {
                   </Label>
                   <Input
                     id="facilityName"
+                    type="text"
                     placeholder="e.g., General Hospital Lagos"
                     value={formData.facilityName}
                     onChange={(e) =>
@@ -389,7 +414,7 @@ export default function Onboarding() {
                         <SelectItem key={country.id} value={String(country.id)}>
                           <div className="flex items-center gap-2">
                             <img
-                              src={country.flag.svg}
+                              src={country.flag.png}
                               alt={country.name}
                               className="w-5 h-4 object-cover rounded"
                             />
@@ -471,6 +496,7 @@ export default function Onboarding() {
                   <Label htmlFor="postalCode">Postal Code</Label>
                   <Input
                     id="postalCode"
+                    type="text"
                     placeholder="e.g., 100001"
                     value={formData.postalCode}
                     onChange={(e) =>
@@ -489,6 +515,7 @@ export default function Onboarding() {
                   <Input
                     id="fullName"
                     placeholder="Your full name"
+                    type="text"
                     value={formData.fullName}
                     onChange={(e) => updateFormData("fullName", e.target.value)}
                   />
@@ -525,24 +552,55 @@ export default function Onboarding() {
                       onChange={(e) => updateFormData("phone", e.target.value)}
                       className="flex-1"
                     />
+
+                    <input
+                      id="postalCode"
+                      type="text"
+                      hidden={true}
+                      placeholder="Phone Code"
+                      value={formData.phoneCode}
+                      onChange={(e) =>
+                        updateFormData("phoneCode", e.target.value)
+                      }
+                      className="flex-1 border rounded-lg px-2 py-1"
+                    />
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Create a secure password"
-                    value={formData.password}
-                    onChange={(e) => updateFormData("password", e.target.value)}
-                  />
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="false"
+                      placeholder="Create a secure password"
+                      value={formData.password}
+                      onChange={(e) =>
+                        updateFormData("password", e.target.value)
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 top-2 h-7 w-7 p-0"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <Eye className="h-4 w-4" />
+                      ) : (
+                        <EyeOff className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="position">Position/Title</Label>
                   <Input
                     id="position"
+                    type="text"
                     placeholder="e.g., Chief Medical Officer"
                     value={formData.position}
                     onChange={(e) => updateFormData("position", e.target.value)}

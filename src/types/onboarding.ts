@@ -14,6 +14,7 @@ export interface OnboardingFormData {
   fullName: string;
   email: string;
   phone: string;
+  phoneCode: string;
   password: string;
   position: string;
 }
@@ -24,6 +25,7 @@ export interface OnboardingApiPayload {
   email: string;
   password: string;
   phoneNumber: string;
+  phoneCode: string;
   roleId: number;
   countryId: number;
   stateId: number;

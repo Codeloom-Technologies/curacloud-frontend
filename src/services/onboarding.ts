@@ -37,7 +37,6 @@ export const fetchCountries = async (): Promise<Country[]> => {
     throw new Error("Failed to fetch countries");
   }
   const countries = await response.json();
-  console.log(countries);
   return countries.data;
 };
 
@@ -72,8 +71,8 @@ export const submitOnboarding = async (payload: OnboardingApiPayload) => {
     const error = await response.json();
     throw new Error(error.message || "Failed to submit onboarding");
   }
-
-  return response.json();
+  const healthcare = await response.json();
+  return healthcare.data;
 };
 
 export const mapFormToApiPayload = (formData: any): OnboardingApiPayload => {
@@ -82,12 +81,13 @@ export const mapFormToApiPayload = (formData: any): OnboardingApiPayload => {
     fullName: formData.fullName,
     email: formData.email,
     password: formData.password,
-    phoneNumber: formData.phone,
+    phoneNumber: formData.phoneCode + formData.phone.replace(/^0+/, ""),
+    phoneCode: formData.phoneCode,
     roleId: ROLE_MAP[formData.role] || 4,
     countryId: Number(formData.countryId),
     stateId: Number(formData.stateId),
     cityId: Number(formData.cityId),
-    role: "Health",
+    role: formData.role,
     facilitySize: formData.facilitySize,
     facilityType: formData.facilityType,
     position: formData.position,
