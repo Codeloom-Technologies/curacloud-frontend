@@ -138,7 +138,7 @@ export default function Login() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="youremail@example.com"
+                    placeholder="your-mail@example.com"
                     required
                     value={formData.email}
                     onChange={(e) => updateFormData("email", e.target.value)}
@@ -168,9 +168,9 @@ export default function Login() {
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
                         <Eye className="h-4 w-4" />
+                      ) : (
+                        <EyeOff className="h-4 w-4" />
                       )}
                     </Button>
                   </div>

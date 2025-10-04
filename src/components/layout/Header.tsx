@@ -19,7 +19,7 @@ export function Header({ onMenuClick }: HeaderProps) {
 
   const logout = () => {
     localStorage.clear();
-    navigate("/login");
+    navigate("/auth/login");
   };
 
   return (

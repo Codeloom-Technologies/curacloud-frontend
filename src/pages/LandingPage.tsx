@@ -130,6 +130,8 @@ const pricingPlans = [
       "Digital medical records",
       "Email support",
       "Mobile app access",
+      "24/7 phone support",
+      "99.9% uptime SLA",
     ],
     popular: false,
   },
@@ -145,9 +147,9 @@ const pricingPlans = [
       "Billing & insurance integration",
       "Pharmacy management",
       "Staff management",
-      "Inventory management",
+      // "Inventory management",
       "24/7 phone support",
-      "Custom reporting",
+      "99.9% uptime SLA",
     ],
     popular: true,
   },
@@ -183,7 +185,7 @@ export default function LandingPage() {
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
-    navigate("/onboarding");
+    navigate("/auth/onboarding");
   };
 
   const handleDemoSubmit = (e: React.FormEvent) => {
@@ -243,7 +245,7 @@ export default function LandingPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => navigate("/login")}
+                onClick={() => navigate("/auth/login")}
               >
                 Sign In
               </Button>

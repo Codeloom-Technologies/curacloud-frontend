@@ -112,112 +112,116 @@ const StaffDirectory = () => {
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
         <main className="flex-1 overflow-y-auto p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h1 className="text-3xl font-bold">Staff Directory</h1>
-            <p className="text-muted-foreground">
-              Manage hospital staff members
-            </p>
-          </div>
-          <Button onClick={() => navigate("/staff/register")}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Staff
-          </Button>
-        </div>
-
-        <div className="bg-card rounded-lg border p-6 mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search by name or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-3xl font-bold">Staff Directory</h1>
+              <p className="text-muted-foreground">
+                Manage hospital staff members
+              </p>
             </div>
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="Doctor">Doctor</SelectItem>
-                <SelectItem value="Nurse">Nurse</SelectItem>
-                <SelectItem value="Lab Technician">Lab Technician</SelectItem>
-                <SelectItem value="Pharmacist">Pharmacist</SelectItem>
-                <SelectItem value="Receptionist">Receptionist</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
-              value={departmentFilter}
-              onValueChange={setDepartmentFilter}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Filter by department" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Departments</SelectItem>
-                <SelectItem value="Cardiology">Cardiology</SelectItem>
-                <SelectItem value="Emergency">Emergency</SelectItem>
-                <SelectItem value="Laboratory">Laboratory</SelectItem>
-                <SelectItem value="Pharmacy">Pharmacy</SelectItem>
-                <SelectItem value="Pediatrics">Pediatrics</SelectItem>
-              </SelectContent>
-            </Select>
+            <Button onClick={() => navigate("/dashboard/staff/register")}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Staff
+            </Button>
           </div>
-        </div>
 
-        <div className="bg-card rounded-lg border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Join Date</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredStaff.map((staff) => (
-                <TableRow key={staff.id}>
-                  <TableCell className="font-medium">{staff.name}</TableCell>
-                  <TableCell>
-                    <div className="text-sm">
-                      <div>{staff.email}</div>
-                      <div className="text-muted-foreground">{staff.phone}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{staff.role}</TableCell>
-                  <TableCell>{staff.department}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={getStatusColor(staff.status)}
-                    >
-                      {staff.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {new Date(staff.joinDate).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => navigate(`/staff/records/${staff.id}`)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+          <div className="bg-card rounded-lg border p-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name or email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Roles</SelectItem>
+                  <SelectItem value="Doctor">Doctor</SelectItem>
+                  <SelectItem value="Nurse">Nurse</SelectItem>
+                  <SelectItem value="Lab Technician">Lab Technician</SelectItem>
+                  <SelectItem value="Pharmacist">Pharmacist</SelectItem>
+                  <SelectItem value="Receptionist">Receptionist</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select
+                value={departmentFilter}
+                onValueChange={setDepartmentFilter}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter by department" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Departments</SelectItem>
+                  <SelectItem value="Cardiology">Cardiology</SelectItem>
+                  <SelectItem value="Emergency">Emergency</SelectItem>
+                  <SelectItem value="Laboratory">Laboratory</SelectItem>
+                  <SelectItem value="Pharmacy">Pharmacy</SelectItem>
+                  <SelectItem value="Pediatrics">Pediatrics</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="bg-card rounded-lg border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Contact</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Join Date</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {filteredStaff.map((staff) => (
+                  <TableRow key={staff.id}>
+                    <TableCell className="font-medium">{staff.name}</TableCell>
+                    <TableCell>
+                      <div className="text-sm">
+                        <div>{staff.email}</div>
+                        <div className="text-muted-foreground">
+                          {staff.phone}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{staff.role}</TableCell>
+                    <TableCell>{staff.department}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={getStatusColor(staff.status)}
+                      >
+                        {staff.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {new Date(staff.joinDate).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          navigate(`/dashboard/staff/records/${staff.id}`)
+                        }
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </main>
       </div>
 

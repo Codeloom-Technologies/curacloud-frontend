@@ -14,15 +14,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { 
-  Search, 
-  Plus, 
-  Eye, 
-  Edit, 
-  Phone, 
+import {
+  Search,
+  Plus,
+  Eye,
+  Edit,
+  Phone,
   Mail,
   Calendar,
-  Filter
+  Filter,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -38,7 +38,7 @@ const patients = [
     lastVisit: "2024-01-15",
     status: "Active",
     primaryDoctor: "Dr. Sarah Johnson",
-    condition: "Hypertension"
+    condition: "Hypertension",
   },
   {
     id: "P002",
@@ -50,7 +50,7 @@ const patients = [
     lastVisit: "2024-01-18",
     status: "Active",
     primaryDoctor: "Dr. Michael Brown",
-    condition: "Diabetes Type 2"
+    condition: "Diabetes Type 2",
   },
   {
     id: "P003",
@@ -62,7 +62,7 @@ const patients = [
     lastVisit: "2024-01-10",
     status: "Inactive",
     primaryDoctor: "Dr. Lisa Chen",
-    condition: "Cardiac Arrhythmia"
+    condition: "Cardiac Arrhythmia",
   },
   {
     id: "P004",
@@ -74,7 +74,7 @@ const patients = [
     lastVisit: "2024-01-20",
     status: "Active",
     primaryDoctor: "Dr. James Wilson",
-    condition: "Pregnancy - 2nd Trimester"
+    condition: "Pregnancy - 2nd Trimester",
   },
   {
     id: "P005",
@@ -86,8 +86,8 @@ const patients = [
     lastVisit: "2024-01-12",
     status: "Active",
     primaryDoctor: "Dr. Sarah Johnson",
-    condition: "Chronic Back Pain"
-  }
+    condition: "Chronic Back Pain",
+  },
 ];
 
 export default function PatientDirectory() {
@@ -95,11 +95,12 @@ export default function PatientDirectory() {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
-  const filteredPatients = patients.filter(patient =>
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.phone.includes(searchTerm) ||
-    patient.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPatients = patients.filter(
+    (patient) =>
+      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.phone.includes(searchTerm) ||
+      patient.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getStatusColor = (status: string) => {
@@ -116,16 +117,18 @@ export default function PatientDirectory() {
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform md:relative md:translate-x-0 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform md:relative md:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <Sidebar />
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        
+
         <main className="flex-1 overflow-y-auto p-6">
           <div className="space-y-6">
             {/* Page Header */}
@@ -136,10 +139,10 @@ export default function PatientDirectory() {
                   Manage and search through all registered patients
                 </p>
               </div>
-              
-              <Button 
+
+              <Button
                 className="bg-gradient-primary hover:shadow-glow transition-all"
-                onClick={() => navigate("/patients/register")}
+                onClick={() => navigate("/dashboard/patients/register")}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Register New Patient
@@ -171,28 +174,38 @@ export default function PatientDirectory() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card>
                 <CardContent className="p-4">
-                  <div className="text-2xl font-bold text-primary">{patients.length}</div>
-                  <div className="text-sm text-muted-foreground">Total Patients</div>
+                  <div className="text-2xl font-bold text-primary">
+                    {patients.length}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Total Patients
+                  </div>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-success">
-                    {patients.filter(p => p.status === "Active").length}
+                    {patients.filter((p) => p.status === "Active").length}
                   </div>
-                  <div className="text-sm text-muted-foreground">Active Patients</div>
+                  <div className="text-sm text-muted-foreground">
+                    Active Patients
+                  </div>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-warning">3</div>
-                  <div className="text-sm text-muted-foreground">Pending Appointments</div>
+                  <div className="text-sm text-muted-foreground">
+                    Pending Appointments
+                  </div>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-primary">12</div>
-                  <div className="text-sm text-muted-foreground">New This Month</div>
+                  <div className="text-sm text-muted-foreground">
+                    New This Month
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -218,16 +231,24 @@ export default function PatientDirectory() {
                     </TableHeader>
                     <TableBody>
                       {filteredPatients.map((patient) => (
-                        <TableRow key={patient.id} className="hover:bg-muted/50">
+                        <TableRow
+                          key={patient.id}
+                          className="hover:bg-muted/50"
+                        >
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <Avatar className="h-10 w-10">
                                 <AvatarFallback className="bg-primary/10 text-primary">
-                                  {patient.name.split(" ").map(n => n[0]).join("")}
+                                  {patient.name
+                                    .split(" ")
+                                    .map((n) => n[0])
+                                    .join("")}
                                 </AvatarFallback>
                               </Avatar>
                               <div>
-                                <div className="font-medium">{patient.name}</div>
+                                <div className="font-medium">
+                                  {patient.name}
+                                </div>
                                 <div className="text-sm text-muted-foreground">
                                   ID: {patient.id}
                                 </div>
@@ -249,12 +270,18 @@ export default function PatientDirectory() {
                           <TableCell>
                             <div className="text-sm">
                               <div>{patient.age} years</div>
-                              <div className="text-muted-foreground">{patient.gender}</div>
+                              <div className="text-muted-foreground">
+                                {patient.gender}
+                              </div>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="text-sm">{patient.primaryDoctor}</div>
-                            <div className="text-xs text-muted-foreground">{patient.condition}</div>
+                            <div className="text-sm">
+                              {patient.primaryDoctor}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {patient.condition}
+                            </div>
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center gap-2 text-sm">
@@ -269,10 +296,14 @@ export default function PatientDirectory() {
                           </TableCell>
                           <TableCell>
                             <div className="flex gap-2">
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 variant="ghost"
-                                onClick={() => navigate(`/patients/records/${patient.id}`)}
+                                onClick={() =>
+                                  navigate(
+                                    `/dashboard/patients/records/${patient.id}`
+                                  )
+                                }
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
@@ -294,8 +325,8 @@ export default function PatientDirectory() {
 
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" 
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
