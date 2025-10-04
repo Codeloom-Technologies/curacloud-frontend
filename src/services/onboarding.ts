@@ -12,6 +12,11 @@ const ROLE_MAP: Record<string, number> = {
 export interface Country {
   id: number;
   name: string;
+  phoneCode: string;
+  flag: {
+    svg: string;
+    png: string;
+  };
 }
 
 export interface State {

@@ -285,7 +285,10 @@ export default function Onboarding() {
                     <SelectContent>
                       {countries.map((country) => (
                         <SelectItem key={country.id} value={String(country.id)}>
-                          {country.name}
+                          <div className="flex items-center gap-2">
+                            <img src={country.flag.svg} alt={country.name} className="w-5 h-4 object-cover rounded" />
+                            <span>{country.name}</span>
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -386,13 +389,24 @@ export default function Onboarding() {
 
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="+234 xxx xxx xxxx"
-                    value={formData.phone}
-                    onChange={(e) => updateFormData("phone", e.target.value)}
-                  />
+                  <div className="flex gap-2">
+                    <div className="flex items-center px-3 border rounded-md bg-muted min-w-[80px] justify-center">
+                      <span className="text-sm font-medium">
+                        {formData.countryId 
+                          ? countries.find(c => c.id === Number(formData.countryId))?.phoneCode || "+--"
+                          : "+--"
+                        }
+                      </span>
+                    </div>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="xxx xxx xxxx"
+                      value={formData.phone}
+                      onChange={(e) => updateFormData("phone", e.target.value)}
+                      className="flex-1"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2">
