@@ -7,13 +7,16 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, ArrowLeft, Building2, Users, MapPin, Check } from "lucide-react";
+import { ArrowRight, ArrowLeft, Building2, Users, MapPin, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
+import { submitOnboarding, mapFormToApiPayload } from "@/services/onboarding";
+import { OnboardingFormData } from "@/types/onboarding";
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<OnboardingFormData>({
     // Step 1: Role
     role: "",
     
@@ -33,7 +36,20 @@ export default function Onboarding() {
     fullName: "",
     email: "",
     phone: "",
+    password: "",
     position: "",
+  });
+
+  const mutation = useMutation({
+    mutationFn: submitOnboarding,
+    onSuccess: (data) => {
+      toast.success("Onboarding complete! Welcome to Curacloud!");
+      console.log("Onboarding response:", data);
+      navigate("/login");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to complete onboarding");
+    },
   });
 
   const totalSteps = 4;
@@ -57,8 +73,8 @@ export default function Onboarding() {
       toast.error("Please fill in location details");
       return;
     }
-    if (step === 4 && (!formData.fullName || !formData.email || !formData.phone)) {
-      toast.error("Please fill in your contact information");
+    if (step === 4 && (!formData.fullName || !formData.email || !formData.phone || !formData.password)) {
+      toast.error("Please fill in all contact information");
       return;
     }
 
@@ -76,10 +92,8 @@ export default function Onboarding() {
   };
 
   const handleComplete = () => {
-    toast.success("Onboarding complete! Welcome to Curacloud!");
-    // Here you would typically save the data to your backend
-    console.log("Onboarding data:", formData);
-    navigate("/login");
+    const payload = mapFormToApiPayload(formData);
+    mutation.mutate(payload);
   };
 
   return (
@@ -382,6 +396,17 @@ export default function Onboarding() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Create a secure password"
+                    value={formData.password}
+                    onChange={(e) => updateFormData("password", e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="position">Position/Title</Label>
                   <Input
                     id="position"
@@ -404,8 +429,17 @@ export default function Onboarding() {
                 Back
               </Button>
 
-              <Button onClick={handleNext} className="bg-gradient-primary">
-                {step === totalSteps ? (
+              <Button 
+                onClick={handleNext} 
+                className="bg-gradient-primary"
+                disabled={mutation.isPending}
+              >
+                {mutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : step === totalSteps ? (
                   <>
                     <Check className="h-4 w-4 mr-2" />
                     Complete
