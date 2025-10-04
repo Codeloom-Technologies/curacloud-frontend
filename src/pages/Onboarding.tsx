@@ -45,7 +45,7 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
-  const [phoneCode, setPhoneCode] = useState("+--");
+  const [_, setPhoneCode] = useState("+--");
 
   const [formData, setFormData] = useState<OnboardingFormData>({
     // Step 1: Role
@@ -132,7 +132,7 @@ export default function Onboarding() {
       // toast.success("Onboarding complete! Welcome to Curacloud!");
       toast.success("Onboarding complete! Please check your mailbox!");
       console.log("Onboarding response:", data);
-      navigate("/login");
+      navigate("/");
     },
     onError: (error: Error) => {
       toast.error(error.message || "Failed to complete onboarding");
