@@ -32,6 +32,7 @@ export const fetchCountries = async (): Promise<Country[]> => {
     throw new Error("Failed to fetch countries");
   }
   const countries = await response.json();
+  console.log(countries);
   return countries.data;
 };
 
