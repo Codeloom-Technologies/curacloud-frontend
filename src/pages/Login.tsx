@@ -38,8 +38,8 @@ export default function Login() {
         title: "Login Successful",
         description: "Welcome back to Curacloud",
       });
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("accessToken", JSON.stringify(data.accessToken));
+      localStorage.setItem("authUser", JSON.stringify(data.user));
+      localStorage.setItem("authToken", JSON.stringify(data.accessToken));
       navigate("/dashboard");
     },
     onError: (error: Error) => {

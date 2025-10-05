@@ -17,6 +17,7 @@ export interface PatientPayload {
     street: string;
     postalCode: string;
   };
+  address2: string;
   bloodGroup?: string;
   genotype?: string;
   patientEmergencyContact: {
@@ -32,11 +33,9 @@ export const registerPatient = async (payload: PatientPayload) => {
     body: JSON.stringify(payload),
   });
 
-  if (!response.ok) {
-    const error = await response.json();
+  if (!response) {
+    const error = await response;
     throw new Error(error.message || "Failed to register patient");
   }
-
-  const result = await response.json();
-  return result.data;
+  return response;
 };

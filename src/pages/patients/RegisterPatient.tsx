@@ -114,6 +114,7 @@ export default function RegisterPatient() {
           (formData.address2 ? `, ${formData.address2}` : ""),
         postalCode: formData.postal,
       },
+      address2: formData.address2,
       bloodGroup: formData.bloodGroup || undefined,
       genotype: formData.genotype || undefined,
       patientEmergencyContact: {
@@ -173,8 +174,9 @@ export default function RegisterPatient() {
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                      <Label htmlFor="title">Title</Label>
+                      <Label htmlFor="title">Title *</Label>
                       <Select
+                        required={true}
                         value={formData.title}
                         onValueChange={(value) =>
                           handleInputChange("title", value)
@@ -219,6 +221,7 @@ export default function RegisterPatient() {
                       <Label htmlFor="gender">Gender *</Label>
                       <Select
                         value={formData.gender}
+                        required={true}
                         onValueChange={(value) =>
                           handleInputChange("gender", value)
                         }
@@ -260,8 +263,9 @@ export default function RegisterPatient() {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="maritalStatus">Marital Status</Label>
+                      <Label htmlFor="maritalStatus">Marital Status *</Label>
                       <Select
+                        required={true}
                         value={formData.maritalStatus}
                         onValueChange={(value) =>
                           handleInputChange("maritalStatus", value)
@@ -282,8 +286,9 @@ export default function RegisterPatient() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="bloodGroup">Blood Group</Label>
+                      <Label htmlFor="bloodGroup">Blood Group *</Label>
                       <Select
+                        required={true}
                         value={formData.bloodGroup}
                         onValueChange={(value) =>
                           handleInputChange("bloodGroup", value)
@@ -305,8 +310,9 @@ export default function RegisterPatient() {
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="genotype">Genotype</Label>
+                      <Label htmlFor="genotype">Genotype *</Label>
                       <Select
+                        required={true}
                         value={formData.genotype}
                         onValueChange={(value) =>
                           handleInputChange("genotype", value)
@@ -366,7 +372,7 @@ export default function RegisterPatient() {
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="email">Email Address</Label>
+                      <Label htmlFor="email">Email Address *</Label>
                       <Input
                         id="email"
                         type="email"
@@ -632,7 +638,7 @@ export default function RegisterPatient() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => navigate("/patients")}
+                  onClick={() => navigate("/dashboard/patients")}
                 >
                   Cancel
                 </Button>

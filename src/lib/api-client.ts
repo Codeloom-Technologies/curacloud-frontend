@@ -4,7 +4,11 @@ export const apiClient = async (
   endpoint: string,
   options: RequestInit = {}
 ): Promise<Response | any> => {
-  const token = localStorage.getItem("authToken");
+  const authToken = localStorage.getItem("authToken");
+
+  const token = JSON.parse(authToken);
+
+  console.log(token);
 
   const headers: HeadersInit = {
     "Content-Type": "application/json",
@@ -12,7 +16,7 @@ export const apiClient = async (
   };
 
   if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
+    headers["Authorization"] = `Bearer ${token.value}`;
   }
 
   const response = await fetch(`${BASE_URL}${endpoint}`, {
