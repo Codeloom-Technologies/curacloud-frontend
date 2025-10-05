@@ -27,6 +27,7 @@ import Invoices from "./pages/billing/Invoices";
 import PaymentProcessing from "./pages/billing/PaymentProcessing";
 import BillingReports from "./pages/billing/BillingReports";
 import NotFound from "./pages/NotFound";
+import UpdatePatient from "./pages/patients/PatientUpdate";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,10 @@ const App = () => (
           <Route
             path="/dashboard/patients/records/:patientId"
             element={<PatientRecords />}
+          />
+          <Route
+            path="/dashboard/patients/records/:patientId/edit"
+            element={<UpdatePatient />}
           />
           <Route path="/dashboard/appointments" element={<Appointments />} />
           <Route

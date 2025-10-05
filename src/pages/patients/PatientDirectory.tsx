@@ -631,7 +631,15 @@ export default function PatientDirectory() {
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                <Button size="sm" variant="ghost">
+                                <Button
+                                  onClick={() =>
+                                    navigate(
+                                      `/dashboard/patients/records/${patient.user.reference}/edit`
+                                    )
+                                  }
+                                  size="sm"
+                                  variant="ghost"
+                                >
                                   <Edit className="h-4 w-4" />
                                 </Button>
                               </div>
