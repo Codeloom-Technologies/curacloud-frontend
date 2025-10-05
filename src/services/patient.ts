@@ -27,6 +27,28 @@ export interface PatientPayload {
   };
 }
 
+export interface PaginatedPatientsResponse {
+  patients: any[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export const fetchPatients = async (
+  page: number = 1,
+  limit: number = 10,
+  search: string = ""
+): Promise<PaginatedPatientsResponse> => {
+  const queryParams = new URLSearchParams({
+    page: page.toString(),
+    perPage: limit.toString(),
+    ...(search && { search }),
+  });
+
+  return await apiClient(`/patients?${queryParams}`);
+};
+
 export const registerPatient = async (payload: PatientPayload) => {
   const response = await apiClient("/patients", {
     method: "POST",
