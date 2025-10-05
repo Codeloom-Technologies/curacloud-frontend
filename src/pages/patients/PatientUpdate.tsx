@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +22,7 @@ import {
   Heart,
   Droplet,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   fetchCountries,
@@ -30,12 +30,16 @@ import {
   Country,
   fetchCities,
 } from "@/services/onboarding";
-import { registerPatient } from "@/services/patient";
+import { fetchPatientById, updatePatient } from "@/services/patient";
+import PatientDetailsSkeleton from "@/components/dashboard/PatientDetailsSkeleton";
+import PatientUpdateSkeleton from "@/components/dashboard/PatientUpdateSkeleton";
 
-export default function RegisterPatient() {
+export default function UpdatePatient() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [selectedState, setSelectedState] = useState<number | null>(null);
+  const { patientId } = useParams();
+
   const [formData, setFormData] = useState({
     title: "",
     firstName: "",
@@ -52,8 +56,8 @@ export default function RegisterPatient() {
     state: "",
     countryId: "",
     stateId: "",
-    postal: "",
     cityId: "",
+    postal: "",
     bloodGroup: "",
     genotype: "",
     emergencyName: "",
@@ -64,11 +68,13 @@ export default function RegisterPatient() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  // Fetch countries
   const { data: countries = [] } = useQuery({
     queryKey: ["countries"],
     queryFn: fetchCountries,
   });
 
+  // Fetch states when country changes
   const { data: states = [] } = useQuery({
     queryKey: ["states", selectedCountry?.id],
     queryFn: () => fetchStates(selectedCountry!.id),
@@ -81,24 +87,105 @@ export default function RegisterPatient() {
     enabled: !!formData.stateId,
   });
 
+  // Fetch existing patient data
+  const {
+    data: patientData,
+    isLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: ["patient", patientId],
+    queryFn: () => fetchPatientById(patientId!),
+    enabled: !!patientId,
+  });
+
+  // Update form data when patient data loads
+  useEffect(() => {
+    if (patientData) {
+      // Extract address parts safely
+      const address = patientData.address || {};
+      const addressStreet = address.street || "";
+      const addressParts = addressStreet.split(",");
+
+      const emergencyContact = patientData.emergencyContacts?.[0] || {};
+      const user = patientData.user || {};
+
+      const updatedFormData = {
+        title: patientData.title || "",
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        gender: patientData.gender || "",
+        dob: patientData.dob,
+        nationalId: patientData.nationalId || "",
+        maritalStatus: patientData.maritalStatus || "",
+        phone: user.phoneNumber || "",
+        email: user.email || "",
+        address1: addressParts[0] || "",
+        address2: addressParts[1]?.trim() || "",
+        address: {
+          street:
+            formData.address1 +
+            (formData.address2 ? `, ${formData.address2}` : ""),
+          postalCode: formData.postal,
+        },
+        city: address.city || "",
+        state: formData.state?.toString() || "",
+        countryId: patientData.user.countryId || "",
+        stateId: patientData.user.stateId || "",
+        cityId: patientData.user.cityId || "",
+        postal: address.postalCode || "",
+        bloodGroup: patientData.bloodGroup || "",
+        genotype: patientData.genotype || "",
+        emergencyName: emergencyContact.fullName || "",
+        emergencyRelation: emergencyContact.relationship || "",
+        emergencyPhone: emergencyContact.phoneNumber || "",
+      };
+
+      setFormData(updatedFormData);
+
+      // Set selected country for dropdown
+      if (patientData.countryId && countries.length > 0) {
+        const country = countries.find(
+          (c: Country) => c.id === patientData.countryId
+        );
+        setSelectedCountry(country || null);
+      }
+
+      setSelectedState(patientData.stateId || null);
+    }
+  }, [patientData, countries]);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  const handleCountryChange = (value: string) => {
+    const countryId = value;
+    const country = countries.find((c: Country) => c.id === Number(countryId));
+    setSelectedCountry(country || null);
+    setSelectedState(null);
+    handleInputChange("countryId", countryId);
+    handleInputChange("stateId", ""); // Reset state when country changes
+  };
+
+  const handleStateChange = (value: string) => {
+    setSelectedState(Number(value));
+    handleInputChange("stateId", value);
+  };
+
   const mutation = useMutation({
-    mutationFn: registerPatient,
+    mutationFn: (payload: any) => updatePatient(patientId!, payload),
     onSuccess: () => {
       toast({
-        title: "Patient Registered Successfully",
-        description: "New patient has been added to the system",
+        title: "Patient Updated",
+        description: "Patient information has been updated successfully",
         variant: "success",
       });
       navigate("/dashboard/patients");
     },
     onError: (error: any) => {
       toast({
-        title: "Registration Failed",
-        description: error.message || "Failed to register patient",
+        title: "Update Failed",
+        description: error.message || "Failed to update patient",
         variant: "destructive",
       });
     },
@@ -108,38 +195,41 @@ export default function RegisterPatient() {
     e.preventDefault();
 
     const payload = {
-      email: formData.email,
-      phoneNumber:
-        selectedCountry?.phoneCode + formData.phone.replace(/^0+/, ""),
-      countryId: Number(formData.countryId),
-      roleId: 17,
       title: formData.title,
-      stateId: Number(formData.stateId),
       firstName: formData.firstName,
       lastName: formData.lastName,
       gender: formData.gender,
       dob: formData.dob,
       nationalId: formData.nationalId || undefined,
-      maritalStatus: formData.maritalStatus || undefined,
+      maritalStatus: formData.maritalStatus,
+      phoneNumber: formData.phone,
+      email: formData.email,
+      countryId: Number(formData.countryId),
+      stateId: Number(formData.stateId),
+      cityId: Number(formData.cityId),
       address: {
-        street:
-          formData.address1 +
-          (formData.address2 ? `, ${formData.address2}` : ""),
+        street: [formData.address1, formData.address2]
+          .filter(Boolean)
+          .join(", "),
+        city: formData.city,
         postalCode: formData.postal,
       },
-      address2: formData.address2,
-      bloodGroup: formData.bloodGroup || undefined,
-      genotype: formData.genotype || undefined,
-      patientEmergencyContact: {
+      bloodGroup: formData.bloodGroup,
+      genotype: formData.genotype,
+      emergencyContact: {
         fullName: formData.emergencyName,
         phoneNumber: formData.emergencyPhone,
         relationship: formData.emergencyRelation,
       },
     };
 
+    console.log("Submitting payload:", payload);
     mutation.mutate(payload);
   };
 
+  if (isLoading || isFetching) {
+    return <PatientUpdateSkeleton />;
+  }
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
@@ -162,15 +252,16 @@ export default function RegisterPatient() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate("/patients")}
+                onClick={() => navigate("/dashboard/patients")}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Directory
               </Button>
               <div>
-                <h1 className="text-3xl font-bold">Register New Patient</h1>
+                <h1 className="text-3xl font-bold">Update Patient</h1>
                 <p className="text-muted-foreground">
-                  Enter patient information to create a new medical record
+                  Update patient information for {formData.firstName}{" "}
+                  {formData.lastName}
                 </p>
               </div>
             </div>
@@ -376,6 +467,7 @@ export default function RegisterPatient() {
                           id="phone"
                           placeholder="8012345678"
                           required
+                          readOnly
                           value={formData.phone}
                           onChange={(e) =>
                             handleInputChange("phone", e.target.value)
@@ -389,6 +481,7 @@ export default function RegisterPatient() {
                       <Input
                         id="email"
                         type="email"
+                        readOnly
                         placeholder="john.smith@email.com"
                         value={formData.email}
                         onChange={(e) =>
@@ -414,21 +507,13 @@ export default function RegisterPatient() {
                       <Label htmlFor="country">Country *</Label>
                       <Select
                         value={formData.countryId}
-                        onValueChange={(value) => {
-                          handleInputChange("countryId", value);
-                          const country = countries.find(
-                            (c) => c.id === Number(value)
-                          );
-                          setSelectedCountry(country || null);
-                          setSelectedState(null);
-                          handleInputChange("stateId", "");
-                        }}
+                        onValueChange={handleCountryChange}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select Country" />
                         </SelectTrigger>
                         <SelectContent>
-                          {countries.map((country) => (
+                          {countries.map((country: Country) => (
                             <SelectItem
                               key={country.id}
                               value={country.id.toString()}
@@ -450,17 +535,14 @@ export default function RegisterPatient() {
                       <Label htmlFor="state">State *</Label>
                       <Select
                         value={formData.stateId}
-                        onValueChange={(value) => {
-                          handleInputChange("stateId", value);
-                          setSelectedState(Number(value));
-                        }}
+                        onValueChange={handleStateChange}
                         disabled={!selectedCountry}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select State" />
                         </SelectTrigger>
                         <SelectContent>
-                          {states.map((state) => (
+                          {states.map((state: any) => (
                             <SelectItem
                               key={state.id}
                               value={state.id.toString()}
@@ -541,19 +623,6 @@ export default function RegisterPatient() {
                       />
                     </div>
                   </div>
-                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="postal">Postal Code</Label>
-                      <Input
-                        id="postal"
-                        placeholder="10001"
-                        value={formData.postal}
-                        onChange={(e) =>
-                          handleInputChange("postal", e.target.value)
-                        }
-                      />
-                    </div>
-                  </div> */}
                 </CardContent>
               </Card>
 
@@ -616,81 +685,6 @@ export default function RegisterPatient() {
                 </CardContent>
               </Card>
 
-              {/* Insurance Information */}
-              {/* <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Shield className="h-5 w-5" />
-                    Insurance Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="insuranceProvider">Insurance Provider</Label>
-                      <Input id="insuranceProvider" placeholder="Blue Cross Blue Shield" />
-                    </div>
-                    <div>
-                      <Label htmlFor="policyNumber">Policy Number</Label>
-                      <Input id="policyNumber" placeholder="BC123456789" />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="groupNumber">Group Number</Label>
-                      <Input id="groupNumber" placeholder="GRP001" />
-                    </div>
-                    <div>
-                      <Label htmlFor="primaryDoctor">Primary Care Doctor</Label>
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Doctor" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="dr-johnson">Dr. Sarah Johnson</SelectItem>
-                          <SelectItem value="dr-brown">Dr. Michael Brown</SelectItem>
-                          <SelectItem value="dr-chen">Dr. Lisa Chen</SelectItem>
-                          <SelectItem value="dr-wilson">Dr. James Wilson</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card> */}
-
-              {/* Medical History */}
-              {/* <Card>
-                <CardHeader>
-                  <CardTitle>Medical History & Notes</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="allergies">Known Allergies</Label>
-                    <Textarea 
-                      id="allergies" 
-                      placeholder="List any known allergies (medications, food, environmental)..."
-                      className="min-h-[80px]"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="medications">Current Medications</Label>
-                    <Textarea
-                      id="medications"
-                      placeholder="List current medications and dosages..."
-                      className="min-h-[80px]"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="medicalHistory">Medical History</Label>
-                    <Textarea
-                      id="medicalHistory"
-                      placeholder="Previous surgeries, chronic conditions, family history..."
-                      className="min-h-[100px]"
-                    />
-                  </div>
-                </CardContent>
-              </Card> */}
-
               {/* Submit Button */}
               <div className="flex justify-end gap-4 pt-6">
                 <Button
@@ -706,7 +700,7 @@ export default function RegisterPatient() {
                   disabled={mutation.isPending}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {mutation.isPending ? "Registering..." : "Register Patient"}
+                  {mutation.isPending ? "Updating..." : "Update Patient"}
                 </Button>
               </div>
             </form>

@@ -95,11 +95,27 @@ export const fetchPatientById = async (patientId: string) => {
   if (!patientId) {
     throw new Error("Patient ID is required");
   }
+  // await new Promise((r) => setTimeout(r, 6000)); // ⏳ simulate  delay in s
+
   const response = await apiClient(`/patients/${patientId}`);
   if (!response) {
     const error = await response;
     throw new Error(error.message || "Failed to fetch patient");
   }
-  console.log({ response });
+  return response;
+};
+
+export const updatePatient = async (
+  patientsId: string,
+  payload: PatientPayload
+) => {
+  const response = await apiClient(`/patients/${patientsId}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+  if (!response) {
+    const error = await response;
+    throw new Error(error.message || "Failed to register patient");
+  }
   return response;
 };

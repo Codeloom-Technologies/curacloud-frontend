@@ -27,13 +27,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { fetchPatientById } from "@/services/patient";
 import EmptyState from "@/components/dashboard/EmptyState";
 import PatientDetailsSkeleton from "@/components/dashboard/PatientDetailsSkeleton";
+import { fetchCities } from "@/services/onboarding";
 
 export default function PatientRecords() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const { patientId } = useParams();
 
-  const { data, isLoading, isFetching, refetch } = useQuery({
+  const { data, isLoading, isFetching } = useQuery({
     queryKey: ["fetchPatientById", patientId],
     queryFn: () => fetchPatientById(patientId),
     enabled: !!patientId,
@@ -41,10 +42,7 @@ export default function PatientRecords() {
 
   const patient = data || {};
 
-  useEffect(() => {
-    console.log("Current patientId:", patientId);
-    console.log("Current patient data:", data);
-  }, [patientId, data]);
+  useEffect(() => {}, [patientId, data]);
 
   const getResultStatusColor = (status: string) => {
     switch (status) {
@@ -94,7 +92,14 @@ export default function PatientRecords() {
                   Complete medical record for {patient.user.fullName}
                 </p>
               </div>
-              <Button variant="outline">
+              <Button
+                onClick={() =>
+                  navigate(
+                    `/dashboard/patients/records/${patient.user.reference}/edit`
+                  )
+                }
+                variant="outline"
+              >
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Patient
               </Button>
