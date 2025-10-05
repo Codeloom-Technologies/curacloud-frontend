@@ -18,7 +18,6 @@ import {
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -51,6 +50,7 @@ import {
   Mail,
   Calendar,
   Filter,
+  TimerIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -95,7 +95,7 @@ export default function PatientDirectory() {
       fetchPatients(currentPage, perPage, debouncedSearch, filters),
   });
 
-  // 📊Patient stats query
+  // Patient stats query
   const {
     data: statsData,
     isLoading: isStatsLoading,
@@ -475,7 +475,13 @@ export default function PatientDirectory() {
             <Card>
               <CardHeader>
                 <CardTitle>
-                  Patients ({isLoading ? "..." : data["meta"].total || 0})
+                  Patients (
+                  {isLoading && isFetching ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    data["meta"].total || 0
+                  )}
+                  )
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -488,6 +494,7 @@ export default function PatientDirectory() {
                         <TableHead>Age/Gender</TableHead>
                         <TableHead>Primary Doctor</TableHead>
                         <TableHead>Last Visit</TableHead>
+                        <TableHead>Added On</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
@@ -600,12 +607,15 @@ export default function PatientDirectory() {
                               </div>
                             </TableCell>
                             <TableCell>
+                              {new Date(patient.createdAt).toLocaleString()}
+                            </TableCell>
+                            <TableCell>
                               <Badge
                                 className={getStatusColor(
-                                  patient.status || "Active"
+                                  patient.user.status || "Active"
                                 )}
                               >
-                                {patient.status || "Active"}
+                                {patient.user.status || "Active"}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -615,7 +625,7 @@ export default function PatientDirectory() {
                                   variant="ghost"
                                   onClick={() =>
                                     navigate(
-                                      `/dashboard/patients/records/${patient.id}`
+                                      `/dashboard/patients/records/${patient.user.reference}`
                                     )
                                   }
                                 >
