@@ -5,11 +5,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, User, MapPin, Phone, Heart, Shield } from "lucide-react";
+import { ArrowLeft, Save, User, MapPin, Phone, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function RegisterPatient() {
@@ -21,7 +25,7 @@ export default function RegisterPatient() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
+
     // Simulate patient registration
     setTimeout(() => {
       setIsLoading(false);
@@ -36,22 +40,24 @@ export default function RegisterPatient() {
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform md:relative md:translate-x-0 ${
-        sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform md:relative md:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <Sidebar />
       </div>
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        
+
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Page Header */}
             <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
                 onClick={() => navigate("/patients")}
               >
@@ -153,11 +159,19 @@ export default function RegisterPatient() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="phone">Primary Phone *</Label>
-                      <Input id="phone" placeholder="+1 (555) 123-4567" required />
+                      <Input
+                        id="phone"
+                        placeholder="+1 (555) 123-4567"
+                        required
+                      />
                     </div>
                     <div>
                       <Label htmlFor="email">Email Address</Label>
-                      <Input id="email" type="email" placeholder="john.smith@email.com" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="john.smith@email.com"
+                      />
                     </div>
                   </div>
                 </CardContent>
@@ -174,7 +188,11 @@ export default function RegisterPatient() {
                 <CardContent className="space-y-4">
                   <div>
                     <Label htmlFor="address1">Address Line 1 *</Label>
-                    <Input id="address1" placeholder="123 Main Street" required />
+                    <Input
+                      id="address1"
+                      placeholder="123 Main Street"
+                      required
+                    />
                   </div>
                   <div>
                     <Label htmlFor="address2">Address Line 2</Label>
@@ -222,7 +240,11 @@ export default function RegisterPatient() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <Label htmlFor="emergencyName">Contact Name *</Label>
-                      <Input id="emergencyName" placeholder="Jane Smith" required />
+                      <Input
+                        id="emergencyName"
+                        placeholder="Jane Smith"
+                        required
+                      />
                     </div>
                     <div>
                       <Label htmlFor="emergencyRelation">Relationship *</Label>
@@ -242,14 +264,18 @@ export default function RegisterPatient() {
                     </div>
                     <div>
                       <Label htmlFor="emergencyPhone">Contact Phone *</Label>
-                      <Input id="emergencyPhone" placeholder="+1 (555) 987-6543" required />
+                      <Input
+                        id="emergencyPhone"
+                        placeholder="+1 (555) 987-6543"
+                        required
+                      />
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Insurance Information */}
-              <Card>
+              {/* <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Shield className="h-5 w-5" />
@@ -288,10 +314,10 @@ export default function RegisterPatient() {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+              </Card> */}
 
               {/* Medical History */}
-              <Card>
+              {/* <Card>
                 <CardHeader>
                   <CardTitle>Medical History & Notes</CardTitle>
                 </CardHeader>
@@ -306,34 +332,34 @@ export default function RegisterPatient() {
                   </div>
                   <div>
                     <Label htmlFor="medications">Current Medications</Label>
-                    <Textarea 
-                      id="medications" 
+                    <Textarea
+                      id="medications"
                       placeholder="List current medications and dosages..."
                       className="min-h-[80px]"
                     />
                   </div>
                   <div>
                     <Label htmlFor="medicalHistory">Medical History</Label>
-                    <Textarea 
-                      id="medicalHistory" 
+                    <Textarea
+                      id="medicalHistory"
                       placeholder="Previous surgeries, chronic conditions, family history..."
                       className="min-h-[100px]"
                     />
                   </div>
                 </CardContent>
-              </Card>
+              </Card> */}
 
               {/* Submit Button */}
               <div className="flex justify-end gap-4 pt-6">
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   variant="outline"
                   onClick={() => navigate("/patients")}
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   className="bg-gradient-primary hover:shadow-glow transition-all"
                   disabled={isLoading}
                 >
@@ -348,8 +374,8 @@ export default function RegisterPatient() {
 
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" 
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
