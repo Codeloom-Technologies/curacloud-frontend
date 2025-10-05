@@ -36,16 +36,16 @@ const navigationItems = [
       { title: "Patient Records", href: "/patients/records" },
     ],
   },
-  // {
-  //   title: "Appointments",
-  //   icon: Calendar,
-  //   href: "/appointments",
-  //   children: [
-  //     { title: "Schedule", href: "/appointments" },
-  //     { title: "Calendar View", href: "/appointments/calendar" },
-  //     { title: "Check-in Queue", href: "/appointments/checkin" },
-  //   ],
-  // },
+  {
+    title: "Appointments",
+    icon: Calendar,
+    href: "/appointments",
+    children: [
+      { title: "Schedule", href: "/appointments" },
+      { title: "Calendar View", href: "/appointments/calendar" },
+      { title: "Check-in Queue", href: "/appointments/checkin" },
+    ],
+  },
   {
     title: "Medical Records",
     icon: FileText,
@@ -56,52 +56,52 @@ const navigationItems = [
       { title: "Medical History", href: "/medical-history" },
     ],
   },
-  // {
-  //   title: "Laboratory",
-  //   icon: TestTube,
-  //   href: "/laboratory",
-  //   children: [
-  //     { title: "Lab Orders", href: "/lab/orders" },
-  //     { title: "Results Entry", href: "/lab/results" },
-  //     { title: "Lab Reports", href: "/lab/reports" },
-  //   ],
-  // },
-  // {
-  //   title: "Radiology",
-  //   icon: Scan,
-  //   href: "/radiology",
-  //   children: [
-  //     { title: "Imaging Orders", href: "/radiology/orders" },
-  //     { title: "Image Upload", href: "/radiology/upload" },
-  //     { title: "Reports", href: "/radiology/reports" },
-  //   ],
-  // },
-  // {
-  //   title: "Pharmacy",
-  //   icon: Pill,
-  //   href: "/pharmacy",
-  //   children: [
-  //     { title: "Prescriptions", href: "/pharmacy/prescriptions" },
-  //     { title: "Inventory", href: "/pharmacy/inventory" },
-  //     { title: "Dispensing", href: "/pharmacy/dispense" },
-  //   ],
-  // },
-  // {
-  //   title: "Inventory",
-  //   icon: Package,
-  //   href: "/inventory",
-  // },
-  // {
-  //   title: "Billing",
-  //   icon: CreditCard,
-  //   href: "/billing",
-  //   children: [
-  //     { title: "Overview", href: "/billing" },
-  //     { title: "Invoices", href: "/billing/invoices" },
-  //     { title: "Payment Processing", href: "/billing/payments" },
-  //     { title: "Reports", href: "/billing/reports" },
-  //   ],
-  // },
+  {
+    title: "Laboratory",
+    icon: TestTube,
+    href: "/laboratory",
+    children: [
+      { title: "Lab Orders", href: "/lab/orders" },
+      { title: "Results Entry", href: "/lab/results" },
+      { title: "Lab Reports", href: "/lab/reports" },
+    ],
+  },
+  {
+    title: "Radiology",
+    icon: Scan,
+    href: "/radiology",
+    children: [
+      { title: "Imaging Orders", href: "/radiology/orders" },
+      { title: "Image Upload", href: "/radiology/upload" },
+      { title: "Reports", href: "/radiology/reports" },
+    ],
+  },
+  {
+    title: "Pharmacy",
+    icon: Pill,
+    href: "/pharmacy",
+    children: [
+      { title: "Prescriptions", href: "/pharmacy/prescriptions" },
+      { title: "Inventory", href: "/pharmacy/inventory" },
+      { title: "Dispensing", href: "/pharmacy/dispense" },
+    ],
+  },
+  {
+    title: "Inventory",
+    icon: Package,
+    href: "/inventory",
+  },
+  {
+    title: "Billing",
+    icon: CreditCard,
+    href: "/billing",
+    children: [
+      { title: "Overview", href: "/billing" },
+      { title: "Invoices", href: "/billing/invoices" },
+      { title: "Payment Processing", href: "/billing/payments" },
+      { title: "Reports", href: "/billing/reports" },
+    ],
+  },
   {
     title: "HR & Staff",
     icon: UserCheck,
@@ -111,11 +111,11 @@ const navigationItems = [
       { title: "Register Staff", href: "/staff/register" },
     ],
   },
-  // {
-  //   title: "Reports",
-  //   icon: BarChart3,
-  //   href: "/reports",
-  // },
+  {
+    title: "Reports",
+    icon: BarChart3,
+    href: "/reports",
+  },
   {
     title: "Settings",
     icon: Settings,
