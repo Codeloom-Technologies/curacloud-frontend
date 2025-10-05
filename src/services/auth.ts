@@ -7,12 +7,11 @@ export const submitLogging = async (payload: LoginApiPayload) => {
     body: JSON.stringify(payload),
   });
 
-  if (!response.ok) {
-    const error = await response.json();
+  if (!response) {
+    const error = await response;
     throw new Error(error.message || "Failed to authenticate ");
   }
-  const user = await response.json();
-  return user.data;
+  return response;
 };
 
 export const mapFormToLoginApiPayload = (formData: any): LoginApiPayload => {

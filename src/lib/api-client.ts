@@ -3,9 +3,9 @@ export const BASE_URL = "http://localhost:3333/api/v1";
 export const apiClient = async (
   endpoint: string,
   options: RequestInit = {}
-): Promise<Response> => {
+): Promise<Response | any> => {
   const token = localStorage.getItem("authToken");
-  
+
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...options.headers,
@@ -19,6 +19,10 @@ export const apiClient = async (
     ...options,
     headers,
   });
-
-  return response;
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to authenticate ");
+  }
+  const responseData = await response.json();
+  return responseData.data;
 };

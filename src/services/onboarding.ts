@@ -62,12 +62,11 @@ export const submitOnboarding = async (payload: OnboardingApiPayload) => {
     body: JSON.stringify(payload),
   });
 
-  if (!response.ok) {
-    const error = await response.json();
+  if (!response) {
+    const error = await response;
     throw new Error(error.message || "Failed to submit onboarding");
   }
-  const healthcare = await response.json();
-  return healthcare.data;
+  return response;
 };
 
 export const mapFormToApiPayload = (formData: any): OnboardingApiPayload => {
