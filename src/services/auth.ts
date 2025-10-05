@@ -1,12 +1,9 @@
 import { LoginApiPayload } from "@/types/auth";
-const BASE_URL = "http://localhost:3333/api/v1";
+import { apiClient } from "@/lib/api-client";
 
 export const submitLogging = async (payload: LoginApiPayload) => {
-  const response = await fetch(`${BASE_URL}/auth/login`, {
+  const response = await apiClient("/auth/login", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(payload),
   });
 

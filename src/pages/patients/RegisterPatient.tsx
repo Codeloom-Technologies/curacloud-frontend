@@ -13,28 +13,106 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, User, MapPin, Phone, Heart } from "lucide-react";
+import { ArrowLeft, Save, User, MapPin, Phone, Heart, Droplet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { fetchCountries, fetchStates, Country } from "@/services/onboarding";
+import { registerPatient } from "@/services/patient";
 
 export default function RegisterPatient() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const [selectedState, setSelectedState] = useState<number | null>(null);
+  const [formData, setFormData] = useState({
+    title: "",
+    firstName: "",
+    lastName: "",
+    gender: "",
+    dob: "",
+    nationalId: "",
+    maritalStatus: "",
+    phone: "",
+    email: "",
+    address1: "",
+    address2: "",
+    city: "",
+    state: "",
+    countryId: "",
+    stateId: "",
+    postal: "",
+    bloodGroup: "",
+    genotype: "",
+    emergencyName: "",
+    emergencyRelation: "",
+    emergencyPhone: "",
+  });
+
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const { data: countries = [] } = useQuery({
+    queryKey: ["countries"],
+    queryFn: fetchCountries,
+  });
+
+  const { data: states = [] } = useQuery({
+    queryKey: ["states", selectedCountry?.id],
+    queryFn: () => fetchStates(selectedCountry!.id),
+    enabled: !!selectedCountry,
+  });
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate patient registration
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const payload = {
+        email: formData.email,
+        phoneNumber: selectedCountry?.phoneCode + formData.phone.replace(/^0+/, ""),
+        countryId: Number(formData.countryId),
+        roleId: 17,
+        title: formData.title,
+        stateId: Number(formData.stateId),
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        gender: formData.gender,
+        dob: formData.dob,
+        nationalId: formData.nationalId || undefined,
+        maritalStatus: formData.maritalStatus || undefined,
+        address: {
+          street: formData.address1 + (formData.address2 ? `, ${formData.address2}` : ""),
+          postalCode: formData.postal,
+        },
+        bloodGroup: formData.bloodGroup || undefined,
+        genotype: formData.genotype || undefined,
+        patientEmergencyContact: {
+          fullName: formData.emergencyName,
+          phoneNumber: formData.emergencyPhone,
+          relationship: formData.emergencyRelation,
+        },
+      };
+
+      await registerPatient(payload);
+      
       toast({
         title: "Patient Registered Successfully",
         description: "New patient has been added to the system",
       });
       navigate("/patients");
-    }, 2000);
+    } catch (error: any) {
+      toast({
+        title: "Registration Failed",
+        description: error.message || "Failed to register patient",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -85,36 +163,48 @@ export default function RegisterPatient() {
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
                       <Label htmlFor="title">Title</Label>
-                      <Select>
+                      <Select value={formData.title} onValueChange={(value) => handleInputChange("title", value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="mr">Mr.</SelectItem>
-                          <SelectItem value="mrs">Mrs.</SelectItem>
-                          <SelectItem value="ms">Ms.</SelectItem>
-                          <SelectItem value="dr">Dr.</SelectItem>
+                          <SelectItem value="Mr">Mr.</SelectItem>
+                          <SelectItem value="Mrs">Mrs.</SelectItem>
+                          <SelectItem value="Ms">Ms.</SelectItem>
+                          <SelectItem value="Dr">Dr.</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div>
                       <Label htmlFor="firstName">First Name *</Label>
-                      <Input id="firstName" placeholder="John" required />
+                      <Input 
+                        id="firstName" 
+                        placeholder="John" 
+                        required 
+                        value={formData.firstName}
+                        onChange={(e) => handleInputChange("firstName", e.target.value)}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="lastName">Last Name *</Label>
-                      <Input id="lastName" placeholder="Smith" required />
+                      <Input 
+                        id="lastName" 
+                        placeholder="Smith" 
+                        required 
+                        value={formData.lastName}
+                        onChange={(e) => handleInputChange("lastName", e.target.value)}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="gender">Gender *</Label>
-                      <Select>
+                      <Select value={formData.gender} onValueChange={(value) => handleInputChange("gender", value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="male">Male</SelectItem>
-                          <SelectItem value="female">Female</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
+                          <SelectItem value="Male">Male</SelectItem>
+                          <SelectItem value="Female">Female</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -123,23 +213,70 @@ export default function RegisterPatient() {
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                       <Label htmlFor="dob">Date of Birth *</Label>
-                      <Input id="dob" type="date" required />
+                      <Input 
+                        id="dob" 
+                        type="date" 
+                        required 
+                        value={formData.dob}
+                        onChange={(e) => handleInputChange("dob", e.target.value)}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="nationalId">National ID / SSN</Label>
-                      <Input id="nationalId" placeholder="123-45-6789" />
+                      <Input 
+                        id="nationalId" 
+                        placeholder="123-45-6789" 
+                        value={formData.nationalId}
+                        onChange={(e) => handleInputChange("nationalId", e.target.value)}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="maritalStatus">Marital Status</Label>
-                      <Select>
+                      <Select value={formData.maritalStatus} onValueChange={(value) => handleInputChange("maritalStatus", value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="single">Single</SelectItem>
-                          <SelectItem value="married">Married</SelectItem>
-                          <SelectItem value="divorced">Divorced</SelectItem>
-                          <SelectItem value="widowed">Widowed</SelectItem>
+                          <SelectItem value="Single">Single</SelectItem>
+                          <SelectItem value="Married">Married</SelectItem>
+                          <SelectItem value="Divorced">Divorced</SelectItem>
+                          <SelectItem value="Widowed">Widowed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="bloodGroup">Blood Group</Label>
+                      <Select value={formData.bloodGroup} onValueChange={(value) => handleInputChange("bloodGroup", value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="A+">A+</SelectItem>
+                          <SelectItem value="A-">A-</SelectItem>
+                          <SelectItem value="B+">B+</SelectItem>
+                          <SelectItem value="B-">B-</SelectItem>
+                          <SelectItem value="AB+">AB+</SelectItem>
+                          <SelectItem value="AB-">AB-</SelectItem>
+                          <SelectItem value="O+">O+</SelectItem>
+                          <SelectItem value="O-">O-</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="genotype">Genotype</Label>
+                      <Select value={formData.genotype} onValueChange={(value) => handleInputChange("genotype", value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="AA">AA</SelectItem>
+                          <SelectItem value="AS">AS</SelectItem>
+                          <SelectItem value="AC">AC</SelectItem>
+                          <SelectItem value="SS">SS</SelectItem>
+                          <SelectItem value="SC">SC</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -159,11 +296,26 @@ export default function RegisterPatient() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="phone">Primary Phone *</Label>
-                      <Input
-                        id="phone"
-                        placeholder="+1 (555) 123-4567"
-                        required
-                      />
+                      <div className="flex gap-2">
+                        {selectedCountry && (
+                          <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-muted min-w-[100px]">
+                            <img 
+                              src={selectedCountry.flag.svg} 
+                              alt={selectedCountry.name}
+                              className="w-5 h-4 object-cover"
+                            />
+                            <span className="text-sm">{selectedCountry.phoneCode}</span>
+                          </div>
+                        )}
+                        <Input
+                          id="phone"
+                          placeholder="8012345678"
+                          required
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange("phone", e.target.value)}
+                          className="flex-1"
+                        />
+                      </div>
                     </div>
                     <div>
                       <Label htmlFor="email">Email Address</Label>
@@ -171,6 +323,8 @@ export default function RegisterPatient() {
                         id="email"
                         type="email"
                         placeholder="john.smith@email.com"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange("email", e.target.value)}
                       />
                     </div>
                   </div>
@@ -186,43 +340,91 @@ export default function RegisterPatient() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="country">Country *</Label>
+                      <Select
+                        value={formData.countryId}
+                        onValueChange={(value) => {
+                          handleInputChange("countryId", value);
+                          const country = countries.find((c) => c.id === Number(value));
+                          setSelectedCountry(country || null);
+                          setSelectedState(null);
+                          handleInputChange("stateId", "");
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select Country" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {countries.map((country) => (
+                            <SelectItem key={country.id} value={country.id.toString()}>
+                              <div className="flex items-center gap-2">
+                                <img 
+                                  src={country.flag.svg} 
+                                  alt={country.name}
+                                  className="w-5 h-4 object-cover"
+                                />
+                                <span>{country.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="state">State *</Label>
+                      <Select
+                        value={formData.stateId}
+                        onValueChange={(value) => {
+                          handleInputChange("stateId", value);
+                          setSelectedState(Number(value));
+                        }}
+                        disabled={!selectedCountry}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select State" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {states.map((state) => (
+                            <SelectItem key={state.id} value={state.id.toString()}>
+                              {state.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
                   <div>
                     <Label htmlFor="address1">Address Line 1 *</Label>
                     <Input
                       id="address1"
                       placeholder="123 Main Street"
                       required
+                      value={formData.address1}
+                      onChange={(e) => handleInputChange("address1", e.target.value)}
                     />
                   </div>
                   <div>
                     <Label htmlFor="address2">Address Line 2</Label>
-                    <Input id="address2" placeholder="Apt 4B" />
+                    <Input 
+                      id="address2" 
+                      placeholder="Apt 4B" 
+                      value={formData.address2}
+                      onChange={(e) => handleInputChange("address2", e.target.value)}
+                    />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <Label htmlFor="city">City *</Label>
-                      <Input id="city" placeholder="New York" required />
-                    </div>
-                    <div>
-                      <Label htmlFor="state">State *</Label>
-                      <Input id="state" placeholder="NY" required />
-                    </div>
-                    <div>
-                      <Label htmlFor="country">Country *</Label>
-                      <Select>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="us">United States</SelectItem>
-                          <SelectItem value="ca">Canada</SelectItem>
-                          <SelectItem value="uk">United Kingdom</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="postal">Postal Code *</Label>
-                      <Input id="postal" placeholder="10001" required />
+                      <Input 
+                        id="postal" 
+                        placeholder="10001" 
+                        required 
+                        value={formData.postal}
+                        onChange={(e) => handleInputChange("postal", e.target.value)}
+                      />
                     </div>
                   </div>
                 </CardContent>
@@ -244,21 +446,23 @@ export default function RegisterPatient() {
                         id="emergencyName"
                         placeholder="Jane Smith"
                         required
+                        value={formData.emergencyName}
+                        onChange={(e) => handleInputChange("emergencyName", e.target.value)}
                       />
                     </div>
                     <div>
                       <Label htmlFor="emergencyRelation">Relationship *</Label>
-                      <Select>
+                      <Select value={formData.emergencyRelation} onValueChange={(value) => handleInputChange("emergencyRelation", value)}>
                         <SelectTrigger>
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="spouse">Spouse</SelectItem>
-                          <SelectItem value="parent">Parent</SelectItem>
-                          <SelectItem value="child">Child</SelectItem>
-                          <SelectItem value="sibling">Sibling</SelectItem>
-                          <SelectItem value="friend">Friend</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
+                          <SelectItem value="Spouse">Spouse</SelectItem>
+                          <SelectItem value="Parent">Parent</SelectItem>
+                          <SelectItem value="Child">Child</SelectItem>
+                          <SelectItem value="Sibling">Sibling</SelectItem>
+                          <SelectItem value="Friend">Friend</SelectItem>
+                          <SelectItem value="Other">Other</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -268,6 +472,8 @@ export default function RegisterPatient() {
                         id="emergencyPhone"
                         placeholder="+1 (555) 987-6543"
                         required
+                        value={formData.emergencyPhone}
+                        onChange={(e) => handleInputChange("emergencyPhone", e.target.value)}
                       />
                     </div>
                   </div>
