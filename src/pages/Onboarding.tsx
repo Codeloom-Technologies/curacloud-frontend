@@ -1,46 +1,149 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, ArrowLeft, Building2, Users, MapPin, Check } from "lucide-react";
+import {
+  ArrowRight,
+  ArrowLeft,
+  Building2,
+  Users,
+  MapPin,
+  Check,
+  Loader2,
+  EyeOff,
+  Eye,
+} from "lucide-react";
 import { toast } from "sonner";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import {
+  submitOnboarding,
+  mapFormToApiPayload,
+  fetchCountries,
+  fetchStates,
+  fetchCities,
+} from "@/services/onboarding";
+import { OnboardingFormData } from "@/types/onboarding";
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [showPassword, setShowPassword] = useState(false);
+  const [_, setPhoneCode] = useState("+--");
+
+  const [formData, setFormData] = useState<OnboardingFormData>({
     // Step 1: Role
     role: "",
-    
+
     // Step 2: Facility Info
     facilityName: "",
     facilityType: "",
     facilitySize: "",
-    
+
     // Step 3: Location
     address: "",
     city: "",
     state: "",
     postalCode: "",
-    country: "Nigeria",
-    
+    country: "",
+    countryId: "",
+    stateId: "",
+    cityId: "",
+
     // Step 4: Contact
     fullName: "",
     email: "",
     phone: "",
+    phoneCode: "",
+    password: "",
     position: "",
+  });
+
+  const { data: countries = [], isLoading: loadingCountries } = useQuery({
+    queryKey: ["countries"],
+    queryFn: fetchCountries,
+  });
+
+  const { data: states = [], isLoading: loadingStates } = useQuery({
+    queryKey: ["states", formData.countryId],
+    queryFn: () => fetchStates(Number(formData.countryId)),
+    enabled: !!formData.countryId,
+  });
+
+  const { data: cities = [], isLoading: loadingCities } = useQuery({
+    queryKey: ["cities", formData.stateId],
+    queryFn: () => fetchCities(Number(formData.stateId)),
+    enabled: !!formData.stateId,
+  });
+
+  useEffect(() => {
+    if (formData.countryId) {
+      setFormData((prev) => ({
+        ...prev,
+        stateId: "",
+        cityId: "",
+        state: "",
+        city: "",
+      }));
+    }
+  }, [formData.countryId]);
+
+  useEffect(() => {
+    if (formData.stateId) {
+      setFormData((prev) => ({ ...prev, cityId: "", city: "" }));
+    }
+  }, [formData.stateId]);
+
+  // Automatically update phone code when country changes
+  useEffect(() => {
+    if (formData.countryId && countries.length > 0) {
+      const selectedCountry = countries.find(
+        (c) => c.id === Number(formData.countryId)
+      );
+
+      const code = selectedCountry?.phoneCode || "+--";
+      setPhoneCode(code);
+      setFormData((prev) => ({ ...prev, phoneCode: code }));
+    } else {
+      setPhoneCode("+--");
+      setFormData((prev) => ({ ...prev, phoneCode: "+--" }));
+    }
+  }, [formData.countryId, countries]);
+
+  const mutation = useMutation({
+    mutationFn: submitOnboarding,
+    onSuccess: (data) => {
+      // toast.success("Onboarding complete! Welcome to Curacloud!");
+      toast.success("Onboarding complete! Please check your mailbox!");
+      console.log("Onboarding response:", data);
+      navigate("/");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to complete onboarding");
+    },
   });
 
   const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
 
   const updateFormData = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleNext = () => {
@@ -49,16 +152,34 @@ export default function Onboarding() {
       toast.error("Please select your role");
       return;
     }
-    if (step === 2 && (!formData.facilityName || !formData.facilityType || !formData.facilitySize)) {
+    if (
+      step === 2 &&
+      (!formData.facilityName ||
+        !formData.facilityType ||
+        !formData.facilitySize)
+    ) {
       toast.error("Please fill in all facility information");
       return;
     }
-    if (step === 3 && (!formData.address || !formData.city || !formData.state)) {
+    if (
+      step === 3 &&
+      (!formData.address ||
+        !formData.countryId ||
+        !formData.stateId ||
+        !formData.cityId)
+    ) {
       toast.error("Please fill in location details");
       return;
     }
-    if (step === 4 && (!formData.fullName || !formData.email || !formData.phone)) {
-      toast.error("Please fill in your contact information");
+    if (
+      step === 4 &&
+      (!formData.fullName ||
+        !formData.email ||
+        !formData.phone ||
+        !formData.phoneCode ||
+        !formData.password)
+    ) {
+      toast.error("Please fill in all contact information");
       return;
     }
 
@@ -76,10 +197,8 @@ export default function Onboarding() {
   };
 
   const handleComplete = () => {
-    toast.success("Onboarding complete! Welcome to Curacloud!");
-    // Here you would typically save the data to your backend
-    console.log("Onboarding data:", formData);
-    navigate("/login");
+    const payload = mapFormToApiPayload(formData);
+    mutation.mutate(payload);
   };
 
   return (
@@ -88,8 +207,12 @@ export default function Onboarding() {
         {/* Progress Bar */}
         <div className="mb-8">
           <div className="flex justify-between mb-2">
-            <span className="text-sm font-medium">Step {step} of {totalSteps}</span>
-            <span className="text-sm text-muted-foreground">{Math.round(progress)}% Complete</span>
+            <span className="text-sm font-medium">
+              Step {step} of {totalSteps}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              {Math.round(progress)}% Complete
+            </span>
           </div>
           <Progress value={progress} className="h-2" />
         </div>
@@ -103,7 +226,8 @@ export default function Onboarding() {
               {step === 4 && "Your contact information"}
             </CardTitle>
             <CardDescription>
-              {step === 1 && "Let's get you set up with the right healthcare management tools"}
+              {step === 1 &&
+                "Let's get you set up with the right healthcare management tools"}
               {step === 2 && "This helps us customize your experience"}
               {step === 3 && "We'll use this for compliance and support"}
               {step === 4 && "Almost done! Just a few more details"}
@@ -115,36 +239,49 @@ export default function Onboarding() {
             {step === 1 && (
               <div className="space-y-4">
                 <Label className="text-base">What's your role?</Label>
-                <RadioGroup value={formData.role} onValueChange={(value) => updateFormData("role", value)}>
+                <RadioGroup
+                  value={formData.role}
+                  onValueChange={(value) => updateFormData("role", value)}
+                >
                   <div className="flex items-center space-x-3 border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer">
                     <RadioGroupItem value="doctor" id="doctor" />
                     <Label htmlFor="doctor" className="flex-1 cursor-pointer">
                       <div className="font-medium">Healthcare Provider</div>
-                      <div className="text-sm text-muted-foreground">Doctor, Physician, Specialist</div>
+                      <div className="text-sm text-muted-foreground">
+                        Doctor, Physician, Specialist
+                      </div>
                     </Label>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3 border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer">
                     <RadioGroupItem value="nurse" id="nurse" />
                     <Label htmlFor="nurse" className="flex-1 cursor-pointer">
                       <div className="font-medium">Nursing Staff</div>
-                      <div className="text-sm text-muted-foreground">Nurse, Care Coordinator</div>
+                      <div className="text-sm text-muted-foreground">
+                        Nurse, Care Coordinator
+                      </div>
                     </Label>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3 border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer">
                     <RadioGroupItem value="admin" id="admin" />
                     <Label htmlFor="admin" className="flex-1 cursor-pointer">
                       <div className="font-medium">Hospital Administrator</div>
-                      <div className="text-sm text-muted-foreground">Manager, Operations, Executive</div>
+                      <div className="text-sm text-muted-foreground">
+                        Manager, Operations, Executive
+                      </div>
                     </Label>
                   </div>
-                  
+
                   <div className="flex items-center space-x-3 border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer">
                     <RadioGroupItem value="other" id="other" />
                     <Label htmlFor="other" className="flex-1 cursor-pointer">
-                      <div className="font-medium">Other Healthcare Professional</div>
-                      <div className="text-sm text-muted-foreground">Pharmacist, Lab Technician, etc.</div>
+                      <div className="font-medium">
+                        Other Healthcare Professional
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Pharmacist, Lab Technician, etc.
+                      </div>
                     </Label>
                   </div>
                 </RadioGroup>
@@ -155,29 +292,44 @@ export default function Onboarding() {
             {step === 2 && (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="facilityName" className="flex items-center gap-2">
+                  <Label
+                    htmlFor="facilityName"
+                    className="flex items-center gap-2"
+                  >
                     <Building2 className="h-4 w-4" />
                     Facility Name
                   </Label>
                   <Input
                     id="facilityName"
+                    type="text"
                     placeholder="e.g., General Hospital Lagos"
                     value={formData.facilityName}
-                    onChange={(e) => updateFormData("facilityName", e.target.value)}
+                    onChange={(e) =>
+                      updateFormData("facilityName", e.target.value)
+                    }
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="facilityType">Type of Facility</Label>
-                  <Select value={formData.facilityType} onValueChange={(value) => updateFormData("facilityType", value)}>
+                  <Select
+                    value={formData.facilityType}
+                    onValueChange={(value) =>
+                      updateFormData("facilityType", value)
+                    }
+                  >
                     <SelectTrigger id="facilityType">
                       <SelectValue placeholder="Select facility type" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="hospital">Hospital</SelectItem>
                       <SelectItem value="clinic">Clinic</SelectItem>
-                      <SelectItem value="specialty">Specialty Center</SelectItem>
-                      <SelectItem value="diagnostic">Diagnostic Center</SelectItem>
+                      <SelectItem value="specialty">
+                        Specialty Center
+                      </SelectItem>
+                      <SelectItem value="diagnostic">
+                        Diagnostic Center
+                      </SelectItem>
                       <SelectItem value="pharmacy">Pharmacy</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
@@ -185,19 +337,33 @@ export default function Onboarding() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="facilitySize" className="flex items-center gap-2">
+                  <Label
+                    htmlFor="facilitySize"
+                    className="flex items-center gap-2"
+                  >
                     <Users className="h-4 w-4" />
                     Facility Size
                   </Label>
-                  <Select value={formData.facilitySize} onValueChange={(value) => updateFormData("facilitySize", value)}>
+                  <Select
+                    value={formData.facilitySize}
+                    onValueChange={(value) =>
+                      updateFormData("facilitySize", value)
+                    }
+                  >
                     <SelectTrigger id="facilitySize">
                       <SelectValue placeholder="Select facility size" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="small">Small (1-50 staff)</SelectItem>
-                      <SelectItem value="medium">Medium (51-200 staff)</SelectItem>
-                      <SelectItem value="large">Large (201-500 staff)</SelectItem>
-                      <SelectItem value="enterprise">Enterprise (500+ staff)</SelectItem>
+                      <SelectItem value="medium">
+                        Medium (51-200 staff)
+                      </SelectItem>
+                      <SelectItem value="large">
+                        Large (201-500 staff)
+                      </SelectItem>
+                      <SelectItem value="enterprise">
+                        Enterprise (500+ staff)
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -213,6 +379,7 @@ export default function Onboarding() {
                     Street Address
                   </Label>
                   <Input
+                    type="text"
                     id="address"
                     placeholder="e.g., 123 Healthcare Avenue"
                     value={formData.address}
@@ -220,128 +387,122 @@ export default function Onboarding() {
                   />
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="country">Country</Label>
+                  <Select
+                    value={formData.countryId}
+                    onValueChange={(value) => {
+                      const country = countries.find(
+                        (c) => c.id === Number(value)
+                      );
+                      setFormData((prev) => ({
+                        ...prev,
+                        countryId: value,
+                        country: country?.name || "",
+                      }));
+                    }}
+                  >
+                    <SelectTrigger id="country">
+                      <SelectValue
+                        placeholder={
+                          loadingCountries ? "Loading..." : "Select country"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {countries.map((country) => (
+                        <SelectItem key={country.id} value={String(country.id)}>
+                          <div className="flex items-center gap-2">
+                            <img
+                              src={country.flag.png}
+                              alt={country.name}
+                              className="w-5 h-4 object-cover rounded"
+                            />
+                            <span>{country.name}</span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="state">State</Label>
-                    <Select value={formData.state} onValueChange={(value) => updateFormData("state", value)}>
+                    <Select
+                      value={formData.stateId}
+                      onValueChange={(value) => {
+                        const state = states.find(
+                          (s) => s.id === Number(value)
+                        );
+                        setFormData((prev) => ({
+                          ...prev,
+                          stateId: value,
+                          state: state?.name || "",
+                        }));
+                      }}
+                      disabled={!formData.countryId}
+                    >
                       <SelectTrigger id="state">
-                        <SelectValue placeholder="Select state" />
+                        <SelectValue
+                          placeholder={
+                            loadingStates ? "Loading..." : "Select state"
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Abia">Abia</SelectItem>
-                        <SelectItem value="Adamawa">Adamawa</SelectItem>
-                        <SelectItem value="Akwa Ibom">Akwa Ibom</SelectItem>
-                        <SelectItem value="Anambra">Anambra</SelectItem>
-                        <SelectItem value="Bauchi">Bauchi</SelectItem>
-                        <SelectItem value="Bayelsa">Bayelsa</SelectItem>
-                        <SelectItem value="Benue">Benue</SelectItem>
-                        <SelectItem value="Borno">Borno</SelectItem>
-                        <SelectItem value="Cross River">Cross River</SelectItem>
-                        <SelectItem value="Delta">Delta</SelectItem>
-                        <SelectItem value="Ebonyi">Ebonyi</SelectItem>
-                        <SelectItem value="Edo">Edo</SelectItem>
-                        <SelectItem value="Ekiti">Ekiti</SelectItem>
-                        <SelectItem value="Enugu">Enugu</SelectItem>
-                        <SelectItem value="FCT">FCT Abuja</SelectItem>
-                        <SelectItem value="Gombe">Gombe</SelectItem>
-                        <SelectItem value="Imo">Imo</SelectItem>
-                        <SelectItem value="Jigawa">Jigawa</SelectItem>
-                        <SelectItem value="Kaduna">Kaduna</SelectItem>
-                        <SelectItem value="Kano">Kano</SelectItem>
-                        <SelectItem value="Katsina">Katsina</SelectItem>
-                        <SelectItem value="Kebbi">Kebbi</SelectItem>
-                        <SelectItem value="Kogi">Kogi</SelectItem>
-                        <SelectItem value="Kwara">Kwara</SelectItem>
-                        <SelectItem value="Lagos">Lagos</SelectItem>
-                        <SelectItem value="Nasarawa">Nasarawa</SelectItem>
-                        <SelectItem value="Niger">Niger</SelectItem>
-                        <SelectItem value="Ogun">Ogun</SelectItem>
-                        <SelectItem value="Ondo">Ondo</SelectItem>
-                        <SelectItem value="Osun">Osun</SelectItem>
-                        <SelectItem value="Oyo">Oyo</SelectItem>
-                        <SelectItem value="Plateau">Plateau</SelectItem>
-                        <SelectItem value="Rivers">Rivers</SelectItem>
-                        <SelectItem value="Sokoto">Sokoto</SelectItem>
-                        <SelectItem value="Taraba">Taraba</SelectItem>
-                        <SelectItem value="Yobe">Yobe</SelectItem>
-                        <SelectItem value="Zamfara">Zamfara</SelectItem>
+                        {states.map((state) => (
+                          <SelectItem key={state.id} value={String(state.id)}>
+                            {state.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="city">City</Label>
-                    <Select value={formData.city} onValueChange={(value) => updateFormData("city", value)}>
+                    <Select
+                      value={formData.cityId}
+                      onValueChange={(value) => {
+                        const city = cities.find((c) => c.id === Number(value));
+                        setFormData((prev) => ({
+                          ...prev,
+                          cityId: value,
+                          city: city?.name || "",
+                        }));
+                      }}
+                      disabled={!formData.stateId}
+                    >
                       <SelectTrigger id="city">
-                        <SelectValue placeholder="Select city" />
+                        <SelectValue
+                          placeholder={
+                            loadingCities ? "Loading..." : "Select city"
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Lagos">Lagos</SelectItem>
-                        <SelectItem value="Abuja">Abuja</SelectItem>
-                        <SelectItem value="Kano">Kano</SelectItem>
-                        <SelectItem value="Ibadan">Ibadan</SelectItem>
-                        <SelectItem value="Port Harcourt">Port Harcourt</SelectItem>
-                        <SelectItem value="Benin City">Benin City</SelectItem>
-                        <SelectItem value="Kaduna">Kaduna</SelectItem>
-                        <SelectItem value="Enugu">Enugu</SelectItem>
-                        <SelectItem value="Aba">Aba</SelectItem>
-                        <SelectItem value="Onitsha">Onitsha</SelectItem>
-                        <SelectItem value="Warri">Warri</SelectItem>
-                        <SelectItem value="Calabar">Calabar</SelectItem>
-                        <SelectItem value="Uyo">Uyo</SelectItem>
-                        <SelectItem value="Ilorin">Ilorin</SelectItem>
-                        <SelectItem value="Jos">Jos</SelectItem>
-                        <SelectItem value="Abeokuta">Abeokuta</SelectItem>
-                        <SelectItem value="Akure">Akure</SelectItem>
-                        <SelectItem value="Owerri">Owerri</SelectItem>
-                        <SelectItem value="Maiduguri">Maiduguri</SelectItem>
-                        <SelectItem value="Sokoto">Sokoto</SelectItem>
+                        {cities.map((city) => (
+                          <SelectItem key={city.id} value={String(city.id)}>
+                            {city.name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="postalCode">Postal Code</Label>
-                    <Input
-                      id="postalCode"
-                      placeholder="e.g., 100001"
-                      value={formData.postalCode}
-                      onChange={(e) => updateFormData("postalCode", e.target.value)}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="country">Country</Label>
-                    <Select value={formData.country} onValueChange={(value) => updateFormData("country", value)}>
-                      <SelectTrigger id="country">
-                        <SelectValue placeholder="Select country" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Nigeria">Nigeria</SelectItem>
-                        <SelectItem value="Ghana">Ghana</SelectItem>
-                        <SelectItem value="Kenya">Kenya</SelectItem>
-                        <SelectItem value="South Africa">South Africa</SelectItem>
-                        <SelectItem value="Egypt">Egypt</SelectItem>
-                        <SelectItem value="Tanzania">Tanzania</SelectItem>
-                        <SelectItem value="Uganda">Uganda</SelectItem>
-                        <SelectItem value="Ethiopia">Ethiopia</SelectItem>
-                        <SelectItem value="Morocco">Morocco</SelectItem>
-                        <SelectItem value="Senegal">Senegal</SelectItem>
-                        <SelectItem value="Rwanda">Rwanda</SelectItem>
-                        <SelectItem value="Cameroon">Cameroon</SelectItem>
-                        <SelectItem value="Ivory Coast">Ivory Coast</SelectItem>
-                        <SelectItem value="Zambia">Zambia</SelectItem>
-                        <SelectItem value="Zimbabwe">Zimbabwe</SelectItem>
-                        <SelectItem value="Botswana">Botswana</SelectItem>
-                        <SelectItem value="Tunisia">Tunisia</SelectItem>
-                        <SelectItem value="Algeria">Algeria</SelectItem>
-                        <SelectItem value="Mozambique">Mozambique</SelectItem>
-                        <SelectItem value="Angola">Angola</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="postalCode">Postal Code</Label>
+                  <Input
+                    id="postalCode"
+                    type="text"
+                    placeholder="e.g., 100001"
+                    value={formData.postalCode}
+                    onChange={(e) =>
+                      updateFormData("postalCode", e.target.value)
+                    }
+                  />
                 </div>
               </div>
             )}
@@ -354,6 +515,7 @@ export default function Onboarding() {
                   <Input
                     id="fullName"
                     placeholder="Your full name"
+                    type="text"
                     value={formData.fullName}
                     onChange={(e) => updateFormData("fullName", e.target.value)}
                   />
@@ -372,19 +534,73 @@ export default function Onboarding() {
 
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="+234 xxx xxx xxxx"
-                    value={formData.phone}
-                    onChange={(e) => updateFormData("phone", e.target.value)}
-                  />
+                  <div className="flex gap-2">
+                    <div className="flex items-center px-3 border rounded-md bg-muted min-w-[80px] justify-center">
+                      <span className="text-sm font-medium">
+                        {formData.countryId
+                          ? countries.find(
+                              (c) => c.id === Number(formData.countryId)
+                            )?.phoneCode || "+--"
+                          : "+--"}
+                      </span>
+                    </div>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="xxx xxx xxxx"
+                      value={formData.phone}
+                      onChange={(e) => updateFormData("phone", e.target.value)}
+                      className="flex-1"
+                    />
+
+                    <input
+                      id="postalCode"
+                      type="text"
+                      hidden={true}
+                      placeholder="Phone Code"
+                      value={formData.phoneCode}
+                      onChange={(e) =>
+                        updateFormData("phoneCode", e.target.value)
+                      }
+                      className="flex-1 border rounded-lg px-2 py-1"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="false"
+                      placeholder="Create a secure password"
+                      value={formData.password}
+                      onChange={(e) =>
+                        updateFormData("password", e.target.value)
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-2 top-2 h-7 w-7 p-0"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <Eye className="h-4 w-4" />
+                      ) : (
+                        <EyeOff className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="position">Position/Title</Label>
                   <Input
                     id="position"
+                    type="text"
                     placeholder="e.g., Chief Medical Officer"
                     value={formData.position}
                     onChange={(e) => updateFormData("position", e.target.value)}
@@ -404,8 +620,17 @@ export default function Onboarding() {
                 Back
               </Button>
 
-              <Button onClick={handleNext} className="bg-gradient-primary">
-                {step === totalSteps ? (
+              <Button
+                onClick={handleNext}
+                className="bg-gradient-primary"
+                disabled={mutation.isPending}
+              >
+                {mutation.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : step === totalSteps ? (
                   <>
                     <Check className="h-4 w-4 mr-2" />
                     Complete

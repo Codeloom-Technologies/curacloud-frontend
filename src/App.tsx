@@ -38,34 +38,58 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/auth/onboarding" element={<Onboarding />} />
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/patients" element={<PatientDirectory />} />
-          <Route path="/patients/register" element={<RegisterPatient />} />
-          <Route path="/patients/records/:patientId" element={<PatientRecords />} />
-          <Route path="/appointments" element={<Appointments />} />
-          <Route path="/appointments/calendar" element={<AppointmentCalendar />} />
-          <Route path="/appointments/checkin" element={<CheckinQueue />} />
-        <Route path="/consultations" element={<Consultations />} />
-        <Route path="/prescriptions" element={<Prescriptions />} />
-        <Route path="/medical-history" element={<MedicalHistory />} />
-        
-        {/* Laboratory Routes */}
-        <Route path="/lab/orders" element={<LabOrders />} />
-        <Route path="/lab/results" element={<ResultsEntry />} />
-        <Route path="/lab/reports" element={<LabReports />} />
-        
-        {/* Staff/HR Routes */}
-        <Route path="/staff" element={<StaffDirectory />} />
-        <Route path="/staff/register" element={<RegisterStaff />} />
-        <Route path="/staff/records/:staffId" element={<StaffRecords />} />
-        
-        {/* Billing Routes */}
-        <Route path="/billing" element={<BillingOverview />} />
-        <Route path="/billing/invoices" element={<Invoices />} />
-        <Route path="/billing/payments" element={<PaymentProcessing />} />
-        <Route path="/billing/reports" element={<BillingReports />} />
+          <Route path="/auth/login" element={<Login />} />
+          <Route path="/dashboard/patients" element={<PatientDirectory />} />
+          <Route
+            path="/dashboard/patients/register"
+            element={<RegisterPatient />}
+          />
+          <Route
+            path="/dashboard/patients/records/:patientId"
+            element={<PatientRecords />}
+          />
+          <Route path="/dashboard/appointments" element={<Appointments />} />
+          <Route
+            path="/dashboard/appointments/calendar"
+            element={<AppointmentCalendar />}
+          />
+          <Route
+            path="/dashboard/appointments/checkin"
+            element={<CheckinQueue />}
+          />
+          <Route path="/dashboard/consultations" element={<Consultations />} />
+          <Route path="/dashboard/prescriptions" element={<Prescriptions />} />
+          <Route
+            path="/dashboard/medical-history"
+            element={<MedicalHistory />}
+          />
+
+          {/* Laboratory Routes */}
+          <Route path="/dashboard/lab/orders" element={<LabOrders />} />
+          <Route path="/dashboard/lab/results" element={<ResultsEntry />} />
+          <Route path="/dashboard/lab/reports" element={<LabReports />} />
+
+          {/* Staff/HR Routes */}
+          <Route path="/dashboard/staff" element={<StaffDirectory />} />
+          <Route path="/dashboard/staff/register" element={<RegisterStaff />} />
+          <Route
+            path="/dashboard/staff/records/:staffId"
+            element={<StaffRecords />}
+          />
+
+          {/* Billing Routes */}
+          <Route path="/dashboard/billing" element={<BillingOverview />} />
+          <Route path="/dashboard/billing/invoices" element={<Invoices />} />
+          <Route
+            path="/dashboard/billing/payments"
+            element={<PaymentProcessing />}
+          />
+          <Route
+            path="/dashboard/billing/reports"
+            element={<BillingReports />}
+          />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

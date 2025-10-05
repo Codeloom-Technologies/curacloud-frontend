@@ -12,26 +12,49 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Heart, Eye, EyeOff, Shield, Users, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { LoginApiPayload } from "@/types/auth";
+import { mapFormToLoginApiPayload, submitLogging } from "@/services/auth";
+import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  const [formData, setFormData] = useState<LoginApiPayload>({
+    email: "",
+    password: "",
+  });
 
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false);
+  const updateFormData = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const mutation = useMutation({
+    mutationFn: submitLogging,
+    onSuccess: (data) => {
       toast({
         title: "Login Successful",
         description: "Welcome back to Curacloud",
       });
-      // In real app, this would redirect to dashboard
-      window.location.href = "/dashboard";
-    }, 2000);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("accessToken", JSON.stringify(data.accessToken));
+      navigate("/dashboard");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Login Failed",
+        description: error.message || "Unable to log in. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    const payload = mapFormToLoginApiPayload(formData);
+    mutation.mutate(payload);
   };
 
   const features = [
@@ -115,8 +138,10 @@ export default function Login() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="doctor@curacloud.com"
+                    placeholder="your-mail@example.com"
                     required
+                    value={formData.email}
+                    onChange={(e) => updateFormData("email", e.target.value)}
                     className="h-11"
                   />
                 </div>
@@ -128,6 +153,10 @@ export default function Login() {
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="Enter your password"
+                      value={formData.password}
+                      onChange={(e) =>
+                        updateFormData("password", e.target.value)
+                      }
                       required
                       className="h-11 pr-10"
                     />
@@ -139,9 +168,9 @@ export default function Login() {
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
                         <Eye className="h-4 w-4" />
+                      ) : (
+                        <EyeOff className="h-4 w-4" />
                       )}
                     </Button>
                   </div>
@@ -152,7 +181,11 @@ export default function Login() {
                     <input type="checkbox" className="rounded border-border" />
                     Remember me
                   </label>
-                  <Button variant="link" className="p-0 h-auto text-primary">
+                  <Button
+                    variant="link"
+                    onClick={() => navigate("/auth/reset-password")}
+                    className="p-0 h-auto text-primary"
+                  >
                     Forgot password?
                   </Button>
                 </div>
@@ -160,9 +193,9 @@ export default function Login() {
                 <Button
                   type="submit"
                   className="w-full h-11 bg-gradient-primary hover:shadow-glow transition-all"
-                  disabled={isLoading}
+                  disabled={mutation.isPending}
                 >
-                  {isLoading ? "Signing in..." : "Sign In"}
+                  {mutation.isPending ? "Signing in..." : "Sign In"}
                 </Button>
               </form>
 
