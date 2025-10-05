@@ -181,7 +181,11 @@ export default function Login() {
                     <input type="checkbox" className="rounded border-border" />
                     Remember me
                   </label>
-                  <Button variant="link" className="p-0 h-auto text-primary">
+                  <Button
+                    variant="link"
+                    onClick={() => navigate("/auth/reset-password")}
+                    className="p-0 h-auto text-primary"
+                  >
                     Forgot password?
                   </Button>
                 </div>
