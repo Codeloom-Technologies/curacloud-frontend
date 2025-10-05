@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -14,6 +15,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import {
   Search,
   Plus,
@@ -25,83 +35,23 @@ import {
   Filter,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-// Sample patient data
-const patients = [
-  {
-    id: "P001",
-    name: "John Smith",
-    age: 45,
-    gender: "Male",
-    phone: "+1 (555) 123-4567",
-    email: "john.smith@email.com",
-    lastVisit: "2024-01-15",
-    status: "Active",
-    primaryDoctor: "Dr. Sarah Johnson",
-    condition: "Hypertension",
-  },
-  {
-    id: "P002",
-    name: "Emma Wilson",
-    age: 32,
-    gender: "Female",
-    phone: "+1 (555) 234-5678",
-    email: "emma.wilson@email.com",
-    lastVisit: "2024-01-18",
-    status: "Active",
-    primaryDoctor: "Dr. Michael Brown",
-    condition: "Diabetes Type 2",
-  },
-  {
-    id: "P003",
-    name: "Robert Davis",
-    age: 67,
-    gender: "Male",
-    phone: "+1 (555) 345-6789",
-    email: "robert.davis@email.com",
-    lastVisit: "2024-01-10",
-    status: "Inactive",
-    primaryDoctor: "Dr. Lisa Chen",
-    condition: "Cardiac Arrhythmia",
-  },
-  {
-    id: "P004",
-    name: "Sarah Johnson",
-    age: 28,
-    gender: "Female",
-    phone: "+1 (555) 456-7890",
-    email: "sarah.johnson@email.com",
-    lastVisit: "2024-01-20",
-    status: "Active",
-    primaryDoctor: "Dr. James Wilson",
-    condition: "Pregnancy - 2nd Trimester",
-  },
-  {
-    id: "P005",
-    name: "Michael Brown",
-    age: 54,
-    gender: "Male",
-    phone: "+1 (555) 567-8901",
-    email: "michael.brown@email.com",
-    lastVisit: "2024-01-12",
-    status: "Active",
-    primaryDoctor: "Dr. Sarah Johnson",
-    condition: "Chronic Back Pain",
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { fetchPatients } from "@/services/patient";
 
 export default function PatientDirectory() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const limit = 10;
   const navigate = useNavigate();
 
-  const filteredPatients = patients.filter(
-    (patient) =>
-      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.phone.includes(searchTerm) ||
-      patient.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const { data, isLoading } = useQuery({
+    queryKey: ["patients", currentPage, searchTerm],
+    queryFn: () => fetchPatients(currentPage, limit, searchTerm),
+  });
+
+  const patients = data?.patients || [];
+  const totalPages = data?.totalPages || 1;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -112,6 +62,41 @@ export default function PatientDirectory() {
       default:
         return "bg-muted text-muted-foreground";
     }
+  };
+
+  const renderPaginationItems = () => {
+    const items = [];
+    const showEllipsisStart = currentPage > 3;
+    const showEllipsisEnd = currentPage < totalPages - 2;
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+        items.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              onClick={() => setCurrentPage(i)}
+              isActive={currentPage === i}
+              className="cursor-pointer"
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>
+        );
+      } else if (i === currentPage - 2 && showEllipsisStart) {
+        items.push(
+          <PaginationItem key="ellipsis-start">
+            <PaginationEllipsis />
+          </PaginationItem>
+        );
+      } else if (i === currentPage + 2 && showEllipsisEnd) {
+        items.push(
+          <PaginationItem key="ellipsis-end">
+            <PaginationEllipsis />
+          </PaginationItem>
+        );
+      }
+    }
+    return items;
   };
 
   return (
@@ -175,7 +160,11 @@ export default function PatientDirectory() {
               <Card>
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-primary">
-                    {patients.length}
+                    {isLoading ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      data?.total || 0
+                    )}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Total Patients
@@ -185,7 +174,11 @@ export default function PatientDirectory() {
               <Card>
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-success">
-                    {patients.filter((p) => p.status === "Active").length}
+                    {isLoading ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      patients.filter((p: any) => p.status === "Active").length
+                    )}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Active Patients
@@ -213,7 +206,9 @@ export default function PatientDirectory() {
             {/* Patients Table */}
             <Card>
               <CardHeader>
-                <CardTitle>Patients ({filteredPatients.length})</CardTitle>
+                <CardTitle>
+                  Patients ({isLoading ? "..." : data?.total || 0})
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
@@ -230,93 +225,186 @@ export default function PatientDirectory() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredPatients.map((patient) => (
-                        <TableRow
-                          key={patient.id}
-                          className="hover:bg-muted/50"
-                        >
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-10 w-10">
-                                <AvatarFallback className="bg-primary/10 text-primary">
-                                  {patient.name
-                                    .split(" ")
-                                    .map((n) => n[0])
-                                    .join("")}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <div className="font-medium">
-                                  {patient.name}
-                                </div>
-                                <div className="text-sm text-muted-foreground">
-                                  ID: {patient.id}
+                      {isLoading ? (
+                        Array.from({ length: 5 }).map((_, index) => (
+                          <TableRow key={index}>
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <Skeleton className="h-10 w-10 rounded-full" />
+                                <div className="space-y-2">
+                                  <Skeleton className="h-4 w-32" />
+                                  <Skeleton className="h-3 w-20" />
                                 </div>
                               </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2 text-sm">
-                                <Phone className="h-3 w-3" />
-                                {patient.phone}
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Mail className="h-3 w-3" />
-                                {patient.email}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              <div>{patient.age} years</div>
-                              <div className="text-muted-foreground">
-                                {patient.gender}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="text-sm">
-                              {patient.primaryDoctor}
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                              {patient.condition}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2 text-sm">
-                              <Calendar className="h-3 w-3" />
-                              {new Date(patient.lastVisit).toLocaleDateString()}
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={getStatusColor(patient.status)}>
-                              {patient.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() =>
-                                  navigate(
-                                    `/dashboard/patients/records/${patient.id}`
-                                  )
-                                }
-                              >
-                                <Eye className="h-4 w-4" />
-                              </Button>
-                              <Button size="sm" variant="ghost">
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                            </div>
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-40" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-20" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-32" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-4 w-24" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-6 w-16 rounded-full" />
+                            </TableCell>
+                            <TableCell>
+                              <Skeleton className="h-8 w-20" />
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : patients.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={7} className="text-center py-8">
+                            <p className="text-muted-foreground">
+                              No patients found
+                            </p>
                           </TableCell>
                         </TableRow>
-                      ))}
+                      ) : (
+                        patients.map((patient: any) => (
+                          <TableRow
+                            key={patient.id}
+                            className="hover:bg-muted/50"
+                          >
+                            <TableCell>
+                              <div className="flex items-center gap-3">
+                                <Avatar className="h-10 w-10">
+                                  <AvatarFallback className="bg-primary/10 text-primary">
+                                    {`${patient.firstName} ${patient.lastName}`
+                                      .split(" ")
+                                      .map((n) => n[0])
+                                      .join("")}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <div className="font-medium">
+                                    {patient.firstName} {patient.lastName}
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">
+                                    ID: {patient.id}
+                                  </div>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-2 text-sm">
+                                  <Phone className="h-3 w-3" />
+                                  {patient.phoneNumber}
+                                </div>
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Mail className="h-3 w-3" />
+                                  {patient.email}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                <div>
+                                  {patient.dob
+                                    ? new Date().getFullYear() -
+                                      new Date(patient.dob).getFullYear()
+                                    : "N/A"}{" "}
+                                  years
+                                </div>
+                                <div className="text-muted-foreground">
+                                  {patient.gender}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="text-sm">
+                                {patient.primaryDoctor || "Not assigned"}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {patient.condition || "-"}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2 text-sm">
+                                <Calendar className="h-3 w-3" />
+                                {patient.lastVisit
+                                  ? new Date(
+                                      patient.lastVisit
+                                    ).toLocaleDateString()
+                                  : "No visits"}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                className={getStatusColor(
+                                  patient.status || "Active"
+                                )}
+                              >
+                                {patient.status || "Active"}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() =>
+                                    navigate(
+                                      `/dashboard/patients/records/${patient.id}`
+                                    )
+                                  }
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button size="sm" variant="ghost">
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
                     </TableBody>
                   </Table>
                 </div>
+
+                {/* Pagination */}
+                {!isLoading && totalPages > 1 && (
+                  <div className="mt-4">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() =>
+                              setCurrentPage((prev) => Math.max(1, prev - 1))
+                            }
+                            className={
+                              currentPage === 1
+                                ? "pointer-events-none opacity-50"
+                                : "cursor-pointer"
+                            }
+                          />
+                        </PaginationItem>
+                        {renderPaginationItems()}
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() =>
+                              setCurrentPage((prev) =>
+                                Math.min(totalPages, prev + 1)
+                              )
+                            }
+                            className={
+                              currentPage === totalPages
+                                ? "pointer-events-none opacity-50"
+                                : "cursor-pointer"
+                            }
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
