@@ -23,13 +23,12 @@ import {
   Droplet,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { fetchCountries, fetchStates, Country } from "@/services/onboarding";
 import { registerPatient } from "@/services/patient";
 
 export default function RegisterPatient() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [selectedState, setSelectedState] = useState<number | null>(null);
   const [formData, setFormData] = useState({
@@ -74,56 +73,57 @@ export default function RegisterPatient() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const payload = {
-        email: formData.email,
-        phoneNumber:
-          selectedCountry?.phoneCode + formData.phone.replace(/^0+/, ""),
-        countryId: Number(formData.countryId),
-        roleId: 17,
-        title: formData.title,
-        stateId: Number(formData.stateId),
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        gender: formData.gender,
-        dob: formData.dob,
-        nationalId: formData.nationalId || undefined,
-        maritalStatus: formData.maritalStatus || undefined,
-        address: {
-          street:
-            formData.address1 +
-            (formData.address2 ? `, ${formData.address2}` : ""),
-          postalCode: formData.postal,
-        },
-        bloodGroup: formData.bloodGroup || undefined,
-        genotype: formData.genotype || undefined,
-        patientEmergencyContact: {
-          fullName: formData.emergencyName,
-          phoneNumber: formData.emergencyPhone,
-          relationship: formData.emergencyRelation,
-        },
-      };
-
-      await registerPatient(payload);
-
+  const mutation = useMutation({
+    mutationFn: registerPatient,
+    onSuccess: () => {
       toast({
         title: "Patient Registered Successfully",
         description: "New patient has been added to the system",
       });
-      navigate("/dastboard/patients");
-    } catch (error: any) {
+      navigate("/dashboard/patients");
+    },
+    onError: (error: any) => {
       toast({
         title: "Registration Failed",
         description: error.message || "Failed to register patient",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
-    }
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const payload = {
+      email: formData.email,
+      phoneNumber:
+        selectedCountry?.phoneCode + formData.phone.replace(/^0+/, ""),
+      countryId: Number(formData.countryId),
+      roleId: 17,
+      title: formData.title,
+      stateId: Number(formData.stateId),
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      gender: formData.gender,
+      dob: formData.dob,
+      nationalId: formData.nationalId || undefined,
+      maritalStatus: formData.maritalStatus || undefined,
+      address: {
+        street:
+          formData.address1 +
+          (formData.address2 ? `, ${formData.address2}` : ""),
+        postalCode: formData.postal,
+      },
+      bloodGroup: formData.bloodGroup || undefined,
+      genotype: formData.genotype || undefined,
+      patientEmergencyContact: {
+        fullName: formData.emergencyName,
+        phoneNumber: formData.emergencyPhone,
+        relationship: formData.emergencyRelation,
+      },
+    };
+
+    mutation.mutate(payload);
   };
 
   return (
@@ -639,10 +639,10 @@ export default function RegisterPatient() {
                 <Button
                   type="submit"
                   className="bg-gradient-primary hover:shadow-glow transition-all"
-                  disabled={isLoading}
+                  disabled={mutation.isPending}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {isLoading ? "Registering..." : "Register Patient"}
+                  {mutation.isPending ? "Registering..." : "Register Patient"}
                 </Button>
               </div>
             </form>
