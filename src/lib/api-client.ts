@@ -8,8 +8,6 @@ export const apiClient = async (
 
   const token = JSON.parse(authToken);
 
-  console.log(token);
-
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...options.headers,

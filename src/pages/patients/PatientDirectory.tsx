@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +25,24 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+
+import {
   Search,
   Plus,
   Eye,
@@ -35,231 +53,102 @@ import {
   Filter,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-// Sample patient data
-const patients = [
-  {
-    id: "P001",
-    name: "John Smith",
-    age: 45,
-    gender: "Male",
-    phone: "+1 (555) 123-4567",
-    email: "john.smith@email.com",
-    lastVisit: "2024-01-15",
-    status: "Active",
-    primaryDoctor: "Dr. Sarah Johnson",
-    condition: "Hypertension",
-  },
-  {
-    id: "P002",
-    name: "Emma Wilson",
-    age: 32,
-    gender: "Female",
-    phone: "+1 (555) 234-5678",
-    email: "emma.wilson@email.com",
-    lastVisit: "2024-01-18",
-    status: "Active",
-    primaryDoctor: "Dr. Michael Brown",
-    condition: "Diabetes Type 2",
-  },
-  {
-    id: "P002",
-    name: "Emma Wilson",
-    age: 32,
-    gender: "Female",
-    phone: "+1 (555) 234-5678",
-    email: "emma.wilson@email.com",
-    lastVisit: "2024-01-18",
-    status: "Active",
-    primaryDoctor: "Dr. Michael Brown",
-    condition: "Diabetes Type 2",
-  },
-  {
-    id: "P002",
-    name: "Emma Wilson",
-    age: 32,
-    gender: "Female",
-    phone: "+1 (555) 234-5678",
-    email: "emma.wilson@email.com",
-    lastVisit: "2024-01-18",
-    status: "Active",
-    primaryDoctor: "Dr. Michael Brown",
-    condition: "Diabetes Type 2",
-  },
-  {
-    id: "P002",
-    name: "Emma Wilson",
-    age: 32,
-    gender: "Female",
-    phone: "+1 (555) 234-5678",
-    email: "emma.wilson@email.com",
-    lastVisit: "2024-01-18",
-    status: "Active",
-    primaryDoctor: "Dr. Michael Brown",
-    condition: "Diabetes Type 2",
-  },
-  {
-    id: "P002",
-    name: "Emma Wilson",
-    age: 32,
-    gender: "Female",
-    phone: "+1 (555) 234-5678",
-    email: "emma.wilson@email.com",
-    lastVisit: "2024-01-18",
-    status: "Active",
-    primaryDoctor: "Dr. Michael Brown",
-    condition: "Diabetes Type 2",
-  },
-  {
-    id: "P002",
-    name: "Emma Wilson",
-    age: 32,
-    gender: "Female",
-    phone: "+1 (555) 234-5678",
-    email: "emma.wilson@email.com",
-    lastVisit: "2024-01-18",
-    status: "Active",
-    primaryDoctor: "Dr. Michael Brown",
-    condition: "Diabetes Type 2",
-  },
-  {
-    id: "P002",
-    name: "Emma Wilson",
-    age: 32,
-    gender: "Female",
-    phone: "+1 (555) 234-5678",
-    email: "emma.wilson@email.com",
-    lastVisit: "2024-01-18",
-    status: "Active",
-    primaryDoctor: "Dr. Michael Brown",
-    condition: "Diabetes Type 2",
-  },
-  {
-    id: "P002",
-    name: "Emma Wilson",
-    age: 32,
-    gender: "Female",
-    phone: "+1 (555) 234-5678",
-    email: "emma.wilson@email.com",
-    lastVisit: "2024-01-18",
-    status: "Active",
-    primaryDoctor: "Dr. Michael Brown",
-    condition: "Diabetes Type 2",
-  },
-  {
-    id: "P002",
-    name: "Emma Wilson",
-    age: 32,
-    gender: "Female",
-    phone: "+1 (555) 234-5678",
-    email: "emma.wilson@email.com",
-    lastVisit: "2024-01-18",
-    status: "Active",
-    primaryDoctor: "Dr. Michael Brown",
-    condition: "Diabetes Type 2",
-  },
-  {
-    id: "P002",
-    name: "Emma Wilson",
-    age: 32,
-    gender: "Female",
-    phone: "+1 (555) 234-5678",
-    email: "emma.wilson@email.com",
-    lastVisit: "2024-01-18",
-    status: "Active",
-    primaryDoctor: "Dr. Michael Brown",
-    condition: "Diabetes Type 2",
-  },
-  {
-    id: "P002",
-    name: "Emma Wilson",
-    age: 32,
-    gender: "Female",
-    phone: "+1 (555) 234-5678",
-    email: "emma.wilson@email.com",
-    lastVisit: "2024-01-18",
-    status: "Active",
-    primaryDoctor: "Dr. Michael Brown",
-    condition: "Diabetes Type 2",
-  },
-  {
-    id: "P002",
-    name: "Emma Wilson",
-    age: 32,
-    gender: "Female",
-    phone: "+1 (555) 234-5678",
-    email: "emma.wilson@email.com",
-    lastVisit: "2024-01-18",
-    status: "Active",
-    primaryDoctor: "Dr. Michael Brown",
-    condition: "Diabetes Type 2",
-  },
-  {
-    id: "P002",
-    name: "Emma Wilson",
-    age: 32,
-    gender: "Female",
-    phone: "+1 (555) 234-5678",
-    email: "emma.wilson@email.com",
-    lastVisit: "2024-01-18",
-    status: "Active",
-    primaryDoctor: "Dr. Michael Brown",
-    condition: "Diabetes Type 2",
-  },
-  {
-    id: "P003",
-    name: "Robert Davis",
-    age: 67,
-    gender: "Male",
-    phone: "+1 (555) 345-6789",
-    email: "robert.davis@email.com",
-    lastVisit: "2024-01-10",
-    status: "Inactive",
-    primaryDoctor: "Dr. Lisa Chen",
-    condition: "Cardiac Arrhythmia",
-  },
-  {
-    id: "P004",
-    name: "Sarah Johnson",
-    age: 28,
-    gender: "Female",
-    phone: "+1 (555) 456-7890",
-    email: "sarah.johnson@email.com",
-    lastVisit: "2024-01-20",
-    status: "Active",
-    primaryDoctor: "Dr. James Wilson",
-    condition: "Pregnancy - 2nd Trimester",
-  },
-  {
-    id: "P005",
-    name: "Michael Brown",
-    age: 54,
-    gender: "Male",
-    phone: "+1 (555) 567-8901",
-    email: "michael.brown@email.com",
-    lastVisit: "2024-01-12",
-    status: "Active",
-    primaryDoctor: "Dr. Sarah Johnson",
-    condition: "Chronic Back Pain",
-  },
-];
 import { useQuery } from "@tanstack/react-query";
-import { fetchPatients } from "@/services/patient";
+import {
+  fetchPatients,
+  patientStatsTotalPerProvider,
+} from "@/services/patient";
 
 export default function PatientDirectory() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const limit = 10;
+  const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
+  const [filters, setFilters] = useState({
+    gender: "",
+    bloodGroup: "",
+    maritalStatus: "",
+    status: "",
+    dateFrom: "",
+    dateTo: "",
+    minAge: "",
+    maxAge: "",
+    hasInsurance: false,
+    hasAllergies: false,
+  });
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const perPage = 10;
+
   const navigate = useNavigate();
 
-  const { data, isLoading } = useQuery({
-    queryKey: ["patients", currentPage, searchTerm],
-    queryFn: () => fetchPatients(currentPage, limit, searchTerm),
+  // Debounce search term (wait 400ms after user stops typing)
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearch(searchTerm), 400);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  // React Query handles pagination + search refetch
+  const { data, isLoading, isFetching, refetch } = useQuery({
+    queryKey: ["patients", currentPage, debouncedSearch, filters],
+    queryFn: () =>
+      fetchPatients(currentPage, perPage, debouncedSearch, filters),
   });
 
-  const patients = data?.patients || [];
-  const totalPages = data?.totalPages || 1;
+  // 📊Patient stats query
+  const {
+    data: statsData,
+    isLoading: isStatsLoading,
+    isFetching: isStatsFetching,
+  } = useQuery({
+    queryKey: ["patientStatsTotalPerProvider"],
+    queryFn: () => patientStatsTotalPerProvider(),
+  });
+
+  const patients = data?.patients ?? [];
+  const meta = data?.meta ?? {};
+  const totalPages = meta.lastPage ?? 1;
+
+  // Pagination handler
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      gender: "",
+      bloodGroup: "",
+      maritalStatus: "",
+      status: "",
+      dateFrom: "",
+      dateTo: "",
+      minAge: "",
+      maxAge: "",
+      hasInsurance: false,
+      hasAllergies: false,
+    });
+    setCurrentPage(1);
+    refetch(); // refresh patients
+    setIsFilterOpen(false);
+  };
+
+  const getActiveFilterCount = () => {
+    let count = 0;
+    Object.entries(filters).forEach(([key, value]) => {
+      if (
+        (typeof value === "string" && value.trim() !== "") ||
+        (typeof value === "boolean" && value === true)
+      ) {
+        count++;
+      }
+    });
+    return count;
+  };
+
+  const activeFilterCount = getActiveFilterCount();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -270,45 +159,6 @@ export default function PatientDirectory() {
       default:
         return "bg-muted text-muted-foreground";
     }
-  };
-
-  const renderPaginationItems = () => {
-    const items = [];
-    const showEllipsisStart = currentPage > 3;
-    const showEllipsisEnd = currentPage < totalPages - 2;
-
-    for (let i = 1; i <= totalPages; i++) {
-      if (
-        i === 1 ||
-        i === totalPages ||
-        (i >= currentPage - 1 && i <= currentPage + 1)
-      ) {
-        items.push(
-          <PaginationItem key={i}>
-            <PaginationLink
-              onClick={() => setCurrentPage(i)}
-              isActive={currentPage === i}
-              className="cursor-pointer"
-            >
-              {i}
-            </PaginationLink>
-          </PaginationItem>
-        );
-      } else if (i === currentPage - 2 && showEllipsisStart) {
-        items.push(
-          <PaginationItem key="ellipsis-start">
-            <PaginationEllipsis />
-          </PaginationItem>
-        );
-      } else if (i === currentPage + 2 && showEllipsisEnd) {
-        items.push(
-          <PaginationItem key="ellipsis-end">
-            <PaginationEllipsis />
-          </PaginationItem>
-        );
-      }
-    }
-    return items;
   };
 
   return (
@@ -359,10 +209,204 @@ export default function PatientDirectory() {
                       className="pl-10"
                     />
                   </div>
-                  <Button variant="outline" className="gap-2">
-                    <Filter className="h-4 w-4" />
-                    Filters
-                  </Button>
+
+                  <Dialog open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" className="gap-2 relative">
+                        <Filter className="h-4 w-4" />
+                        Filters
+                        {activeFilterCount > 0 && (
+                          <span className="absolute -top-1 -right-1 bg-primary text-white text-xs font-medium rounded-full px-1.5 py-0.5">
+                            {activeFilterCount}
+                          </span>
+                        )}
+                      </Button>
+                    </DialogTrigger>
+
+                    <DialogContent className="max-w-lg">
+                      <DialogHeader>
+                        <DialogTitle>Filter Patients</DialogTitle>
+                      </DialogHeader>
+
+                      <div className="grid grid-cols-2 gap-4 py-4">
+                        <div>
+                          <Label>Gender</Label>
+                          <Select
+                            onValueChange={(val) =>
+                              setFilters((f) => ({ ...f, gender: val }))
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select gender" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Male">Male</SelectItem>
+                              <SelectItem value="Female">Female</SelectItem>
+                              <SelectItem value="Other">Other</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label>Blood Group</Label>
+                          <div>
+                            <Select
+                              onValueChange={(val) =>
+                                setFilters((f) => ({ ...f, bloodGroup: val }))
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="A+">A+</SelectItem>
+                                <SelectItem value="A-">A-</SelectItem>
+                                <SelectItem value="B+">B+</SelectItem>
+                                <SelectItem value="B-">B-</SelectItem>
+                                <SelectItem value="AB+">AB+</SelectItem>
+                                <SelectItem value="AB-">AB-</SelectItem>
+                                <SelectItem value="O+">O+</SelectItem>
+                                <SelectItem value="O-">O-</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label>Marital Status</Label>
+                          <Select
+                            onValueChange={(val) =>
+                              setFilters((f) => ({ ...f, maritalStatus: val }))
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Single">Single</SelectItem>
+                              <SelectItem value="Married">Married</SelectItem>
+                              <SelectItem value="Divorced">Divorced</SelectItem>
+                              <SelectItem value="Widowed">Widowed</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label>Status</Label>
+                          <Select
+                            onValueChange={(val) =>
+                              setFilters((f) => ({ ...f, status: val }))
+                            }
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Active">Active</SelectItem>
+                              <SelectItem value="Inactive">Inactive</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div>
+                          <Label>Date From</Label>
+                          <Input
+                            type="date"
+                            value={filters.dateFrom}
+                            onChange={(e) =>
+                              setFilters((f) => ({
+                                ...f,
+                                dateFrom: e.target.value,
+                              }))
+                            }
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Date To</Label>
+                          <Input
+                            type="date"
+                            value={filters.dateTo}
+                            onChange={(e) =>
+                              setFilters((f) => ({
+                                ...f,
+                                dateTo: e.target.value,
+                              }))
+                            }
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Min Age</Label>
+                          <Input
+                            type="number"
+                            value={filters.minAge}
+                            onChange={(e) =>
+                              setFilters((f) => ({
+                                ...f,
+                                minAge: e.target.value,
+                              }))
+                            }
+                          />
+                        </div>
+
+                        <div>
+                          <Label>Max Age</Label>
+                          <Input
+                            type="number"
+                            value={filters.maxAge}
+                            onChange={(e) =>
+                              setFilters((f) => ({
+                                ...f,
+                                maxAge: e.target.value,
+                              }))
+                            }
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-2 col-span-2">
+                          <Checkbox
+                            checked={filters.hasInsurance}
+                            onCheckedChange={(checked) =>
+                              setFilters((f: any) => ({
+                                ...f,
+                                hasInsurance: checked,
+                              }))
+                            }
+                          />
+                          <Label>Has Insurance</Label>
+                        </div>
+
+                        <div className="flex items-center gap-2 col-span-2">
+                          <Checkbox
+                            checked={filters.hasAllergies}
+                            onCheckedChange={(checked) =>
+                              setFilters((f: any) => ({
+                                ...f,
+                                hasAllergies: checked,
+                              }))
+                            }
+                          />
+                          <Label>Has Allergies</Label>
+                        </div>
+                      </div>
+
+                      <DialogFooter>
+                        <Button variant="outline" onClick={handleClearFilters}>
+                          Clear Filters
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setCurrentPage(1);
+                            refetch(); // trigger React Query manually
+                            setIsFilterOpen(false);
+                          }}
+                        >
+                          Apply Filters
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </CardContent>
             </Card>
@@ -372,10 +416,10 @@ export default function PatientDirectory() {
               <Card>
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-primary">
-                    {isLoading ? (
+                    {isStatsLoading ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
-                      data?.total || 0
+                      statsData.totalPatients || 0
                     )}
                   </div>
                   <div className="text-sm text-muted-foreground">
@@ -386,10 +430,10 @@ export default function PatientDirectory() {
               <Card>
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-success">
-                    {isLoading ? (
+                    {isStatsLoading && isStatsFetching ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
-                      patients.filter((p: any) => p.status === "Active").length
+                      statsData.activePatients || 0
                     )}
                   </div>
                   <div className="text-sm text-muted-foreground">
@@ -399,7 +443,13 @@ export default function PatientDirectory() {
               </Card>
               <Card>
                 <CardContent className="p-4">
-                  <div className="text-2xl font-bold text-warning">3</div>
+                  <div className="text-2xl font-bold text-warning">
+                    {isStatsLoading && isStatsFetching ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      statsData.pendingAppointments || 0
+                    )}
+                  </div>
                   <div className="text-sm text-muted-foreground">
                     Pending Appointments
                   </div>
@@ -407,7 +457,13 @@ export default function PatientDirectory() {
               </Card>
               <Card>
                 <CardContent className="p-4">
-                  <div className="text-2xl font-bold text-primary">12</div>
+                  <div className="text-2xl font-bold text-primary">
+                    {isStatsLoading && isStatsFetching ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      statsData.newPatientsThisMonth || 0
+                    )}
+                  </div>
                   <div className="text-sm text-muted-foreground">
                     New This Month
                   </div>
@@ -419,7 +475,7 @@ export default function PatientDirectory() {
             <Card>
               <CardHeader>
                 <CardTitle>
-                  Patients ({isLoading ? "..." : data?.total || 0})
+                  Patients ({isLoading ? "..." : data["meta"].total || 0})
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -487,7 +543,7 @@ export default function PatientDirectory() {
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-10 w-10">
                                   <AvatarFallback className="bg-primary/10 text-primary">
-                                    {`${patient.firstName} ${patient.lastName}`
+                                    {`${patient.user.firstName} ${patient.user.lastName}`
                                       .split(" ")
                                       .map((n) => n[0])
                                       .join("")}
@@ -495,10 +551,11 @@ export default function PatientDirectory() {
                                 </Avatar>
                                 <div>
                                   <div className="font-medium">
-                                    {patient.firstName} {patient.lastName}
+                                    {patient.user.firstName}{" "}
+                                    {patient.user.lastName}
                                   </div>
                                   <div className="text-sm text-muted-foreground">
-                                    ID: {patient.id}
+                                    ID: {patient.medicalRecordNumber}
                                   </div>
                                 </div>
                               </div>
@@ -507,21 +564,18 @@ export default function PatientDirectory() {
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2 text-sm">
                                   <Phone className="h-3 w-3" />
-                                  {patient.phoneNumber}
+                                  {patient.user.phoneNumber}
                                 </div>
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                   <Mail className="h-3 w-3" />
-                                  {patient.email}
+                                  {patient.user.email}
                                 </div>
                               </div>
                             </TableCell>
                             <TableCell>
                               <div className="text-sm">
                                 <div>
-                                  {patient.dob
-                                    ? new Date().getFullYear() -
-                                      new Date(patient.dob).getFullYear()
-                                    : "N/A"}{" "}
+                                  {patient.age} {""}
                                   years
                                 </div>
                                 <div className="text-muted-foreground">
@@ -541,9 +595,7 @@ export default function PatientDirectory() {
                               <div className="flex items-center gap-2 text-sm">
                                 <Calendar className="h-3 w-3" />
                                 {patient.lastVisit
-                                  ? new Date(
-                                      patient.lastVisit
-                                    ).toLocaleDateString()
+                                  ? patient.lastVisit
                                   : "No visits"}
                               </div>
                             </TableCell>
@@ -588,9 +640,7 @@ export default function PatientDirectory() {
                       <PaginationContent>
                         <PaginationItem>
                           <PaginationPrevious
-                            onClick={() =>
-                              setCurrentPage((prev) => Math.max(1, prev - 1))
-                            }
+                            onClick={() => handlePageChange(currentPage - 1)}
                             className={
                               currentPage === 1
                                 ? "pointer-events-none opacity-50"
@@ -598,14 +648,22 @@ export default function PatientDirectory() {
                             }
                           />
                         </PaginationItem>
-                        {renderPaginationItems()}
+
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                          <PaginationItem key={i}>
+                            <PaginationLink
+                              onClick={() => handlePageChange(i + 1)}
+                              isActive={currentPage === i + 1}
+                              className="cursor-pointer"
+                            >
+                              {i + 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ))}
+
                         <PaginationItem>
                           <PaginationNext
-                            onClick={() =>
-                              setCurrentPage((prev) =>
-                                Math.min(totalPages, prev + 1)
-                              )
-                            }
+                            onClick={() => handlePageChange(currentPage + 1)}
                             className={
                               currentPage === totalPages
                                 ? "pointer-events-none opacity-50"
@@ -615,6 +673,11 @@ export default function PatientDirectory() {
                         </PaginationItem>
                       </PaginationContent>
                     </Pagination>
+                  </div>
+                )}
+                {isFetching && !isLoading && (
+                  <div className="text-center text-sm text-muted-foreground mt-2">
+                    Loading more patients...
                   </div>
                 )}
               </CardContent>
