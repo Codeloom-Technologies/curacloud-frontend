@@ -44,9 +44,6 @@ export const fetchPatients = async (
     page: page.toString(),
     perPage: perPage.toString(),
   });
-
-  // await new Promise((r) => setTimeout(r, 2000)); // ⏳ simulate 2s delay
-
   // Add search only if it's not empty
   if (search && search.trim() !== "") {
     queryParams.append("search", search.trim());
@@ -82,12 +79,26 @@ export const registerPatient = async (payload: PatientPayload) => {
 };
 
 export const patientStatsTotalPerProvider = async () => {
+  // await new Promise((r) => setTimeout(r, 6000)); // ⏳ simulate  delay in s
+
   const response = await apiClient("/patients/stats/total-per-provider");
 
   if (!response) {
     const error = await response;
-    throw new Error(error.message || "Failed to register patient");
+    throw new Error(error.message || "Failed to fetch statistics");
   }
-  console.log(response);
+  return response;
+};
+
+export const fetchPatientById = async (patientId: string) => {
+  if (!patientId) {
+    throw new Error("Patient ID is required");
+  }
+  const response = await apiClient(`/patients/${patientId}`);
+  if (!response) {
+    const error = await response;
+    throw new Error(error.message || "Failed to fetch patient");
+  }
+  console.log({ response });
   return response;
 };

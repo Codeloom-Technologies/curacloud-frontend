@@ -79,6 +79,7 @@ export default function RegisterPatient() {
       toast({
         title: "Patient Registered Successfully",
         description: "New patient has been added to the system",
+        variant: "success",
       });
       navigate("/dashboard/patients");
     },

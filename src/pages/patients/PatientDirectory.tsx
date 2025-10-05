@@ -18,7 +18,6 @@ import {
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
@@ -95,7 +94,7 @@ export default function PatientDirectory() {
       fetchPatients(currentPage, perPage, debouncedSearch, filters),
   });
 
-  // 📊Patient stats query
+  // Patient stats query
   const {
     data: statsData,
     isLoading: isStatsLoading,
@@ -475,7 +474,13 @@ export default function PatientDirectory() {
             <Card>
               <CardHeader>
                 <CardTitle>
-                  Patients ({isLoading ? "..." : data["meta"].total || 0})
+                  Patients (
+                  {isLoading && isFetching ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    data["meta"].total || 0
+                  )}
+                  )
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -602,10 +607,10 @@ export default function PatientDirectory() {
                             <TableCell>
                               <Badge
                                 className={getStatusColor(
-                                  patient.status || "Active"
+                                  patient.user.status || "Active"
                                 )}
                               >
-                                {patient.status || "Active"}
+                                {patient.user.status || "Active"}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -615,7 +620,7 @@ export default function PatientDirectory() {
                                   variant="ghost"
                                   onClick={() =>
                                     navigate(
-                                      `/dashboard/patients/records/${patient.id}`
+                                      `/dashboard/patients/records/${patient.user.reference}`
                                     )
                                   }
                                 >

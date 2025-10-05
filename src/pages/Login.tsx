@@ -37,6 +37,7 @@ export default function Login() {
       toast({
         title: "Login Successful",
         description: "Welcome back to Curacloud",
+        variant: "success",
       });
       localStorage.setItem("authUser", JSON.stringify(data.user));
       localStorage.setItem("authToken", JSON.stringify(data.accessToken));
