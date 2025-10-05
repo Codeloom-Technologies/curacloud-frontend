@@ -36,7 +36,7 @@ export interface PaginatedPatientsResponse {
 
 export const fetchPatients = async (
   page: number = 1,
-  perPage: number = 10,
+  perPage: number = 5,
   search: string = "",
   filters: Record<string, any> = {}
 ): Promise<PaginatedPatientsResponse | any> => {
@@ -44,6 +44,7 @@ export const fetchPatients = async (
     page: page.toString(),
     perPage: perPage.toString(),
   });
+
   // Add search only if it's not empty
   if (search && search.trim() !== "") {
     queryParams.append("search", search.trim());

@@ -149,7 +149,7 @@ export default function PatientRecords() {
                         Age & Gender
                       </p>
                       <p className="font-medium">
-                        {patient.age} Years {""}
+                        {patient.age} years {""}
                         {patient.gender} {""}
                       </p>
                     </div>

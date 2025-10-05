@@ -50,6 +50,7 @@ import {
   Mail,
   Calendar,
   Filter,
+  TimerIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -493,6 +494,7 @@ export default function PatientDirectory() {
                         <TableHead>Age/Gender</TableHead>
                         <TableHead>Primary Doctor</TableHead>
                         <TableHead>Last Visit</TableHead>
+                        <TableHead>Added On</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Actions</TableHead>
                       </TableRow>
@@ -603,6 +605,9 @@ export default function PatientDirectory() {
                                   ? patient.lastVisit
                                   : "No visits"}
                               </div>
+                            </TableCell>
+                            <TableCell>
+                              {new Date(patient.createdAt).toLocaleString()}
                             </TableCell>
                             <TableCell>
                               <Badge
