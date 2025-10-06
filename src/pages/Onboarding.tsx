@@ -531,9 +531,6 @@ export default function Onboarding() {
                     <div className="space-y-2">
                       <Label htmlFor="gender">Gender *</Label>
                       <Select
-                        // onChange={(e) =>
-                        //   updateFormData("gender", e.target.value)
-                        // }
                         required={true}
                         value={formData.gender}
                         onValueChange={(value) =>

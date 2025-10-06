@@ -69,6 +69,7 @@ export default function PatientDirectory() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState({
     gender: "",
     bloodGroup: "",
@@ -81,7 +82,6 @@ export default function PatientDirectory() {
     hasInsurance: false,
     hasAllergies: false,
   });
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   const perPage = 10;
 
@@ -513,7 +513,7 @@ export default function PatientDirectory() {
                         <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
-                    <TableBody>
+                    <TableBody className="transition-all duration-300 ease-in-out">
                       {isLoading ? (
                         Array.from({ length: 5 }).map((_, index) => (
                           <TableRow key={index}>
@@ -567,11 +567,9 @@ export default function PatientDirectory() {
                             <TableCell>
                               <div className="flex items-center gap-3">
                                 <Avatar className="h-10 w-10">
-                                  <AvatarFallback className="bg-primary/10 text-primary">
-                                    {`${patient.user.firstName} ${patient.user.lastName}`
-                                      .split(" ")
-                                      .map((n) => n[0])
-                                      .join("")}
+                                  <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/40 text-primary font-medium">
+                                    {patient.user.firstName[0]}
+                                    {patient.user.lastName[0]}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div>

@@ -63,19 +63,42 @@ export const fetchStaffs = async (
     throw new Error(error.message || "Failed to fetch staff");
   }
   const { data, meta } = response;
-  return { patients: data, meta };
+  return { staffs: data, meta };
 };
 
 export const fetchStaffById = async (staffId: string) => {
   if (!staffId) {
     throw new Error("Staff ID is required");
   }
-  // await new Promise((r) => setTimeout(r, 6000)); // ⏳ simulate  delay in s
 
   const response = await apiClient(`/staffs/${staffId}`);
   if (!response) {
     const error = await response;
     throw new Error(error.message || "Failed to fetch staff");
+  }
+  return response;
+};
+
+export const staffStatsTotalPerProvider = async () => {
+  const response = await apiClient("/staffs/stats/total-per-provider");
+  if (!response) {
+    const error = await response;
+    throw new Error(error.message || "Failed to fetch statistics");
+  }
+  return response;
+};
+
+export const updateStaff = async (
+  staffId: string,
+  payload: CreateStaffRequest
+) => {
+  const response = await apiClient(`/staffs/${staffId}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+  if (!response) {
+    const error = await response;
+    throw new Error(error.message || "Failed to update staff");
   }
   return response;
 };

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,13 @@ import {
   TITLES,
 } from "@/constants";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { fetchDepartments, fetchRoles, registerStaff } from "@/services/staff";
+import {
+  fetchDepartments,
+  fetchRoles,
+  fetchStaffById,
+  registerStaff,
+  updateStaff,
+} from "@/services/staff";
 import {
   Country,
   fetchCities,
@@ -32,8 +38,9 @@ import {
 } from "@/services/onboarding";
 import { Role } from "@/types/auth";
 import { CreateStaffRequest, DoctorSpecialization } from "@/types";
+import PatientUpdateSkeleton from "@/components/dashboard/PatientUpdateSkeleton";
 
-const RegisterStaff = () => {
+const UpdateStaff = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -41,6 +48,8 @@ const RegisterStaff = () => {
   const [departments, setDepartments] = useState([]);
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [_, setSelectedState] = useState<number | null>(null);
+
+  const { staffId } = useParams();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -64,29 +73,77 @@ const RegisterStaff = () => {
     employmentType: "",
   });
 
+  // Fetch staff data
+  const { data: staffData, isLoading , isFetching} = useQuery({
+    queryKey: ["staff", staffId],
+    queryFn: () => fetchStaffById(staffId!),
+    enabled: !!staffId,
+  });
+
+  // Update form data when staff data loads
+  useEffect(() => {
+    if (staffData) {
+      const user = staffData.user || {};
+      const address = staffData.address || {};
+
+      const updatedFormData = {
+        title: staffData.title || "",
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        email: user.email || "",
+        phoneNumber: user.phoneNumber || "",
+        roleId: staffData.roleId?.toString() || "",
+        departmentId: staffData.departmentId?.toString() || "",
+        specialization: staffData.specialization || "",
+        licenseNumber: staffData.licenseNumber || "",
+        dateOfBirth: staffData.dob
+          ? new Date(staffData.dob).toISOString().split("T")[0]
+          : "",
+        gender: staffData.gender || "",
+        address: address.street || "",
+        cityId: staffData.cityId?.toString() || "",
+        stateId: staffData.stateId?.toString() || "",
+        countryId: staffData.countryId?.toString() || "",
+        emergencyContact: staffData.emergencyContactName || "",
+        emergencyPhone: staffData.emergencyPhoneNumber || "",
+        joinDate: staffData.joinDate
+          ? new Date(staffData.joinDate).toISOString().split("T")[0]
+          : "",
+        employmentType: staffData.employmentType || "",
+      };
+
+      setFormData(updatedFormData);
+
+      // Set selected country for dropdown
+      if (staffData.countryId && countries.length > 0) {
+        const country = countries.find(
+          (c: Country) => c.id === staffData.countryId
+        );
+        setSelectedCountry(country || null);
+      }
+
+      setSelectedState(staffData.stateId || null);
+    }
+  }, [staffData]);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const {
-    data: countries = [],
-    isLoading: loadingCountries,
-    isFetching: isFetchingCountries,
-  } = useQuery({
+  // Fetch countries
+  const { data: countries = [], isLoading: loadingCountries } = useQuery({
     queryKey: ["countries"],
     queryFn: fetchCountries,
   });
 
-  const {
-    data: states = [],
-    isLoading: loadingState,
-    isFetching: isFetchingStates,
-  } = useQuery({
+  // Fetch states when country changes
+  const { data: states = [], isLoading: loadingState } = useQuery({
     queryKey: ["states", selectedCountry?.id],
     queryFn: () => fetchStates(selectedCountry!.id),
     enabled: !!selectedCountry,
   });
 
+  // Fetch cities when state changes
   const { data: cities = [], isLoading: loadingCities } = useQuery({
     queryKey: ["cities", formData.stateId],
     queryFn: () => fetchCities(Number(formData.stateId)),
@@ -94,52 +151,45 @@ const RegisterStaff = () => {
   });
 
   // Fetch roles
-  const {
-    data: rolesData = [],
-    isLoading: isLoadingRoles,
-    isFetching: isFetchingRoles,
-  } = useQuery({
+  const { data: rolesData = [], isLoading: isLoadingRoles } = useQuery({
     queryKey: ["roles"],
     queryFn: fetchRoles,
   });
 
   // Fetch departments
-  const {
-    data: departmentsData = [],
-    isLoading: isLoadingDepartments,
-    isFetching: isFetchingDepartments,
-  } = useQuery({
-    queryKey: ["departments"],
-    queryFn: fetchDepartments,
-  });
+  const { data: departmentsData = [], isLoading: isLoadingDepartments } =
+    useQuery({
+      queryKey: ["departments"],
+      queryFn: fetchDepartments,
+    });
 
   // Update local state when query data changes
   useEffect(() => {
     if (rolesData) {
       setRoles(rolesData);
     }
-  }, [rolesData]); // only runs when rolesData changes
+  }, [rolesData]);
 
   useEffect(() => {
     if (departmentsData) {
       setDepartments(departmentsData);
     }
-  }, [departmentsData]); // only runs when departmentsData changes
+  }, [departmentsData]);
 
   const mutation = useMutation({
-    mutationFn: registerStaff,
+    mutationFn: (payload: any) => updateStaff(staffId!, payload),
     onSuccess: () => {
       toast({
-        title: "Staff Registered",
-        description: "Staff member has been successfully registered.",
+        title: "Staff Updated",
+        description: "Staff member has been successfully updated.",
         variant: "success",
       });
       navigate("/dashboard/staff");
     },
     onError: (error: any) => {
       toast({
-        title: "Registration Failed",
-        description: error.message || "Failed to register a staff",
+        title: "Update Failed",
+        description: error.message || "Failed to update staff",
         variant: "destructive",
       });
     },
@@ -150,8 +200,7 @@ const RegisterStaff = () => {
 
     const payload: CreateStaffRequest = {
       email: formData.email,
-      phoneNumber:
-        selectedCountry?.phoneCode + formData.phoneNumber.replace(/^0+/, ""),
+      phoneNumber: formData.phoneNumber,
       countryId: Number(formData.countryId),
       roleId: Number(formData.roleId),
       title: formData.title,
@@ -160,7 +209,7 @@ const RegisterStaff = () => {
       lastName: formData.lastName,
       gender: formData.gender,
       dob: formData.dateOfBirth,
-      cityId: Number(formData.cityId) || ("" as any),
+      cityId: Number(formData.cityId) || undefined,
       departmentId: Number(formData.departmentId),
       emergencyContactName: formData.emergencyContact,
       employmentType: formData.employmentType,
@@ -175,6 +224,26 @@ const RegisterStaff = () => {
 
     mutation.mutate(payload);
   };
+
+  const handleCountryChange = (value: string) => {
+    const countryId = value;
+    const country = countries.find((c: Country) => c.id === Number(countryId));
+    setSelectedCountry(country || null);
+    setSelectedState(null);
+    handleInputChange("countryId", countryId);
+    handleInputChange("stateId", "");
+    handleInputChange("cityId", "");
+  };
+
+  const handleStateChange = (value: string) => {
+    setSelectedState(Number(value));
+    handleInputChange("stateId", value);
+    handleInputChange("cityId", "");
+  };
+
+  if (isLoading || isFetching) {
+    return <PatientUpdateSkeleton />;
+  }
 
   return (
     <div className="flex h-screen bg-background">
@@ -192,16 +261,6 @@ const RegisterStaff = () => {
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
         <main className="flex-1 overflow-y-auto p-6">
-          {/* <Button
-          variant="ghost"
-          onClick={() => navigate("/staff")}
-          className="mb-6"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Staff Directory
-        </Button>
-
-        <h1 className="text-3xl font-bold mb-6">Register New Staff</h1> */}
           <div className="flex items-center gap-4">
             <Button
               variant="ghost"
@@ -212,26 +271,26 @@ const RegisterStaff = () => {
               Back to Staff Directory
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Register New Staff</h1>
+              <h1 className="text-3xl font-bold">Update Staff</h1>
               <p className="text-muted-foreground pb-5">
-                Enter staff information to create new record
+                Update staff information
               </p>
             </div>
           </div>
+
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Personal Information Card */}
             <Card>
               <CardHeader>
                 <CardTitle>Personal Information</CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="specialization">Title * </Label>
+                  <Label htmlFor="title">Title *</Label>
                   <Select
                     required={true}
                     value={formData.title}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, title: value })
-                    }
+                    onValueChange={(value) => handleInputChange("title", value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Title" />
@@ -249,7 +308,6 @@ const RegisterStaff = () => {
                   <Label htmlFor="firstName">First Name *</Label>
                   <Input
                     id="firstName"
-                    name="firstName"
                     value={formData.firstName}
                     onChange={(e) =>
                       handleInputChange("firstName", e.target.value)
@@ -261,7 +319,6 @@ const RegisterStaff = () => {
                   <Label htmlFor="lastName">Last Name *</Label>
                   <Input
                     id="lastName"
-                    name="lastName"
                     value={formData.lastName}
                     onChange={(e) =>
                       handleInputChange("lastName", e.target.value)
@@ -273,7 +330,7 @@ const RegisterStaff = () => {
                   <Label htmlFor="email">Email *</Label>
                   <Input
                     id="email"
-                    name="email"
+                    readOnly
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
@@ -281,7 +338,7 @@ const RegisterStaff = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Label htmlFor="phoneNumber">Phone Number *</Label>
                   <div className="flex gap-2">
                     {selectedCountry && (
                       <div className="flex items-center gap-2 px-3 py-2 border rounded-md bg-muted min-w-[100px]">
@@ -296,6 +353,7 @@ const RegisterStaff = () => {
                       </div>
                     )}
                     <Input
+                      readOnly
                       id="phoneNumber"
                       placeholder="8012345678"
                       required
@@ -311,7 +369,6 @@ const RegisterStaff = () => {
                   <Label htmlFor="dateOfBirth">Date of Birth *</Label>
                   <Input
                     id="dateOfBirth"
-                    name="dateOfBirth"
                     type="date"
                     value={formData.dateOfBirth}
                     onChange={(e) =>
@@ -326,7 +383,7 @@ const RegisterStaff = () => {
                     required={true}
                     value={formData.gender}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, gender: value })
+                      handleInputChange("gender", value)
                     }
                   >
                     <SelectTrigger>
@@ -344,6 +401,7 @@ const RegisterStaff = () => {
               </CardContent>
             </Card>
 
+            {/* Professional Information Card */}
             <Card>
               <CardHeader>
                 <CardTitle>Professional Information</CardTitle>
@@ -353,17 +411,15 @@ const RegisterStaff = () => {
                   <Label htmlFor="role">Role *</Label>
                   <Select
                     required={true}
-                    value={formData.roleId.toString()}
+                    value={formData.roleId}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, roleId: value })
+                      handleInputChange("roleId", value)
                     }
                   >
                     <SelectTrigger>
                       <SelectValue
                         placeholder={
-                          isLoadingRoles || isFetchingRoles
-                            ? "Loading..."
-                            : "Select Role"
+                          isLoadingRoles ? "Loading..." : "Select Role"
                         }
                       />
                     </SelectTrigger>
@@ -380,22 +436,22 @@ const RegisterStaff = () => {
                   <Label htmlFor="department">Department *</Label>
                   <Select
                     required={true}
-                    value={formData.departmentId.toString()}
+                    value={formData.departmentId}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, departmentId: value })
+                      handleInputChange("departmentId", value)
                     }
                   >
                     <SelectTrigger>
                       <SelectValue
                         placeholder={
-                          isLoadingDepartments || isFetchingDepartments
+                          isLoadingDepartments
                             ? "Loading..."
                             : "Select Department"
                         }
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      {departments.map((department) => (
+                      {departments.map((department: any) => (
                         <SelectItem
                           key={department.id}
                           value={department.id.toString()}
@@ -409,10 +465,9 @@ const RegisterStaff = () => {
                 <div>
                   <Label htmlFor="specialization">Specialization</Label>
                   <Select
-                    required={true}
                     value={formData.specialization}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, specialization: value })
+                      handleInputChange("specialization", value)
                     }
                   >
                     <SelectTrigger>
@@ -431,7 +486,6 @@ const RegisterStaff = () => {
                   <Label htmlFor="licenseNumber">License Number</Label>
                   <Input
                     id="licenseNumber"
-                    name="licenseNumber"
                     value={formData.licenseNumber}
                     onChange={(e) =>
                       handleInputChange("licenseNumber", e.target.value)
@@ -442,7 +496,6 @@ const RegisterStaff = () => {
                   <Label htmlFor="joinDate">Join Date *</Label>
                   <Input
                     id="joinDate"
-                    name="joinDate"
                     type="date"
                     value={formData.joinDate}
                     onChange={(e) =>
@@ -456,7 +509,7 @@ const RegisterStaff = () => {
                   <Select
                     value={formData.employmentType}
                     onValueChange={(value) =>
-                      setFormData({ ...formData, employmentType: value })
+                      handleInputChange("employmentType", value)
                     }
                   >
                     <SelectTrigger>
@@ -474,6 +527,7 @@ const RegisterStaff = () => {
               </CardContent>
             </Card>
 
+            {/* Contact Information Card */}
             <Card>
               <CardHeader>
                 <CardTitle>Contact Information</CardTitle>
@@ -483,7 +537,6 @@ const RegisterStaff = () => {
                   <Label htmlFor="address">Address *</Label>
                   <Textarea
                     id="address"
-                    name="address"
                     value={formData.address}
                     onChange={(e) =>
                       handleInputChange("address", e.target.value)
@@ -495,27 +548,17 @@ const RegisterStaff = () => {
                   <Label htmlFor="country">Country *</Label>
                   <Select
                     value={formData.countryId}
-                    onValueChange={(value) => {
-                      handleInputChange("countryId", value);
-                      const country = countries.find(
-                        (c) => c.id === Number(value)
-                      );
-                      setSelectedCountry(country || null);
-                      setSelectedState(null);
-                      handleInputChange("stateId", "");
-                    }}
+                    onValueChange={handleCountryChange}
                   >
                     <SelectTrigger>
                       <SelectValue
                         placeholder={
-                          loadingCountries || isFetchingCountries
-                            ? "Loading..."
-                            : "Select Country"
+                          loadingCountries ? "Loading..." : "Select Country"
                         }
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      {countries.map((country) => (
+                      {countries.map((country: Country) => (
                         <SelectItem
                           key={country.id}
                           value={country.id.toString()}
@@ -537,23 +580,18 @@ const RegisterStaff = () => {
                   <Label htmlFor="state">State *</Label>
                   <Select
                     value={formData.stateId}
-                    onValueChange={(value) => {
-                      handleInputChange("stateId", value);
-                      setSelectedState(Number(value));
-                    }}
+                    onValueChange={handleStateChange}
                     disabled={!selectedCountry}
                   >
                     <SelectTrigger>
                       <SelectValue
                         placeholder={
-                          loadingState || isFetchingStates
-                            ? "Loading..."
-                            : "Select State"
+                          loadingState ? "Loading..." : "Select State"
                         }
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      {states.map((state) => (
+                      {states.map((state: any) => (
                         <SelectItem key={state.id} value={state.id.toString()}>
                           {state.name}
                         </SelectItem>
@@ -565,17 +603,12 @@ const RegisterStaff = () => {
                   <Label htmlFor="city">City</Label>
                   <Select
                     value={formData.cityId}
-                    onValueChange={(value) => {
-                      const city = cities.find((c) => c.id === Number(value));
-                      setFormData((prev) => ({
-                        ...prev,
-                        cityId: value,
-                        city: city?.name || "",
-                      }));
-                    }}
+                    onValueChange={(value) =>
+                      handleInputChange("cityId", value)
+                    }
                     disabled={!formData.stateId}
                   >
-                    <SelectTrigger id="city">
+                    <SelectTrigger>
                       <SelectValue
                         placeholder={
                           loadingCities ? "Loading..." : "Select city"
@@ -583,8 +616,8 @@ const RegisterStaff = () => {
                       />
                     </SelectTrigger>
                     <SelectContent>
-                      {cities.map((city) => (
-                        <SelectItem key={city.id} value={String(city.id)}>
+                      {cities.map((city: any) => (
+                        <SelectItem key={city.id} value={city.id.toString()}>
                           {city.name}
                         </SelectItem>
                       ))}
@@ -597,7 +630,6 @@ const RegisterStaff = () => {
                   </Label>
                   <Input
                     id="emergencyContact"
-                    name="emergencyContact"
                     value={formData.emergencyContact}
                     onChange={(e) =>
                       handleInputChange("emergencyContact", e.target.value)
@@ -611,7 +643,6 @@ const RegisterStaff = () => {
                   </Label>
                   <Input
                     id="emergencyPhone"
-                    name="emergencyPhone"
                     value={formData.emergencyPhone}
                     onChange={(e) =>
                       handleInputChange("emergencyPhone", e.target.value)
@@ -630,7 +661,9 @@ const RegisterStaff = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit">Register Staff</Button>
+              <Button type="submit" disabled={mutation.isPending}>
+                {mutation.isPending ? "Updating..." : "Update Staff"}
+              </Button>
             </div>
           </form>
         </main>
@@ -647,4 +680,4 @@ const RegisterStaff = () => {
   );
 };
 
-export default RegisterStaff;
+export default UpdateStaff;

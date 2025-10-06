@@ -45,7 +45,7 @@ import { Textarea } from "@/components/ui/textarea";
 export default function UpdatePatient() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
-  const [selectedState, setSelectedState] = useState<number | null>(null);
+  const [_, setSelectedState] = useState<number | null>(null);
   const { patientId } = useParams();
 
   const [formData, setFormData] = useState({
