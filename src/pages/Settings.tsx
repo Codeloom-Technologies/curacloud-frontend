@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, User, Lock, Bell, Shield, Moon, Sun } from "lucide-react";
+import { User, Lock, Bell, Shield, Moon, Sun } from "lucide-react";
+import { Header } from "@/components/layout/Header";
+import { Sidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "@/hooks/use-toast";
 
 export default function Settings() {
-  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [smsNotifications, setSmsNotifications] = useState(false);
@@ -41,28 +42,34 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-primary-soft/20 to-accent/30">
-      <div className="container mx-auto px-4 py-8 max-w-5xl">
-        {/* Header */}
-        <div className="mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate("/dashboard")}
-            className="mb-4 hover:bg-accent"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Dashboard
-          </Button>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-            Settings
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Manage your account settings and preferences
-          </p>
-        </div>
+    <div className="flex h-screen bg-background">
+      {/* Sidebar */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform md:relative md:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <Sidebar />
+      </div>
 
-        {/* Settings Tabs */}
-        <Tabs defaultValue="profile" className="space-y-6">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-5xl mx-auto space-y-6">
+            {/* Header */}
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                Settings
+              </h1>
+              <p className="text-muted-foreground mt-2">
+                Manage your account settings and preferences
+              </p>
+            </div>
+
+            {/* Settings Tabs */}
+            <Tabs defaultValue="profile" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
             <TabsTrigger value="profile" className="gap-2">
               <User className="h-4 w-4" />
@@ -129,10 +136,7 @@ export default function Settings() {
 
                 <Separator />
 
-                <div className="flex justify-end gap-3">
-                  <Button variant="outline" onClick={() => navigate("/dashboard")}>
-                    Cancel
-                  </Button>
+                <div className="flex justify-end">
                   <Button onClick={handleSaveProfile}>Save Changes</Button>
                 </div>
               </CardContent>
@@ -362,8 +366,18 @@ export default function Settings() {
               </Card>
             </div>
           </TabsContent>
-        </Tabs>
+            </Tabs>
+          </div>
+        </main>
       </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
     </div>
   );
 }
