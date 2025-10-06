@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { useQuery } from "@tanstack/react-query";
-
 import {
   ArrowLeft,
   Edit,
@@ -27,7 +26,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { fetchPatientById } from "@/services/patient";
 import EmptyState from "@/components/dashboard/EmptyState";
 import PatientDetailsSkeleton from "@/components/dashboard/PatientDetailsSkeleton";
-import { fetchCities } from "@/services/onboarding";
 
 export default function PatientRecords() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -154,8 +152,8 @@ export default function PatientRecords() {
                         Age & Gender
                       </p>
                       <p className="font-medium">
-                        {patient.age} years {""}
-                        {patient.gender} {""}
+                        {patient.user.age} years {""}
+                        {patient.user.gender} {""}
                       </p>
                     </div>
                     <div className="space-y-1">
@@ -235,11 +233,11 @@ export default function PatientRecords() {
                           <span className="text-muted-foreground">
                             Date of Birth:
                           </span>
-                          <p className="font-medium">{patient.dob}</p>
+                          <p className="font-medium">{patient.user.dob}</p>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Gender:</span>
-                          <p className="font-medium">{patient.gender}</p>
+                          <p className="font-medium">{patient.user.gender}</p>
                         </div>
                         <div className="col-span-2">
                           <span className="text-muted-foreground">Email:</span>

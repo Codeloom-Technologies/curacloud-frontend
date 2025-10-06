@@ -17,12 +17,14 @@ export interface OnboardingFormData {
   phoneCode: string;
   password: string;
   position: string;
+  gender: string;
 }
 
 export interface OnboardingApiPayload {
   facilityName: string;
   fullName: string;
   email: string;
+  gender: string;
   password: string;
   phoneNumber: string;
   phoneCode: string;
