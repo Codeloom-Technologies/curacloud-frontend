@@ -227,7 +227,7 @@ const RegisterStaff = () => {
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="specialization">Title * </Label>
+                  <Label htmlFor="title">Title * </Label>
                   <Select
                     required={true}
                     value={formData.title}

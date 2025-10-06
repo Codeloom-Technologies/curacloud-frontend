@@ -339,7 +339,7 @@ const StaffDirectory = () => {
                     </div>
 
                     <div>
-                      <Label>Specialization</Label>
+                      <Label>Specialty</Label>
                       <div>
                         <Select
                           onValueChange={(val) =>
