@@ -212,7 +212,9 @@ const RegisterStaff = () => {
               Back to Staff Directory
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Register New Staff</h1>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                Register New Staff
+              </h1>
               <p className="text-muted-foreground pb-5">
                 Enter staff information to create new record
               </p>

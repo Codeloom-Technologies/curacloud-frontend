@@ -74,7 +74,11 @@ const UpdateStaff = () => {
   });
 
   // Fetch staff data
-  const { data: staffData, isLoading , isFetching} = useQuery({
+  const {
+    data: staffData,
+    isLoading,
+    isFetching,
+  } = useQuery({
     queryKey: ["staff", staffId],
     queryFn: () => fetchStaffById(staffId!),
     enabled: !!staffId,
@@ -271,7 +275,9 @@ const UpdateStaff = () => {
               Back to Staff Directory
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Update Staff</h1>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                Update Staff
+              </h1>
               <p className="text-muted-foreground pb-5">
                 Update staff information
               </p>

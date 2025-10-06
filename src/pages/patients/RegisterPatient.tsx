@@ -13,14 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import {
-  ArrowLeft,
-  Save,
-  User,
-  MapPin,
-  Phone,
-  Heart,
-} from "lucide-react";
+import { ArrowLeft, Save, User, MapPin, Phone, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
@@ -184,7 +177,9 @@ export default function RegisterPatient() {
                 Back to Directory
               </Button>
               <div>
-                <h1 className="text-3xl font-bold">Register New Patient</h1>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                  Register New Patient
+                </h1>
                 <p className="text-muted-foreground">
                   Enter patient information to create a new medical record
                 </p>

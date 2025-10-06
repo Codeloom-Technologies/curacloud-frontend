@@ -274,7 +274,9 @@ export default function UpdatePatient() {
                 Back to Directory
               </Button>
               <div>
-                <h1 className="text-3xl font-bold">Update Patient</h1>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                  Update Patient
+                </h1>
                 <p className="text-muted-foreground">
                   Update patient information for {formData.firstName}{" "}
                   {formData.lastName}

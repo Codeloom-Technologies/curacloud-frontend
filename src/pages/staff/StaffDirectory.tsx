@@ -221,7 +221,9 @@ const StaffDirectory = () => {
         <main className="flex-1 overflow-y-auto p-6">
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h1 className="text-3xl font-bold">Staff Directory</h1>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                Staff Directory
+              </h1>
               <p className="text-muted-foreground">
                 Manage hospital staff members
               </p>

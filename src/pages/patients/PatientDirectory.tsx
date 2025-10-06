@@ -186,7 +186,9 @@ export default function PatientDirectory() {
             {/* Page Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <h1 className="text-3xl font-bold">Patient Directory</h1>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                  Patient Directory
+                </h1>
                 <p className="text-muted-foreground">
                   Manage and search through all registered patients
                 </p>

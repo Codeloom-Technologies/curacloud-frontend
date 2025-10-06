@@ -85,7 +85,9 @@ export default function PatientRecords() {
                 Back to Directory
               </Button>
               <div className="flex-1">
-                <h1 className="text-3xl font-bold">Patient Records</h1>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                  Patient Records
+                </h1>
                 <p className="text-muted-foreground">
                   Complete medical record for {patient.user.fullName}
                 </p>
