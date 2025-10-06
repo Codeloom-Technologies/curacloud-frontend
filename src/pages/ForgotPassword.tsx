@@ -39,6 +39,7 @@ export default function ForgotPassword() {
       toast({
         title: "Email Sent",
         description: "Check your inbox for password reset instructions.",
+        variant: "success",
       });
     } catch (error) {
       toast({
@@ -66,7 +67,7 @@ export default function ForgotPassword() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => navigate("/login")}
+              onClick={() => navigate("/auth/login")}
               className="w-fit -ml-2 mb-2"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -121,7 +122,7 @@ export default function ForgotPassword() {
                 <Button
                   variant="outline"
                   className="w-full"
-                  onClick={() => navigate("/login")}
+                  onClick={() => navigate("/auth/login")}
                 >
                   Return to Login
                 </Button>
