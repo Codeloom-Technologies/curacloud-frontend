@@ -74,7 +74,7 @@ const UpdateStaff = () => {
   });
 
   // Fetch staff data
-  const { data: staffData, isLoading } = useQuery({
+  const { data: staffData, isLoading , isFetching} = useQuery({
     queryKey: ["staff", staffId],
     queryFn: () => fetchStaffById(staffId!),
     enabled: !!staffId,
@@ -83,8 +83,6 @@ const UpdateStaff = () => {
   // Update form data when staff data loads
   useEffect(() => {
     if (staffData) {
-      console.log("Staff data loaded:", staffData);
-
       const user = staffData.user || {};
       const address = staffData.address || {};
 
@@ -243,7 +241,7 @@ const UpdateStaff = () => {
     handleInputChange("cityId", "");
   };
 
-  if (isLoading) {
+  if (isLoading || isFetching) {
     return <PatientUpdateSkeleton />;
   }
 

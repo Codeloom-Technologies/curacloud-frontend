@@ -175,18 +175,6 @@ const RegisterStaff = () => {
 
     mutation.mutate(payload);
   };
-  //   toast({
-  //     title: "Staff Registered",
-  //     description: "Staff member has been successfully registered.",
-  //   });
-  //   navigate("/staff");
-  // };
-
-  // const handleChange = (
-  //   e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  // ) => {
-  //   setFormData({ ...formData, [e.target.name]: e.target.value });
-  // };
 
   return (
     <div className="flex h-screen bg-background">

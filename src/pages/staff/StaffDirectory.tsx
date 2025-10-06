@@ -190,16 +190,6 @@ const StaffDirectory = () => {
 
   const activeFilterCount = getActiveFilterCount();
 
-  // const filteredStaff = mockStaffData.filter((staff) => {
-  //   const matchesSearch =
-  //     staff.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //     staff.email.toLowerCase().includes(searchQuery.toLowerCase());
-  //   const matchesRole = roleFilter === "all" || staff.role === roleFilter;
-  //   const matchesDepartment =
-  //     departmentFilter === "all" || staff.department === departmentFilter;
-  //   return matchesSearch && matchesRole && matchesDepartment;
-  // });
-
   const getStatusColor = (status: Staff["status"]) => {
     switch (status) {
       case "Active":
@@ -498,7 +488,7 @@ const StaffDirectory = () => {
                   {isStatsLoading ? (
                     <Skeleton className="h-8 w-16" />
                   ) : (
-                    statsData.totalStaffs || 0
+                    statsData?.totalStaffs || 0
                   )}
                 </div>
                 <div className="text-sm text-muted-foreground">
@@ -512,7 +502,7 @@ const StaffDirectory = () => {
                   {isStatsLoading && isStatsFetching ? (
                     <Skeleton className="h-8 w-16" />
                   ) : (
-                    statsData.activeStaffs || 0
+                    statsData?.activeStaffs || 0
                   )}
                 </div>
                 <div className="text-sm text-muted-foreground">
@@ -607,7 +597,6 @@ const StaffDirectory = () => {
                           {staff.user.status}
                         </Badge>
                       </TableCell>
-                      {/* <TableCell>{staff.joinDate}</TableCell> */}
                       <TableCell>
                         <Button
                           variant="ghost"
