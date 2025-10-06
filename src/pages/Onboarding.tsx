@@ -30,7 +30,7 @@ import {
   EyeOff,
   Eye,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import {
   submitOnboarding,
@@ -40,12 +40,19 @@ import {
   fetchCities,
 } from "@/services/onboarding";
 import { OnboardingFormData } from "@/types/onboarding";
+import {
+  GENDERS,
+  HEALTHCARE_PROVIDER_FACILITY_SIZE,
+  HEALTHCARE_PROVIDER_ROLES,
+  HEALTHCARE_PROVIDER_TYPES,
+} from "@/constants";
 
 export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [_, setPhoneCode] = useState("+--");
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState<OnboardingFormData>({
     // Step 1: Role
@@ -72,6 +79,7 @@ export default function Onboarding() {
     phone: "",
     phoneCode: "",
     password: "",
+    gender: "",
     position: "",
   });
 
@@ -128,14 +136,21 @@ export default function Onboarding() {
 
   const mutation = useMutation({
     mutationFn: submitOnboarding,
-    onSuccess: (data) => {
+    onSuccess: (_) => {
       // toast.success("Onboarding complete! Welcome to Curacloud!");
-      toast.success("Onboarding complete! Please check your mailbox!");
-      console.log("Onboarding response:", data);
+      toast({
+        title: "Healthcare Onboarded",
+        description: "Onboarding complete! Please check your mailbox!",
+        variant: "success",
+      });
       navigate("/");
     },
     onError: (error: Error) => {
-      toast.error(error.message || "Failed to complete onboarding");
+      toast({
+        title: "Onboarding Failed",
+        description: error.message || "Failed to complete onboarding",
+        variant: "destructive",
+      });
     },
   });
 
@@ -149,7 +164,11 @@ export default function Onboarding() {
   const handleNext = () => {
     // Validate current step
     if (step === 1 && !formData.role) {
-      toast.error("Please select your role");
+      toast({
+        title: "Onboarding Failed",
+        description: "Please select your role",
+        variant: "destructive",
+      });
       return;
     }
     if (
@@ -158,7 +177,11 @@ export default function Onboarding() {
         !formData.facilityType ||
         !formData.facilitySize)
     ) {
-      toast.error("Please fill in all facility information");
+      toast({
+        title: "Onboarding Failed",
+        description: "Please fill in all facility information",
+        variant: "destructive",
+      });
       return;
     }
     if (
@@ -168,7 +191,11 @@ export default function Onboarding() {
         !formData.stateId ||
         !formData.cityId)
     ) {
-      toast.error("Please fill in location details");
+      toast({
+        title: "Onboarding Failed",
+        description: "Please fill in location details",
+        variant: "destructive",
+      });
       return;
     }
     if (
@@ -177,9 +204,14 @@ export default function Onboarding() {
         !formData.email ||
         !formData.phone ||
         !formData.phoneCode ||
-        !formData.password)
+        !formData.password ||
+        !formData.gender)
     ) {
-      toast.error("Please fill in all contact information");
+      toast({
+        title: "Onboarding Failed",
+        description: "Please fill in all contact information",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -243,47 +275,26 @@ export default function Onboarding() {
                   value={formData.role}
                   onValueChange={(value) => updateFormData("role", value)}
                 >
-                  <div className="flex items-center space-x-3 border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer">
-                    <RadioGroupItem value="doctor" id="doctor" />
-                    <Label htmlFor="doctor" className="flex-1 cursor-pointer">
-                      <div className="font-medium">Healthcare Provider</div>
-                      <div className="text-sm text-muted-foreground">
-                        Doctor, Physician, Specialist
+                  {HEALTHCARE_PROVIDER_ROLES.map((role, index) => {
+                    const id = role.title.toLowerCase().replace(/\s+/g, "-"); // generate a unique id
+                    return (
+                      <div
+                        key={id}
+                        className="flex items-center space-x-3 border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                      >
+                        <RadioGroupItem
+                          value={role.title.toLowerCase()}
+                          id={id}
+                        />
+                        <Label htmlFor={id} className="flex-1 cursor-pointer">
+                          <div className="font-medium">{role.title}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {role.description}
+                          </div>
+                        </Label>
                       </div>
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-3 border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer">
-                    <RadioGroupItem value="nurse" id="nurse" />
-                    <Label htmlFor="nurse" className="flex-1 cursor-pointer">
-                      <div className="font-medium">Nursing Staff</div>
-                      <div className="text-sm text-muted-foreground">
-                        Nurse, Care Coordinator
-                      </div>
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-3 border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer">
-                    <RadioGroupItem value="admin" id="admin" />
-                    <Label htmlFor="admin" className="flex-1 cursor-pointer">
-                      <div className="font-medium">Hospital Administrator</div>
-                      <div className="text-sm text-muted-foreground">
-                        Manager, Operations, Executive
-                      </div>
-                    </Label>
-                  </div>
-
-                  <div className="flex items-center space-x-3 border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer">
-                    <RadioGroupItem value="other" id="other" />
-                    <Label htmlFor="other" className="flex-1 cursor-pointer">
-                      <div className="font-medium">
-                        Other Healthcare Professional
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Pharmacist, Lab Technician, etc.
-                      </div>
-                    </Label>
-                  </div>
+                    );
+                  })}
                 </RadioGroup>
               </div>
             )}
@@ -297,7 +308,7 @@ export default function Onboarding() {
                     className="flex items-center gap-2"
                   >
                     <Building2 className="h-4 w-4" />
-                    Facility Name
+                    Facility Name *
                   </Label>
                   <Input
                     id="facilityName"
@@ -311,7 +322,7 @@ export default function Onboarding() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="facilityType">Type of Facility</Label>
+                  <Label htmlFor="facilityType">Type of Facility *</Label>
                   <Select
                     value={formData.facilityType}
                     onValueChange={(value) =>
@@ -322,16 +333,11 @@ export default function Onboarding() {
                       <SelectValue placeholder="Select facility type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="hospital">Hospital</SelectItem>
-                      <SelectItem value="clinic">Clinic</SelectItem>
-                      <SelectItem value="specialty">
-                        Specialty Center
-                      </SelectItem>
-                      <SelectItem value="diagnostic">
-                        Diagnostic Center
-                      </SelectItem>
-                      <SelectItem value="pharmacy">Pharmacy</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      {HEALTHCARE_PROVIDER_TYPES.map((provider) => (
+                        <SelectItem key={provider} value={provider}>
+                          {provider}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -342,7 +348,7 @@ export default function Onboarding() {
                     className="flex items-center gap-2"
                   >
                     <Users className="h-4 w-4" />
-                    Facility Size
+                    Facility Size *
                   </Label>
                   <Select
                     value={formData.facilitySize}
@@ -354,16 +360,11 @@ export default function Onboarding() {
                       <SelectValue placeholder="Select facility size" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="small">Small (1-50 staff)</SelectItem>
-                      <SelectItem value="medium">
-                        Medium (51-200 staff)
-                      </SelectItem>
-                      <SelectItem value="large">
-                        Large (201-500 staff)
-                      </SelectItem>
-                      <SelectItem value="enterprise">
-                        Enterprise (500+ staff)
-                      </SelectItem>
+                      {HEALTHCARE_PROVIDER_FACILITY_SIZE.map((size) => (
+                        <SelectItem key={size} value={size}>
+                          {size}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -376,7 +377,7 @@ export default function Onboarding() {
                 <div className="space-y-2">
                   <Label htmlFor="address" className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
-                    Street Address
+                    Street Address *
                   </Label>
                   <Input
                     type="text"
@@ -388,7 +389,7 @@ export default function Onboarding() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="country">Country</Label>
+                  <Label htmlFor="country">Country *</Label>
                   <Select
                     value={formData.countryId}
                     onValueChange={(value) => {
@@ -428,7 +429,7 @@ export default function Onboarding() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="state">State</Label>
+                    <Label htmlFor="state">State *</Label>
                     <Select
                       value={formData.stateId}
                       onValueChange={(value) => {
@@ -461,7 +462,7 @@ export default function Onboarding() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="city">City</Label>
+                    <Label htmlFor="city">City *</Label>
                     <Select
                       value={formData.cityId}
                       onValueChange={(value) => {
@@ -509,20 +510,50 @@ export default function Onboarding() {
 
             {/* Step 4: Contact Information */}
             {step === 4 && (
+              //
+
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    placeholder="Your full name"
-                    type="text"
-                    value={formData.fullName}
-                    onChange={(e) => updateFormData("fullName", e.target.value)}
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Full Name *</Label>
+                    <Input
+                      id="fullName"
+                      placeholder="Your full name"
+                      type="text"
+                      value={formData.fullName}
+                      onChange={(e) =>
+                        updateFormData("fullName", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <div className="space-y-2">
+                      <Label htmlFor="gender">Gender *</Label>
+                      <Select
+                        required={true}
+                        value={formData.gender}
+                        onValueChange={(value) =>
+                          updateFormData("gender", value)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {GENDERS.map((gender) => (
+                            <SelectItem key={gender} value={gender}>
+                              {gender}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">Email Address *</Label>
                   <Input
                     id="email"
                     type="email"
@@ -533,7 +564,7 @@ export default function Onboarding() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="phone">Phone Number *</Label>
                   <div className="flex gap-2">
                     <div className="flex items-center px-3 border rounded-md bg-muted min-w-[80px] justify-center">
                       <span className="text-sm font-medium">
@@ -553,9 +584,9 @@ export default function Onboarding() {
                       className="flex-1"
                     />
 
-                    <input
+                    <Input
                       id="postalCode"
-                      type="text"
+                      type="hidden"
                       hidden={true}
                       placeholder="Phone Code"
                       value={formData.phoneCode}
@@ -568,7 +599,7 @@ export default function Onboarding() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">Password *</Label>
                   <div className="relative">
                     <Input
                       id="password"

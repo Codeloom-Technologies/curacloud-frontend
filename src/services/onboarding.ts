@@ -1,6 +1,5 @@
 import { OnboardingApiPayload } from "@/types/onboarding";
-
-const BASE_URL = "http://localhost:3333/api/v1";
+import { apiClient, BASE_URL } from "@/lib/api-client";
 
 const ROLE_MAP: Record<string, number> = {
   doctor: 9,
@@ -58,20 +57,17 @@ export const fetchCities = async (stateId: number): Promise<City[]> => {
 };
 
 export const submitOnboarding = async (payload: OnboardingApiPayload) => {
-  const response = await fetch(`${BASE_URL}/healthcares`, {
+  console.log(payload);
+  const response = await apiClient("/healthcares", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     body: JSON.stringify(payload),
   });
 
-  if (!response.ok) {
-    const error = await response.json();
+  if (!response) {
+    const error = await response;
     throw new Error(error.message || "Failed to submit onboarding");
   }
-  const healthcare = await response.json();
-  return healthcare.data;
+  return response;
 };
 
 export const mapFormToApiPayload = (formData: any): OnboardingApiPayload => {
@@ -79,6 +75,7 @@ export const mapFormToApiPayload = (formData: any): OnboardingApiPayload => {
     facilityName: formData.facilityName,
     fullName: formData.fullName,
     email: formData.email,
+    gender: formData.gender,
     password: formData.password,
     phoneNumber: formData.phoneCode + formData.phone.replace(/^0+/, ""),
     phoneCode: formData.phoneCode,
