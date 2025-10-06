@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -17,11 +18,30 @@ interface HeaderProps {
 export function Header({ onMenuClick }: HeaderProps) {
   const navigate = useNavigate();
 
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    // Get the user data from localStorage
+    const storedUser = localStorage.getItem("authUser");
+
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        console.log(parsedUser);
+      } catch (error) {
+        console.error("Error parsing user from localStorage:", error);
+      }
+    }
+  }, []);
+
   const logout = () => {
     localStorage.clear();
     navigate("/auth/login");
   };
-
+  const settings = () => {
+    navigate("/dashboard/settings");
+  };
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
       <div className="flex h-16 items-center justify-between px-6">
@@ -72,18 +92,22 @@ export function Header({ onMenuClick }: HeaderProps) {
             <DropdownMenuContent className="w-56" align="end">
               <div className="flex items-center justify-start gap-2 p-2">
                 <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium">Dr. Sarah Johnson</p>
+                  <p className="font-medium">
+                    {user?.fullName
+                      ? `${user?.title}. ${user.fullName}`
+                      : user?.email || "User"}
+                  </p>
                   <p className="text-xs text-muted-foreground">
-                    Chief Medical Officer
+                    {user?.roles?.[0]?.name.toUpperCase() || "Healthcare Staff"}
                   </p>
                 </div>
               </div>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={settings}>
                 <User className="mr-2 h-4 w-4" />
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={settings}>
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
               </DropdownMenuItem>
