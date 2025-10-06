@@ -30,6 +30,7 @@ import NotFound from "./pages/NotFound";
 import UpdatePatient from "./pages/patients/PatientUpdate";
 import UpdateStaff from "./pages/staff/UpdateStaff";
 import EmailVerification from "./pages/EmailVerification";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -101,6 +102,10 @@ const App = () => (
             path="/dashboard/billing/reports"
             element={<BillingReports />}
           />
+          
+          {/* Settings Route */}
+          <Route path="/dashboard/settings" element={<Settings />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
