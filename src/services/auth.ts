@@ -20,3 +20,14 @@ export const mapFormToLoginApiPayload = (formData: any): LoginApiPayload => {
     password: formData.password,
   };
 };
+
+export const verifyEmail = async (token: string) => {
+  const response = await apiClient(`/auth/verify-email?token=${token}`, {
+    method: "GET",
+  });
+
+  if (!response) {
+    throw new Error("Failed to verify email");
+  }
+  return response;
+};

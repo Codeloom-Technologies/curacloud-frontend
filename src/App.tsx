@@ -29,6 +29,7 @@ import BillingReports from "./pages/billing/BillingReports";
 import NotFound from "./pages/NotFound";
 import UpdatePatient from "./pages/patients/PatientUpdate";
 import UpdateStaff from "./pages/staff/UpdateStaff";
+import EmailVerification from "./pages/EmailVerification";
 
 const queryClient = new QueryClient();
 
@@ -41,6 +42,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth/onboarding" element={<Onboarding />} />
+          <Route path="/auth/verify-email" element={<EmailVerification />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/auth/login" element={<Login />} />
           <Route path="/dashboard/patients" element={<PatientDirectory />} />
