@@ -20,9 +20,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, Eye, Edit } from "lucide-react";
+import { Search, Plus, Eye, Edit, Filter } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchDepartments, fetchRoles, fetchStaffs } from "@/services/staff";
+import {
+  fetchDepartments,
+  fetchRoles,
+  fetchStaffs,
+  staffStatsTotalPerProvider,
+} from "@/services/staff";
 import { Role } from "@/types/auth";
 import {
   Pagination,
@@ -32,6 +37,24 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import {
+  DOCTOR_SPECIALIZATIONS,
+  GENDERS,
+  MARITAL_STATUSES,
+  PATIENT_STATUS,
+} from "@/constants";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface Staff {
   id: string;
@@ -60,11 +83,7 @@ const StaffDirectory = () => {
     gender: "",
     roleId: "",
     specialization: "",
-    bloodGroup: "",
-    maritalStatus: "",
     status: "",
-    dateFrom: "",
-    dateTo: "",
     minAge: "",
     maxAge: "",
     joinDateFrom: "",
@@ -86,11 +105,9 @@ const StaffDirectory = () => {
     queryFn: () => fetchStaffs(currentPage, perPage, debouncedSearch, filters),
   });
 
-  const staffs = data?.patients ?? [];
+  const staffs = data?.staffs ?? [];
   const meta = data?.meta ?? {};
   const totalPages = meta.lastPage ?? 1;
-
-  console.log(staffs);
 
   const {
     data: departmentsData = [],
@@ -126,11 +143,7 @@ const StaffDirectory = () => {
   const handleClearFilters = () => {
     setFilters({
       gender: "",
-      bloodGroup: "",
-      maritalStatus: "",
       status: "",
-      dateFrom: "",
-      dateTo: "",
       minAge: "",
       maxAge: "",
       joinDateFrom: "",
@@ -144,15 +157,15 @@ const StaffDirectory = () => {
     setIsFilterOpen(false);
   };
 
-  // Patient stats query
-  // const {
-  //   data: statsData,
-  //   isLoading: isStatsLoading,
-  //   isFetching: isStatsFetching,
-  // } = useQuery({
-  //   queryKey: ["patientStatsTotalPerProvider"],
-  //   queryFn: () => patientStatsTotalPerProvider(),
-  // });
+  // Staff stats query
+  const {
+    data: statsData,
+    isLoading: isStatsLoading,
+    isFetching: isStatsFetching,
+  } = useQuery({
+    queryKey: ["staffStatsTotalPerProvider"],
+    queryFn: () => staffStatsTotalPerProvider(),
+  });
 
   // Pagination handler
   const handlePageChange = (page: number) => {
@@ -161,6 +174,21 @@ const StaffDirectory = () => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
+
+  const getActiveFilterCount = () => {
+    let count = 0;
+    Object.entries(filters).forEach(([key, value]) => {
+      if (
+        (typeof value === "string" && value.trim() !== "") ||
+        (typeof value === "boolean" && value === true)
+      ) {
+        count++;
+      }
+    });
+    return count;
+  };
+
+  const activeFilterCount = getActiveFilterCount();
 
   // const filteredStaff = mockStaffData.filter((staff) => {
   //   const matchesSearch =
@@ -215,7 +243,7 @@ const StaffDirectory = () => {
           </div>
 
           <div className="bg-card rounded-lg border p-6 mb-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -278,75 +306,338 @@ const StaffDirectory = () => {
                   ))}
                 </SelectContent>
               </Select>
+
+              <Dialog open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="gap-2 relative">
+                    <Filter className="h-4 w-4" />
+                    Filters
+                    {activeFilterCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-primary text-white text-xs font-medium rounded-full px-1.5 py-0.5">
+                        {activeFilterCount}
+                      </span>
+                    )}
+                  </Button>
+                </DialogTrigger>
+
+                <DialogContent className="max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Filter Staffs</DialogTitle>
+                  </DialogHeader>
+
+                  <div className="grid grid-cols-2 gap-4 py-4">
+                    <div>
+                      <Label>Gender</Label>
+                      <Select
+                        onValueChange={(val) =>
+                          setFilters((f) => ({ ...f, gender: val }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {GENDERS.map((gender) => (
+                            <SelectItem key={gender} value={gender}>
+                              {gender}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label>Specialization</Label>
+                      <div>
+                        <Select
+                          onValueChange={(val) =>
+                            setFilters((f) => ({ ...f, specialization: val }))
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {DOCTOR_SPECIALIZATIONS.map((specialization) => (
+                              <SelectItem
+                                key={specialization}
+                                value={specialization}
+                              >
+                                {specialization}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label>Marital Status</Label>
+                      <Select
+                        onValueChange={(val) =>
+                          setFilters((f) => ({ ...f, maritalStatus: val }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {MARITAL_STATUSES.map((maritalStatus) => (
+                            <SelectItem
+                              key={maritalStatus}
+                              value={maritalStatus}
+                            >
+                              {maritalStatus}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label>Status</Label>
+                      <Select
+                        onValueChange={(val) =>
+                          setFilters((f) => ({ ...f, status: val }))
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {PATIENT_STATUS.map((status) => (
+                            <SelectItem key={status} value={status}>
+                              {status}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label>Join From</Label>
+                      <Input
+                        type="date"
+                        value={filters.joinDateFrom}
+                        onChange={(e) =>
+                          setFilters((f) => ({
+                            ...f,
+                            joinDateFrom: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    <div>
+                      <Label>Joined To</Label>
+                      <Input
+                        type="date"
+                        value={filters.joinDateTo}
+                        onChange={(e) =>
+                          setFilters((f) => ({
+                            ...f,
+                            joinDateTo: e.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+
+                    {/* <div>
+                      <Label>Min Age</Label>
+                      <Input
+                        type="number"
+                        value={filters.minAge}
+                        onChange={(e) =>
+                          setFilters((f) => ({
+                            ...f,
+                            minAge: e.target.value,
+                          }))
+                        }
+                      />
+                    </div> */}
+                    {/* 
+                    <div>
+                      <Label>Max Age</Label>
+                      <Input
+                        type="number"
+                        value={filters.maxAge}
+                        onChange={(e) =>
+                          setFilters((f) => ({
+                            ...f,
+                            maxAge: e.target.value,
+                          }))
+                        }
+                      />
+                    </div> */}
+                  </div>
+
+                  <DialogFooter>
+                    <Button variant="outline" onClick={handleClearFilters}>
+                      Clear Filters
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setCurrentPage(1);
+                        refetch(); // trigger React Query manually
+                        setIsFilterOpen(false);
+                      }}
+                    >
+                      Apply Filters
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
 
+          {/* Staff Statistics */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pb-6">
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-2xl font-bold text-primary">
+                  {isStatsLoading ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    statsData.totalStaffs || 0
+                  )}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Total Staffs
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-2xl font-bold text-success">
+                  {isStatsLoading && isStatsFetching ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    statsData.activeStaffs || 0
+                  )}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Active Staff
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-2xl font-bold text-warning">
+                  {isStatsLoading && isStatsFetching ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    statsData.inActiveStaffs || 0
+                  )}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  Inactive Staff
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <div className="text-2xl font-bold text-primary">
+                  {isStatsLoading && isStatsFetching ? (
+                    <Skeleton className="h-8 w-16" />
+                  ) : (
+                    statsData.newStaffsThisMonth || 0
+                  )}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  New This Month
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           <div className="bg-card rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Join Date</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {staffs.map((staff) => (
-                  <TableRow key={staff.id}>
-                    <TableCell className="font-medium">
-                      {staff.user.fullName}
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div>{staff.user.email}</div>
-                        <div className="text-muted-foreground">
-                          {staff.user.phoneNumber}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{staff.user.roles[0].name}</TableCell>
-                    <TableCell>{staff.user.department.name}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={getStatusColor(staff.user.status)}
-                      >
-                        {staff.user.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{staff.joinDate}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() =>
-                          navigate(
-                            `/dashboard/staff/records/${staff.user.reference}`
-                          )
-                        }
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        onClick={() =>
-                          navigate(
-                            `/dashboard/staffs/records/${staff.user.reference}/edit`
-                          )
-                        }
-                        size="sm"
-                        variant="ghost"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
+            {isLoading ? (
+              <div className="flex justify-center py-8 text-muted-foreground">
+                Loading staff records...
+              </div>
+            ) : staffs.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                <Search className="h-10 w-10 mb-2 opacity-50" />
+                <p>No staff found</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Department</TableHead>
+                    <TableHead>Specialization</TableHead>
+                    <TableHead>Status</TableHead>
+                    {/* <TableHead>Join Date</TableHead> */}
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody className="transition-all duration-300 ease-in-out">
+                  {staffs.map((staff) => (
+                    <TableRow key={staff.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/40 text-primary font-medium">
+                              {staff.user.firstName[0]}
+                              {staff.user.lastName[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          {staff.user.fullName}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          <div>{staff.user.email}</div>
+                          <div className="text-muted-foreground">
+                            {staff.user.phoneNumber}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{staff.user.roles[0].name}</TableCell>
+                      <TableCell>{staff.specialization}</TableCell>
+                      <TableCell>{staff.user.department.name}</TableCell>
+                      <TableCell>
+                        <Badge
+                          variant="outline"
+                          className={getStatusColor(staff.user.status)}
+                        >
+                          {staff.user.status}
+                        </Badge>
+                      </TableCell>
+                      {/* <TableCell>{staff.joinDate}</TableCell> */}
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            navigate(
+                              `/dashboard/staff/records/${staff.user.reference}`
+                            )
+                          }
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          onClick={() =>
+                            navigate(
+                              `/dashboard/staff/records/${staff.user.reference}/edit`
+                            )
+                          }
+                          size="sm"
+                          variant="ghost"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+
             {/* Pagination */}
             {!isLoading && totalPages > 1 && (
               <div className="mt-4">

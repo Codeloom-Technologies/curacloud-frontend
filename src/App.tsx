@@ -28,6 +28,7 @@ import PaymentProcessing from "./pages/billing/PaymentProcessing";
 import BillingReports from "./pages/billing/BillingReports";
 import NotFound from "./pages/NotFound";
 import UpdatePatient from "./pages/patients/PatientUpdate";
+import UpdateStaff from "./pages/staff/UpdateStaff";
 
 const queryClient = new QueryClient();
 
@@ -83,7 +84,10 @@ const App = () => (
             path="/dashboard/staff/records/:staffId"
             element={<StaffRecords />}
           />
-
+          <Route
+            path="/dashboard/staff/records/:staffId/edit"
+            element={<UpdateStaff />}
+          />
           {/* Billing Routes */}
           <Route path="/dashboard/billing" element={<BillingOverview />} />
           <Route path="/dashboard/billing/invoices" element={<Invoices />} />
