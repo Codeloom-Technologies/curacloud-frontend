@@ -20,7 +20,6 @@ import {
   MapPin,
   Phone,
   Heart,
-  Droplet,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -31,11 +30,20 @@ import {
   fetchCities,
 } from "@/services/onboarding";
 import { registerPatient } from "@/services/patient";
+import {
+  BLOOD_GROUPS,
+  GENDERS,
+  GENOTYPES,
+  MARITAL_STATUSES,
+  TITLES,
+} from "@/constants";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function RegisterPatient() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
-  const [selectedState, setSelectedState] = useState<number | null>(null);
+  const [_, setSelectedState] = useState<number | null>(null);
+
   const [formData, setFormData] = useState({
     title: "",
     firstName: "",
@@ -64,12 +72,20 @@ export default function RegisterPatient() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const { data: countries = [] } = useQuery({
+  const {
+    data: countries = [],
+    isFetching: isFetchingCountries,
+    isLoading: loadingCountries,
+  } = useQuery({
     queryKey: ["countries"],
     queryFn: fetchCountries,
   });
 
-  const { data: states = [] } = useQuery({
+  const {
+    data: states = [],
+    isLoading: loadingState,
+    isFetching: isFetchingStates,
+  } = useQuery({
     queryKey: ["states", selectedCountry?.id],
     queryFn: () => fetchStates(selectedCountry!.id),
     enabled: !!selectedCountry,
@@ -199,10 +215,11 @@ export default function RegisterPatient() {
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Mr">Mr.</SelectItem>
-                          <SelectItem value="Mrs">Mrs.</SelectItem>
-                          <SelectItem value="Ms">Ms.</SelectItem>
-                          <SelectItem value="Dr">Dr.</SelectItem>
+                          {TITLES.map((title) => (
+                            <SelectItem key={title} value={title}>
+                              {title}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -243,9 +260,11 @@ export default function RegisterPatient() {
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Male">Male</SelectItem>
-                          <SelectItem value="Female">Female</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
+                          {GENDERS.map((gender) => (
+                            <SelectItem key={gender} value={gender}>
+                              {gender}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -288,10 +307,14 @@ export default function RegisterPatient() {
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Single">Single</SelectItem>
-                          <SelectItem value="Married">Married</SelectItem>
-                          <SelectItem value="Divorced">Divorced</SelectItem>
-                          <SelectItem value="Widowed">Widowed</SelectItem>
+                          {MARITAL_STATUSES.map((maritalStatus) => (
+                            <SelectItem
+                              key={maritalStatus}
+                              value={maritalStatus}
+                            >
+                              {maritalStatus}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -311,14 +334,11 @@ export default function RegisterPatient() {
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="A+">A+</SelectItem>
-                          <SelectItem value="A-">A-</SelectItem>
-                          <SelectItem value="B+">B+</SelectItem>
-                          <SelectItem value="B-">B-</SelectItem>
-                          <SelectItem value="AB+">AB+</SelectItem>
-                          <SelectItem value="AB-">AB-</SelectItem>
-                          <SelectItem value="O+">O+</SelectItem>
-                          <SelectItem value="O-">O-</SelectItem>
+                          {BLOOD_GROUPS.map((bloodGroup) => (
+                            <SelectItem key={bloodGroup} value={bloodGroup}>
+                              {bloodGroup}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -335,11 +355,11 @@ export default function RegisterPatient() {
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="AA">AA</SelectItem>
-                          <SelectItem value="AS">AS</SelectItem>
-                          <SelectItem value="AC">AC</SelectItem>
-                          <SelectItem value="SS">SS</SelectItem>
-                          <SelectItem value="SC">SC</SelectItem>
+                          {GENOTYPES.map((genotype) => (
+                            <SelectItem key={genotype} value={genotype}>
+                              {genotype}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -425,7 +445,13 @@ export default function RegisterPatient() {
                         }}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select Country" />
+                          <SelectValue
+                            placeholder={
+                              loadingCountries || isFetchingCountries
+                                ? "Loading..."
+                                : "Select Country"
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {countries.map((country) => (
@@ -457,7 +483,13 @@ export default function RegisterPatient() {
                         disabled={!selectedCountry}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select State" />
+                          <SelectValue
+                            placeholder={
+                              loadingState || isFetchingStates
+                                ? "Loading..."
+                                : "Select State"
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {states.map((state) => (
@@ -475,7 +507,7 @@ export default function RegisterPatient() {
 
                   <div>
                     <Label htmlFor="address1">Address Line 1 *</Label>
-                    <Input
+                    <Textarea
                       id="address1"
                       placeholder="123 Main Street"
                       required
@@ -485,7 +517,7 @@ export default function RegisterPatient() {
                       }
                     />
                   </div>
-                  <div>
+                  {/* <div>
                     <Label htmlFor="address2">Address Line 2</Label>
                     <Input
                       id="address2"
@@ -495,7 +527,7 @@ export default function RegisterPatient() {
                         handleInputChange("address2", e.target.value)
                       }
                     />
-                  </div>
+                  </div> */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="city">City *</Label>

@@ -33,6 +33,14 @@ import {
 import { fetchPatientById, updatePatient } from "@/services/patient";
 import PatientDetailsSkeleton from "@/components/dashboard/PatientDetailsSkeleton";
 import PatientUpdateSkeleton from "@/components/dashboard/PatientUpdateSkeleton";
+import {
+  BLOOD_GROUPS,
+  GENDERS,
+  GENOTYPES,
+  MARITAL_STATUSES,
+  TITLES,
+} from "@/constants";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function UpdatePatient() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -69,13 +77,21 @@ export default function UpdatePatient() {
   const navigate = useNavigate();
 
   // Fetch countries
-  const { data: countries = [] } = useQuery({
+  const {
+    data: countries = [],
+    isFetching: isFetchingCountries,
+    isLoading: loadingCountries,
+  } = useQuery({
     queryKey: ["countries"],
     queryFn: fetchCountries,
   });
 
   // Fetch states when country changes
-  const { data: states = [] } = useQuery({
+  const {
+    data: states = [],
+    isLoading: loadingState,
+    isFetching: isFetchingStates,
+  } = useQuery({
     queryKey: ["states", selectedCountry?.id],
     queryFn: () => fetchStates(selectedCountry!.id),
     enabled: !!selectedCountry,
@@ -290,10 +306,11 @@ export default function UpdatePatient() {
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Mr">Mr.</SelectItem>
-                          <SelectItem value="Mrs">Mrs.</SelectItem>
-                          <SelectItem value="Ms">Ms.</SelectItem>
-                          <SelectItem value="Dr">Dr.</SelectItem>
+                          {TITLES.map((title) => (
+                            <SelectItem key={title} value={title}>
+                              {title}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -334,9 +351,11 @@ export default function UpdatePatient() {
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Male">Male</SelectItem>
-                          <SelectItem value="Female">Female</SelectItem>
-                          <SelectItem value="Other">Other</SelectItem>
+                          {GENDERS.map((gender) => (
+                            <SelectItem key={gender} value={gender}>
+                              {gender}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -379,10 +398,14 @@ export default function UpdatePatient() {
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Single">Single</SelectItem>
-                          <SelectItem value="Married">Married</SelectItem>
-                          <SelectItem value="Divorced">Divorced</SelectItem>
-                          <SelectItem value="Widowed">Widowed</SelectItem>
+                          {MARITAL_STATUSES.map((maritalStatus) => (
+                            <SelectItem
+                              key={maritalStatus}
+                              value={maritalStatus}
+                            >
+                              {maritalStatus}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -402,14 +425,11 @@ export default function UpdatePatient() {
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="A+">A+</SelectItem>
-                          <SelectItem value="A-">A-</SelectItem>
-                          <SelectItem value="B+">B+</SelectItem>
-                          <SelectItem value="B-">B-</SelectItem>
-                          <SelectItem value="AB+">AB+</SelectItem>
-                          <SelectItem value="AB-">AB-</SelectItem>
-                          <SelectItem value="O+">O+</SelectItem>
-                          <SelectItem value="O-">O-</SelectItem>
+                          {BLOOD_GROUPS.map((bloodGroup) => (
+                            <SelectItem key={bloodGroup} value={bloodGroup}>
+                              {bloodGroup}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -426,11 +446,11 @@ export default function UpdatePatient() {
                           <SelectValue placeholder="Select" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="AA">AA</SelectItem>
-                          <SelectItem value="AS">AS</SelectItem>
-                          <SelectItem value="AC">AC</SelectItem>
-                          <SelectItem value="SS">SS</SelectItem>
-                          <SelectItem value="SC">SC</SelectItem>
+                          {GENOTYPES.map((genotype) => (
+                            <SelectItem key={genotype} value={genotype}>
+                              {genotype}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -510,7 +530,13 @@ export default function UpdatePatient() {
                         onValueChange={handleCountryChange}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select Country" />
+                          <SelectValue
+                            placeholder={
+                              loadingCountries || isFetchingCountries
+                                ? "Loading..."
+                                : "Select Country"
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {countries.map((country: Country) => (
@@ -539,7 +565,13 @@ export default function UpdatePatient() {
                         disabled={!selectedCountry}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select State" />
+                          <SelectValue
+                            placeholder={
+                              loadingState || isFetchingStates
+                                ? "Loading..."
+                                : "Select State"
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
                           {states.map((state: any) => (
@@ -557,7 +589,7 @@ export default function UpdatePatient() {
 
                   <div>
                     <Label htmlFor="address1">Address Line 1 *</Label>
-                    <Input
+                    <Textarea
                       id="address1"
                       placeholder="123 Main Street"
                       required
@@ -567,7 +599,7 @@ export default function UpdatePatient() {
                       }
                     />
                   </div>
-                  <div>
+                  {/* <div>
                     <Label htmlFor="address2">Address Line 2</Label>
                     <Input
                       id="address2"
@@ -577,7 +609,7 @@ export default function UpdatePatient() {
                         handleInputChange("address2", e.target.value)
                       }
                     />
-                  </div>
+                  </div> */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="city">City *</Label>

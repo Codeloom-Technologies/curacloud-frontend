@@ -57,6 +57,7 @@ export const fetchCities = async (stateId: number): Promise<City[]> => {
 };
 
 export const submitOnboarding = async (payload: OnboardingApiPayload) => {
+  console.log(payload);
   const response = await apiClient("/healthcares", {
     method: "POST",
     body: JSON.stringify(payload),
@@ -74,6 +75,7 @@ export const mapFormToApiPayload = (formData: any): OnboardingApiPayload => {
     facilityName: formData.facilityName,
     fullName: formData.fullName,
     email: formData.email,
+    gender: formData.gender,
     password: formData.password,
     phoneNumber: formData.phoneCode + formData.phone.replace(/^0+/, ""),
     phoneCode: formData.phoneCode,

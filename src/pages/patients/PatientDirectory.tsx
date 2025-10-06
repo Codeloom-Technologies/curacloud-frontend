@@ -50,7 +50,6 @@ import {
   Mail,
   Calendar,
   Filter,
-  TimerIcon,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -58,6 +57,12 @@ import {
   fetchPatients,
   patientStatsTotalPerProvider,
 } from "@/services/patient";
+import {
+  BLOOD_GROUPS,
+  GENDERS,
+  MARITAL_STATUSES,
+  PATIENT_STATUS,
+} from "@/constants";
 
 export default function PatientDirectory() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -240,9 +245,11 @@ export default function PatientDirectory() {
                               <SelectValue placeholder="Select gender" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Male">Male</SelectItem>
-                              <SelectItem value="Female">Female</SelectItem>
-                              <SelectItem value="Other">Other</SelectItem>
+                              {GENDERS.map((gender) => (
+                                <SelectItem key={gender} value={gender}>
+                                  {gender}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -259,14 +266,14 @@ export default function PatientDirectory() {
                                 <SelectValue placeholder="Select" />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="A+">A+</SelectItem>
-                                <SelectItem value="A-">A-</SelectItem>
-                                <SelectItem value="B+">B+</SelectItem>
-                                <SelectItem value="B-">B-</SelectItem>
-                                <SelectItem value="AB+">AB+</SelectItem>
-                                <SelectItem value="AB-">AB-</SelectItem>
-                                <SelectItem value="O+">O+</SelectItem>
-                                <SelectItem value="O-">O-</SelectItem>
+                                {BLOOD_GROUPS.map((bloodGroup) => (
+                                  <SelectItem
+                                    key={bloodGroup}
+                                    value={bloodGroup}
+                                  >
+                                    {bloodGroup}
+                                  </SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                           </div>
@@ -283,10 +290,14 @@ export default function PatientDirectory() {
                               <SelectValue placeholder="Select status" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Single">Single</SelectItem>
-                              <SelectItem value="Married">Married</SelectItem>
-                              <SelectItem value="Divorced">Divorced</SelectItem>
-                              <SelectItem value="Widowed">Widowed</SelectItem>
+                              {MARITAL_STATUSES.map((maritalStatus) => (
+                                <SelectItem
+                                  key={maritalStatus}
+                                  value={maritalStatus}
+                                >
+                                  {maritalStatus}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -302,8 +313,11 @@ export default function PatientDirectory() {
                               <SelectValue placeholder="Select status" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="Active">Active</SelectItem>
-                              <SelectItem value="Inactive">Inactive</SelectItem>
+                              {PATIENT_STATUS.map((status) => (
+                                <SelectItem key={status} value={status}>
+                                  {status}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -538,6 +552,10 @@ export default function PatientDirectory() {
                             <p className="text-muted-foreground">
                               No patients found
                             </p>
+                            {/* <EmptyState
+                              message=" No patients found"
+                              icon={Users}
+                            /> */}
                           </TableCell>
                         </TableRow>
                       ) : (
@@ -582,11 +600,11 @@ export default function PatientDirectory() {
                             <TableCell>
                               <div className="text-sm">
                                 <div>
-                                  {patient.age} {""}
+                                  {patient.user.age} {""}
                                   years
                                 </div>
                                 <div className="text-muted-foreground">
-                                  {patient.gender}
+                                  {patient.user.gender}
                                 </div>
                               </div>
                             </TableCell>
