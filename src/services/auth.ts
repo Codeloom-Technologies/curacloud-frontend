@@ -29,5 +29,6 @@ export const verifyEmail = async (token: string) => {
   if (!response) {
     throw new Error("Failed to verify email");
   }
+  console.log(response);
   return response;
 };
