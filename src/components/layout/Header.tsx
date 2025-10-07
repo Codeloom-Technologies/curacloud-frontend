@@ -28,7 +28,6 @@ export function Header({ onMenuClick }: HeaderProps) {
       try {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
-        console.log(parsedUser);
       } catch (error) {
         console.error("Error parsing user from localStorage:", error);
       }
@@ -94,7 +93,7 @@ export function Header({ onMenuClick }: HeaderProps) {
                 <div className="flex flex-col space-y-1 leading-none">
                   <p className="font-medium">
                     {user?.fullName
-                      ? `${user?.title}. ${user.fullName}`
+                      ? `${user.fullName}`
                       : user?.email || "User"}
                   </p>
                   <p className="text-xs text-muted-foreground">
