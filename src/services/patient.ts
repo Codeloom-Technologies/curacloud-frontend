@@ -119,3 +119,16 @@ export const updatePatient = async (
   }
   return response;
 };
+
+export const fetchPatientByMRN = async (patientId: string) => {
+  if (!patientId) {
+    throw new Error("Patient ID is required");
+  }
+
+  const response = await apiClient(`/patients/by-medical-number/${patientId}`);
+  if (!response) {
+    const error = await response;
+    throw new Error(error.message || "Failed to fetch patient");
+  }
+  return response;
+};
