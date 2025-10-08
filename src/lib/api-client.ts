@@ -1,4 +1,4 @@
-export const BASE_URL = "https://cura-cloud-api.onrender.com";
+export const BASE_URL = "https://cura-cloud-api.onrender.com/api/v1";
 
 export const apiClient = async (
   endpoint: string,
