@@ -89,7 +89,7 @@ export default function PatientRecords() {
                   Patient Records
                 </h1>
                 <p className="text-muted-foreground">
-                  Complete medical record for {patient.user.fullName}
+                  Complete medical record for {patient?.user?.fullName}
                 </p>
               </div>
               <Button
@@ -112,7 +112,7 @@ export default function PatientRecords() {
                   <div className="flex items-center gap-4">
                     <Avatar className="h-20 w-20">
                       <AvatarFallback className="bg-primary/10 text-primary text-xl">
-                        {patient.user.fullName
+                        {patient?.user?.fullName
                           .split(" ")
                           .map((n) => n[0])
                           .join("")}
@@ -120,7 +120,7 @@ export default function PatientRecords() {
                     </Avatar>
                     <div>
                       <h2 className="text-2xl font-bold">
-                        {patient.user.fullName}
+                        {patient?.user?.fullName}
                       </h2>
                       <p className="text-muted-foreground">
                         Patient ID: {patient.medicalRecordNumber}
@@ -177,7 +177,7 @@ export default function PatientRecords() {
                         Emergency Contact
                       </p>
                       <p className="font-medium">
-                        {patient.emergencyContacts[0].fullName}
+                        {patient.emergencyContacts[0]?.fullName}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {patient.emergencyContacts[0].relationship}
