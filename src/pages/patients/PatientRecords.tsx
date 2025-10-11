@@ -39,6 +39,7 @@ export default function PatientRecords() {
   });
 
   const patient = data || {};
+  console.log({ patient });
 
   useEffect(() => {}, [patientId, data]);
 
@@ -235,7 +236,9 @@ export default function PatientRecords() {
                           <span className="text-muted-foreground">
                             Date of Birth:
                           </span>
-                          <p className="font-medium">{patient.user.dob}</p>
+                          <p className="font-medium">
+                            {patient.user.dateOfBirth}
+                          </p>
                         </div>
                         <div>
                           <span className="text-muted-foreground">Gender:</span>
@@ -311,17 +314,18 @@ export default function PatientRecords() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
-                        {patient?.allergies?.length ? (
-                          patient.allergies.map((allergy, index) => (
-                            <Badge
-                              key={index}
-                              variant="destructive"
-                              className="mr-2"
-                            >
-                              {allergy}
-                            </Badge>
-                          ))
+                        {patient?.allergies ? (
+                          <p>{patient?.allergies} </p>
                         ) : (
+                          // patient.allergies.map((allergy, index) => (
+                          //   <Badge
+                          //     key={index}
+                          //     variant="destructive"
+                          //     className="mr-2"
+                          //   >
+                          //     {allergy}
+                          //   </Badge>
+                          // ))
                           <EmptyState
                             icon={Dna}
                             message="No allergies found."
@@ -341,24 +345,25 @@ export default function PatientRecords() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        {patient?.currentMedications?.length ? (
-                          patient?.currentMedications?.map((med, index) => (
-                            <div
-                              key={index}
-                              className="border-l-4 border-primary pl-3"
-                            >
-                              <p className="font-medium">
-                                {med.name} - {med.dosage}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {med.frequency}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                For: {med.for}
-                              </p>
-                            </div>
-                          ))
+                        {patient?.currentMedications ? (
+                          // patient?.currentMedications?.map((med, index) => (
+                          <p>{patient?.currentMedications}</p>
                         ) : (
+                          //   <div
+                          //     key={index}
+                          //     className="border-l-4 border-primary pl-3"
+                          //   >
+                          //     <p className="font-medium">
+                          //       {med.name} - {med.dosage}
+                          //     </p>
+                          //     <p className="text-sm text-muted-foreground">
+                          //       {med.frequency}
+                          //     </p>
+                          //     <p className="text-xs text-muted-foreground">
+                          //       For: {med.for}
+                          //     </p>
+                          //   </div>
+                          // ))
                           <EmptyState
                             icon={Pill}
                             message="No active medications found."
@@ -539,24 +544,25 @@ export default function PatientRecords() {
                           Current Medications
                         </h4>
                         <div className="space-y-2">
-                          {patient?.currentMedications?.length ? (
-                            patient?.currentMedications?.map((med, index) => (
-                              <div
-                                key={index}
-                                className="flex justify-between items-center p-2 bg-success/5 rounded"
-                              >
-                                <div>
-                                  <p className="font-medium">{med.name}</p>
-                                  <p className="text-sm text-muted-foreground">
-                                    {med.dosage} - {med.frequency}
-                                  </p>
-                                </div>
-                                <Badge className="bg-success/10 text-success">
-                                  Active
-                                </Badge>
-                              </div>
-                            ))
+                          {patient?.currentMedications ? (
+                            <p>{patient.currentMedications}</p>
                           ) : (
+                            // patient?.currentMedications?.map((med, index) => (
+                            //   <div
+                            //     key={index}
+                            //     className="flex justify-between items-center p-2 bg-success/5 rounded"
+                            //   >
+                            //     <div>
+                            //       <p className="font-medium">{med.name}</p>
+                            //       <p className="text-sm text-muted-foreground">
+                            //         {med.dosage} - {med.frequency}
+                            //       </p>
+                            //     </div>
+                            //     <Badge className="bg-success/10 text-success">
+                            //       Active
+                            //     </Badge>
+                            //   </div>
+                            // ))
                             <EmptyState
                               icon={Pill}
                               message="No active medications found."

@@ -37,12 +37,19 @@ export default function RegisterPatient() {
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [_, setSelectedState] = useState<number | null>(null);
 
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  /* ============================
+   * FORM DATA
+  ================================
+   */
   const [formData, setFormData] = useState({
     title: "",
     firstName: "",
     lastName: "",
     gender: "",
-    dob: "",
+    dateOfBirth: "",
     nationalId: "",
     maritalStatus: "",
     phone: "",
@@ -60,11 +67,15 @@ export default function RegisterPatient() {
     emergencyName: "",
     emergencyRelation: "",
     emergencyPhone: "",
+    currentMedications: "",
+    allergies: "",
+    medicalHistory: "",
   });
 
-  const { toast } = useToast();
-  const navigate = useNavigate();
-
+  /* ============================
+   * FETCH COUNTRIES
+  ================================
+   */
   const {
     data: countries = [],
     isFetching: isFetchingCountries,
@@ -74,6 +85,10 @@ export default function RegisterPatient() {
     queryFn: fetchCountries,
   });
 
+  /* ============================
+   * FETCH STATES
+  ================================
+   */
   const {
     data: states = [],
     isLoading: loadingState,
@@ -84,16 +99,28 @@ export default function RegisterPatient() {
     enabled: !!selectedCountry,
   });
 
+  /* ============================
+   * FETCH CITY
+  ================================
+   */
   const { data: cities = [], isLoading: loadingCities } = useQuery({
     queryKey: ["cities", formData.stateId],
     queryFn: () => fetchCities(Number(formData.stateId)),
     enabled: !!formData.stateId,
   });
 
+  /* ============================
+   * HANDLE ON CHANGE EVENT
+  ================================
+   */
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  /* ============================
+   * REGISTER A PATIENT
+  ================================
+   */
   const mutation = useMutation({
     mutationFn: registerPatient,
     onSuccess: () => {
@@ -113,13 +140,17 @@ export default function RegisterPatient() {
     },
   });
 
+  /* ============================
+   * SUBMIT DATA 
+  ================================
+   */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     const payload = {
       email: formData.email,
       phoneNumber:
-        selectedCountry?.phoneCode + formData.phone.replace(/^0+/, ""),
+        selectedCountry?.phoneCode + formData.phone.replace(/\D/g, ""),
       countryId: Number(formData.countryId),
       roleId: 17,
       title: formData.title,
@@ -127,7 +158,7 @@ export default function RegisterPatient() {
       firstName: formData.firstName,
       lastName: formData.lastName,
       gender: formData.gender,
-      dob: formData.dob,
+      dateOfBirth: formData.dateOfBirth,
       nationalId: formData.nationalId || undefined,
       maritalStatus: formData.maritalStatus || undefined,
       address: {
@@ -144,6 +175,9 @@ export default function RegisterPatient() {
         phoneNumber: formData.emergencyPhone,
         relationship: formData.emergencyRelation,
       },
+      currentMedications: formData.currentMedications,
+      allergies: formData.allergies,
+      medicalHistory: formData.medicalHistory,
     };
 
     mutation.mutate(payload);
@@ -272,9 +306,9 @@ export default function RegisterPatient() {
                         id="dob"
                         type="date"
                         required
-                        value={formData.dob}
+                        value={formData.dateOfBirth}
                         onChange={(e) =>
-                          handleInputChange("dob", e.target.value)
+                          handleInputChange("dateOfBirth", e.target.value)
                         }
                       />
                     </div>
@@ -428,6 +462,7 @@ export default function RegisterPatient() {
                     <div>
                       <Label htmlFor="country">Country *</Label>
                       <Select
+                        required
                         value={formData.countryId}
                         onValueChange={(value) => {
                           handleInputChange("countryId", value);
@@ -470,6 +505,7 @@ export default function RegisterPatient() {
                     <div>
                       <Label htmlFor="state">State *</Label>
                       <Select
+                        required
                         value={formData.stateId}
                         onValueChange={(value) => {
                           handleInputChange("stateId", value);
@@ -686,15 +722,19 @@ export default function RegisterPatient() {
               </Card> */}
 
               {/* Medical History */}
-              {/* <Card>
+              <Card>
                 <CardHeader>
                   <CardTitle>Medical History & Notes</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
                     <Label htmlFor="allergies">Known Allergies</Label>
-                    <Textarea 
-                      id="allergies" 
+                    <Textarea
+                      value={formData.allergies}
+                      onChange={(e) =>
+                        handleInputChange("allergies", e.target.value)
+                      }
+                      id="allergies"
                       placeholder="List any known allergies (medications, food, environmental)..."
                       className="min-h-[80px]"
                     />
@@ -702,6 +742,10 @@ export default function RegisterPatient() {
                   <div>
                     <Label htmlFor="medications">Current Medications</Label>
                     <Textarea
+                      value={formData.currentMedications}
+                      onChange={(e) =>
+                        handleInputChange("currentMedications", e.target.value)
+                      }
                       id="medications"
                       placeholder="List current medications and dosages..."
                       className="min-h-[80px]"
@@ -710,13 +754,17 @@ export default function RegisterPatient() {
                   <div>
                     <Label htmlFor="medicalHistory">Medical History</Label>
                     <Textarea
+                      value={formData.medicalHistory}
+                      onChange={(e) =>
+                        handleInputChange("medicalHistory", e.target.value)
+                      }
                       id="medicalHistory"
                       placeholder="Previous surgeries, chronic conditions, family history..."
                       className="min-h-[100px]"
                     />
                   </div>
                 </CardContent>
-              </Card> */}
+              </Card>
 
               {/* Submit Button */}
               <div className="flex justify-end gap-4 pt-6">

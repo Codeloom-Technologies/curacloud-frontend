@@ -56,41 +56,41 @@ const navigationItems = [
       { title: "Medical History", href: "/dashboard/medical-history" },
     ],
   },
-  {
-    title: "Laboratory",
-    icon: TestTube,
-    href: "/dashboard/laboratory",
-    children: [
-      { title: "Lab Orders", href: "/dashboard/lab/orders" },
-      { title: "Results Entry", href: "/dashboard/lab/results" },
-      { title: "Lab Reports", href: "/dashboard/lab/reports" },
-    ],
-  },
-  {
-    title: "Radiology",
-    icon: Scan,
-    href: "/dashboard/radiology",
-    children: [
-      { title: "Imaging Orders", href: "/dashboard/radiology/orders" },
-      { title: "Image Upload", href: "/dashboard/radiology/upload" },
-      { title: "Reports", href: "/dashboard/radiology/reports" },
-    ],
-  },
-  {
-    title: "Pharmacy",
-    icon: Pill,
-    href: "/dashboard/pharmacy",
-    children: [
-      { title: "Prescriptions", href: "/dashboard/pharmacy/prescriptions" },
-      { title: "Inventory", href: "/dashboard/pharmacy/inventory" },
-      { title: "Dispensing", href: "/dashboard/pharmacy/dispense" },
-    ],
-  },
-  {
-    title: "Inventory",
-    icon: Package,
-    href: "/dashboard/inventory",
-  },
+  // {
+  //   title: "Laboratory",
+  //   icon: TestTube,
+  //   href: "/dashboard/laboratory",
+  //   children: [
+  //     { title: "Lab Orders", href: "/dashboard/lab/orders" },
+  //     { title: "Results Entry", href: "/dashboard/lab/results" },
+  //     { title: "Lab Reports", href: "/dashboard/lab/reports" },
+  //   ],
+  // },
+  // {
+  //   title: "Radiology",
+  //   icon: Scan,
+  //   href: "/dashboard/radiology",
+  //   children: [
+  //     { title: "Imaging Orders", href: "/dashboard/radiology/orders" },
+  //     { title: "Image Upload", href: "/dashboard/radiology/upload" },
+  //     { title: "Reports", href: "/dashboard/radiology/reports" },
+  //   ],
+  // },
+  // {
+  //   title: "Pharmacy",
+  //   icon: Pill,
+  //   href: "/dashboard/pharmacy",
+  //   children: [
+  //     { title: "Prescriptions", href: "/dashboard/pharmacy/prescriptions" },
+  //     { title: "Inventory", href: "/dashboard/pharmacy/inventory" },
+  //     { title: "Dispensing", href: "/dashboard/pharmacy/dispense" },
+  //   ],
+  // },
+  // {
+  //   title: "Inventory",
+  //   icon: Package,
+  //   href: "/dashboard/inventory",
+  // },
   {
     title: "Billing",
     icon: CreditCard,
@@ -111,11 +111,11 @@ const navigationItems = [
       { title: "Register Staff", href: "/dashboard/staff/register" },
     ],
   },
-  {
-    title: "Reports",
-    icon: BarChart3,
-    href: "/dashboard/reports",
-  },
+  // {
+  //   title: "Reports",
+  //   icon: BarChart3,
+  //   href: "/dashboard/reports",
+  // },
   {
     title: "Settings",
     icon: Settings,

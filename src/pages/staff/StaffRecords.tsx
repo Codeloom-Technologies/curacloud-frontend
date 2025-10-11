@@ -200,7 +200,7 @@ const StaffRecords = () => {
                       <p className="text-sm text-muted-foreground">
                         Date of Birth
                       </p>
-                      <p className="font-medium">{staffData.user.dob}</p>
+                      <p className="font-medium">{staffData.user.dateOfBirth}</p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Gender</p>

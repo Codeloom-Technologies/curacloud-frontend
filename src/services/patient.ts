@@ -10,7 +10,7 @@ export interface PatientPayload {
   firstName: string;
   lastName: string;
   gender: string;
-  dob: string;
+  dateOfBirth: string;
   nationalId?: string;
   maritalStatus?: string;
   address: {

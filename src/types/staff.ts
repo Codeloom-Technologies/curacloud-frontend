@@ -10,7 +10,7 @@ export interface CreateStaffRequest {
   phoneNumber: string;
   roleId: number;
   departmentId: number;
-  dob: string;
+  dateOfBirth: string;
   gender: string;
   address: object;
   cityId: number | string;

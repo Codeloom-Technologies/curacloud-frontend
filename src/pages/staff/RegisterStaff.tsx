@@ -68,6 +68,10 @@ const RegisterStaff = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  /* ============================
+   * FETCH COUNTRIES
+  ================================
+   */
   const {
     data: countries = [],
     isLoading: loadingCountries,
@@ -77,6 +81,10 @@ const RegisterStaff = () => {
     queryFn: fetchCountries,
   });
 
+  /* ============================
+   * FETCH STATE
+  ================================
+   */
   const {
     data: states = [],
     isLoading: loadingState,
@@ -86,7 +94,10 @@ const RegisterStaff = () => {
     queryFn: () => fetchStates(selectedCountry!.id),
     enabled: !!selectedCountry,
   });
-
+  /* ============================
+   * FETCH CITIES
+  ================================
+   */
   const { data: cities = [], isLoading: loadingCities } = useQuery({
     queryKey: ["cities", formData.stateId],
     queryFn: () => fetchCities(Number(formData.stateId)),
@@ -151,7 +162,7 @@ const RegisterStaff = () => {
     const payload: CreateStaffRequest = {
       email: formData.email,
       phoneNumber:
-        selectedCountry?.phoneCode + formData.phoneNumber.replace(/^0+/, ""),
+        selectedCountry?.phoneCode + formData.phoneNumber.replace(/\D/g, ""),
       countryId: Number(formData.countryId),
       roleId: Number(formData.roleId),
       title: formData.title,
@@ -159,7 +170,7 @@ const RegisterStaff = () => {
       firstName: formData.firstName,
       lastName: formData.lastName,
       gender: formData.gender,
-      dob: formData.dateOfBirth,
+      dateOfBirth: formData.dateOfBirth,
       cityId: Number(formData.cityId) || ("" as any),
       departmentId: Number(formData.departmentId),
       emergencyContactName: formData.emergencyContact,

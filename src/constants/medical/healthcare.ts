@@ -12,10 +12,10 @@ export const HEALTHCARE_PROVIDER_TYPES = [
 export const APPOINTMENT_STATUS = [
   "Scheduled",
   "Confirmed",
-  "In Progress",
+  "In progress",
   "Completed",
   "Cancelled",
-  "No Show",
+  "No show",
 ] as const;
 
 export const PATIENT_STATUS = [

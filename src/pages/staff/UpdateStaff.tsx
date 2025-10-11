@@ -100,8 +100,8 @@ const UpdateStaff = () => {
         departmentId: staffData.departmentId?.toString() || "",
         specialization: staffData.specialization || "",
         licenseNumber: staffData.licenseNumber || "",
-        dateOfBirth: staffData.dob
-          ? new Date(staffData.dob).toISOString().split("T")[0]
+        dateOfBirth: staffData.dateOfBirth
+          ? new Date(staffData.dateOfBirth).toISOString().split("T")[0]
           : "",
         gender: staffData.gender || "",
         address: address.street || "",
@@ -212,7 +212,7 @@ const UpdateStaff = () => {
       firstName: formData.firstName,
       lastName: formData.lastName,
       gender: formData.gender,
-      dob: formData.dateOfBirth,
+      dateOfBirth: formData.dateOfBirth,
       cityId: Number(formData.cityId) || undefined,
       departmentId: Number(formData.departmentId),
       emergencyContactName: formData.emergencyContact,

@@ -62,7 +62,6 @@ export default function Consultations() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
-
   const [statusFilter, setStatusFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [debouncedId, setDebouncedId] = useState("");
@@ -83,6 +82,7 @@ export default function Consultations() {
 
     return () => clearTimeout(handler);
   }, [searchTerm]);
+  
   // Pagination handler
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -108,6 +108,7 @@ export default function Consultations() {
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+  
   const { toast } = useToast();
   const navigate = useNavigate();
 

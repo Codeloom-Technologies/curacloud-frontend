@@ -53,7 +53,7 @@ export default function UpdatePatient() {
     firstName: "",
     lastName: "",
     gender: "",
-    dob: "",
+    dateOfBirth: "",
     nationalId: "",
     maritalStatus: "",
     phone: "",
@@ -76,7 +76,10 @@ export default function UpdatePatient() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Fetch countries
+  /* ============================
+   * FETCH COUNTRIES
+  ================================
+   */
   const {
     data: countries = [],
     isFetching: isFetchingCountries,
@@ -130,7 +133,7 @@ export default function UpdatePatient() {
         firstName: user.firstName || "",
         lastName: user.lastName || "",
         gender: patientData.gender || "",
-        dob: patientData.dob,
+        dateOfBirth: patientData.dateOfBirth,
         nationalId: patientData.nationalId || "",
         maritalStatus: patientData.maritalStatus || "",
         phone: user.phoneNumber || "",
@@ -215,7 +218,7 @@ export default function UpdatePatient() {
       firstName: formData.firstName,
       lastName: formData.lastName,
       gender: formData.gender,
-      dob: formData.dob,
+      dateOfBirth: formData.dateOfBirth,
       nationalId: formData.nationalId || undefined,
       maritalStatus: formData.maritalStatus,
       phoneNumber: formData.phone,
@@ -370,9 +373,9 @@ export default function UpdatePatient() {
                         id="dob"
                         type="date"
                         required
-                        value={formData.dob}
+                        value={formData.dateOfBirth}
                         onChange={(e) =>
-                          handleInputChange("dob", e.target.value)
+                          handleInputChange("dateOfBirth", e.target.value)
                         }
                       />
                     </div>
