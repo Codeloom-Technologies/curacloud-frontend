@@ -13,6 +13,7 @@ import {
   Settings,
   ChevronDown,
   Heart,
+  BookText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -44,6 +45,19 @@ const navigationItems = [
       { title: "Schedule", href: "/dashboard/appointments" },
       { title: "Calendar View", href: "/dashboard/appointments/calendar" },
       { title: "Check-in Queue", href: "/dashboard/appointments/checkin" },
+    ],
+  },
+  {
+    title: "Patient Vitals",
+    icon: BookText,
+    href: "/dashboard/patient-vitals",
+    children: [
+      {
+        title: "Vitals",
+        href: "/dashboard/patient-vitals",
+      },
+      // { title: "Results Entry", href: "/dashboard/lab/results" },
+      // { title: "Lab Reports", href: "/dashboard/lab/reports" },
     ],
   },
   {

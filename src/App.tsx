@@ -32,6 +32,7 @@ import UpdateStaff from "./pages/staff/UpdateStaff";
 import EmailVerification from "./pages/EmailVerification";
 import Settings from "./pages/Settings";
 import ForgotPassword from "./pages/ForgotPassword";
+import PatientVitals from "./pages/patient-vitals/PatientVitals";
 
 const queryClient = new QueryClient();
 
@@ -104,10 +105,13 @@ const App = () => (
             path="/dashboard/billing/reports"
             element={<BillingReports />}
           />
-          
+
           {/* Settings Route */}
           <Route path="/dashboard/settings" element={<Settings />} />
-          
+
+          {/* Patient vitals  routes */}
+          <Route path="/dashboard/patient-vitals" element={<PatientVitals />} />
+
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

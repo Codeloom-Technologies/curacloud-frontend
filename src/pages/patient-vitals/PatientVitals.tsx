@@ -45,30 +45,18 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { APPOINTMENT_STATUS } from "@/constants";
-import TimePicker from "react-time-picker";
-import "react-time-picker/dist/TimePicker.css";
-import "react-clock/dist/Clock.css";
+import { createPatientVital } from "@/services/patient-vital";
 
-export default function Appointments() {
+export default function PatientVitals() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState({
     startDate: "",
     endDate: "",
-    status: "",
+    status: "Checked-in",
     date: "",
     priority: "",
     type: "",
@@ -84,14 +72,17 @@ export default function Appointments() {
 
   const [formData, setFormData] = useState({
     patientId: "",
-    appointmentDate: "",
-    appointmentTime: new Date().toTimeString().slice(0, 5), // "HH:mm"
+    heightCm: "",
+    weightKg: "", // "HH:mm"
     doctorId: "",
-    reason: "",
-    type: "",
-    notes: "",
-    priority: "",
+    temperatureC: "",
+    bloodPressureSystolic: "",
+    bloodPressureDiastolic: "",
+    heartRateBpm: "",
     name: "",
+    respiratoryRate: "",
+    oxygenSaturation: "",
+    notes: "",
   });
 
   // fetch patient details
@@ -185,19 +176,19 @@ export default function Appointments() {
   };
 
   const mutation = useMutation({
-    mutationFn: createAppointments,
+    mutationFn: createPatientVital,
     onSuccess: () => {
       toast({
-        title: "Appointment Scheduled",
-        description: "The appointment has been successfully scheduled",
+        title: "Patient Vitals",
+        description: "The vitals has been successfully added",
         variant: "success",
       });
-      navigate("/dashboard/appointments");
+      navigate("/dashboard/patient-vitals");
     },
     onError: (error: any) => {
       toast({
-        title: "Appointments Failed",
-        description: error.message || "Failed to create appointment",
+        title: "Patient Vitals Failed",
+        description: error.message || "Failed to create Patient Vitals",
         variant: "destructive",
       });
     },
@@ -210,12 +201,13 @@ export default function Appointments() {
       patientId: patient.id,
       doctorId: formData.doctorId,
       name: formData.name,
-      type: formData.type,
-      appointmentDate: formData.appointmentDate,
-      appointmentTime: formData.appointmentTime,
-      reason: formData.reason,
+      bloodPressureDiastolic: formData.bloodPressureDiastolic,
+      heightCm: formData.heightCm,
+      temperatureC: formData.temperatureC,
+      bloodPressureSystolic: formData.bloodPressureSystolic,
       notes: formData.notes,
-      priority: formData.priority,
+      oxygenSaturation: formData.oxygenSaturation,
+      weightKg: formData.weightKg,
     };
 
     mutation.mutate(payload);
@@ -244,39 +236,10 @@ export default function Appointments() {
 
   const handleUpdateAppointmentStatus = (id: number) => {
     const payload = {
-      status: "Checked-in",
+      status: "Waiting",
     };
     updateStatusMutation.mutate({ id, payload });
   };
-
-  const handleClearFilters = () => {
-    setFilters({
-      startDate: "",
-      endDate: "",
-      status: "",
-      date: "",
-      priority: "",
-      type: "",
-    });
-    setCurrentPage(1);
-    refetch(); // refresh patients
-    setIsFilterOpen(false);
-  };
-
-  const getActiveFilterCount = () => {
-    let count = 0;
-    Object.entries(filters).forEach(([key, value]) => {
-      if (
-        (typeof value === "string" && value.trim() !== "") ||
-        (typeof value === "boolean" && value === true)
-      ) {
-        count++;
-      }
-    });
-    return count;
-  };
-
-  const activeFilterCount = getActiveFilterCount();
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -317,18 +280,16 @@ export default function Appointments() {
             {/* Page Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold">Appointment Scheduling</h1>
-                <p className="text-muted-foreground">
-                  Manage and schedule patient appointments
-                </p>
+                <h1 className="text-3xl font-bold">Patient Vitals</h1>
+                <p className="text-muted-foreground">Manage patient vitals</p>
               </div>
-              <Button
+              {/* <Button
                 onClick={() => setShowBookingForm(true)}
                 className="bg-gradient-primary hover:shadow-glow transition-all"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Schedule Appointment
-              </Button>
+                Create Vitals
+              </Button> */}
             </div>
 
             {/* Search and Filters */}
@@ -344,147 +305,6 @@ export default function Appointments() {
                       className="pl-10"
                     />
                   </div>
-
-                  <Dialog open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="gap-2 relative">
-                        <Filter className="h-4 w-4" />
-                        Filters
-                        {activeFilterCount > 0 && (
-                          <span className="absolute -top-1 -right-1 bg-primary text-white text-xs font-medium rounded-full px-1.5 py-0.5">
-                            {activeFilterCount}
-                          </span>
-                        )}
-                      </Button>
-                    </DialogTrigger>
-
-                    <DialogContent className="max-w-lg">
-                      <DialogHeader>
-                        <DialogTitle>Filter Appointments</DialogTitle>
-                      </DialogHeader>
-
-                      <div className="grid grid-cols-2 gap-4 py-4">
-                        <div>
-                          <Label>Appointment Type</Label>
-                          <Select
-                            onValueChange={(val) =>
-                              setFilters((f) => ({ ...f, type: val }))
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {APPOINTMENT_TYPES.map((type) => (
-                                <SelectItem key={type} value={type}>
-                                  {type}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div>
-                          <Label>Priority</Label>
-                          <div>
-                            <Select
-                              onValueChange={(val) =>
-                                setFilters((f) => ({ ...f, priority: val }))
-                              }
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select priority" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {APPOINTMENT_PRIORITY.map((priority) => (
-                                  <SelectItem key={priority} value={priority}>
-                                    {priority}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-
-                        <div>
-                          <Label>Date From</Label>
-                          <Input
-                            type="date"
-                            value={filters.startDate}
-                            onChange={(e) =>
-                              setFilters((f) => ({
-                                ...f,
-                                startDate: e.target.value,
-                              }))
-                            }
-                          />
-                        </div>
-
-                        <div>
-                          <Label>Date To</Label>
-                          <Input
-                            type="date"
-                            value={filters.endDate}
-                            onChange={(e) =>
-                              setFilters((f) => ({
-                                ...f,
-                                endDate: e.target.value,
-                              }))
-                            }
-                          />
-                        </div>
-
-                        <div>
-                          <Label>Status</Label>
-                          <Select
-                            onValueChange={(val) =>
-                              setFilters((f) => ({ ...f, status: val }))
-                            }
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {APPOINTMENT_STATUS.map((status) => (
-                                <SelectItem key={status} value={status}>
-                                  {status}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div>
-                          <Label>Date</Label>
-                          <Input
-                            type="date"
-                            value={filters.date}
-                            onChange={(e) =>
-                              setFilters((f) => ({
-                                ...f,
-                                date: e.target.value,
-                              }))
-                            }
-                          />
-                        </div>
-                      </div>
-
-                      <DialogFooter>
-                        <Button variant="outline" onClick={handleClearFilters}>
-                          Clear Filters
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            setCurrentPage(1);
-                            refetch();
-                            setIsFilterOpen(false);
-                          }}
-                        >
-                          Apply Filters
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
                 </div>
               </CardContent>
             </Card>
@@ -579,6 +399,14 @@ export default function Appointments() {
                                 : " Check-in"}
                             </Button>
                           )}
+
+                          <Button
+                            onClick={() => setShowBookingForm(true)}
+                            className="bg-gradient-primary hover:shadow-glow transition-all"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Create Vitals
+                          </Button>
                         </div>
                       </div>
                     </CardContent>
@@ -643,7 +471,7 @@ export default function Appointments() {
               <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
                 <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                   <CardHeader>
-                    <CardTitle>Schedule New Appointment</CardTitle>
+                    <CardTitle>Create New Vital</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -723,120 +551,134 @@ export default function Appointments() {
                           </Select>
                         </div>
                         <div>
-                          <Label htmlFor="appointmentType">
-                            Appointment Type *
-                          </Label>
-                          <Select
-                            value={formData.type}
-                            onValueChange={(value) =>
-                              handleInputChange("type", value)
+                          <Label htmlFor="weightKg">weight (Kg) *</Label>
+                          <Input
+                            id="weightKg"
+                            type="number"
+                            required
+                            value={formData.weightKg}
+                            onChange={(e) =>
+                              handleInputChange("weightKg", e.target.value)
                             }
-                          >
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select Type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {APPOINTMENT_TYPES.map((type) => (
-                                <SelectItem key={type} value={type}>
-                                  {type}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          />
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="appointmentDate">Date *</Label>
+                        {/* <div>
+                          <Label htmlFor="weightKg">weight (Kg) *</Label>
                           <Input
-                            id="appointmentDate"
-                            type="date"
+                            id="weightKg"
+                            type="number"
                             required
-                            value={formData.appointmentDate}
+                            value={formData.weightKg}
                             onChange={(e) =>
-                              handleInputChange(
-                                "appointmentDate",
-                                e.target.value
-                              )
+                              handleInputChange("weightKg", e.target.value)
                             }
                           />
-                        </div>
+                        </div> */}
                         <div>
-                          <Label htmlFor="appointmentTime">Time *</Label>
-                          {/* <Input
-                            id="appointmentTime"
-                            type="time"
-                            
+                          <Label htmlFor="heightCm">Height (Cm) *</Label>
+                          <Input
+                            id="heightCm"
+                            type="number"
                             required
-                            value={formData.appointmentTime}
-                            
+                            value={formData.heightCm}
+                            onChange={(e) =>
+                              handleInputChange("heightCm", e.target.value)
+                            }
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="temperatureC">
+                            temperature (C) *
+                          </Label>
+                          <Input
+                            id="temperatureC"
+                            type="number"
+                            required
+                            value={formData.temperatureC}
+                            onChange={(e) =>
+                              handleInputChange("temperatureC", e.target.value)
+                            }
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="bloodPressureSystolic">
+                            Blood Pressure Systolic
+                          </Label>
+                          <Input
+                            id="bloodPressureSystolic"
+                            type="number"
+                            value={formData.bloodPressureSystolic}
                             onChange={(e) =>
                               handleInputChange(
-                                "appointmentTime",
+                                "bloodPressureSystolic",
                                 e.target.value
                               )
                             }
-                          /> 
-                          */}
-                          <br />
-                          <TimePicker
-                            // className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                            onChange={(value: string) =>
-                              handleInputChange("appointmentTime", value)
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="heartRateBpm">Heart Rate (Bpm)</Label>
+                          <Input
+                            id="heartRateBpm"
+                            type="number"
+                            value={formData.heartRateBpm}
+                            onChange={(e) =>
+                              handleInputChange("heartRateBpm", e.target.value)
                             }
-                            value={formData.appointmentTime}
-                            disableClock
-                            format="hh:mm a"
-                            clearIcon={null}
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="respiratoryRate">
+                            Respiratory Rate
+                          </Label>
+                          <Input
+                            id="respiratoryRate"
+                            type="number"
+                            value={formData.respiratoryRate}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "respiratoryRate",
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="oxygenSaturation">
+                            oxygen Saturation
+                          </Label>
+                          <Input
+                            id="oxygenSaturation"
+                            type="number"
+                            value={formData.oxygenSaturation}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "oxygenSaturation",
+                                e.target.value
+                              )
+                            }
                           />
                         </div>
                       </div>
 
                       <div>
-                        <Label htmlFor="reason">Reason for Visit *</Label>
+                        <Label htmlFor="notes">Notes</Label>
                         <Textarea
-                          value={formData.reason}
-                          onChange={(e) =>
-                            handleInputChange("reason", e.target.value)
-                          }
-                          id="reason"
-                          placeholder="Describe the reason for the appointment..."
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="reason">Notes *</Label>
-                        <Textarea
+                          id="notes"
+                          placeholder="Enter notes..."
                           value={formData.notes}
                           onChange={(e) =>
                             handleInputChange("notes", e.target.value)
                           }
-                          id="notes"
-                          placeholder="Add additional notes for the appointment..."
                         />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="priority">Priority</Label>
-                        <Select
-                          value={formData.priority}
-                          onValueChange={(value) =>
-                            handleInputChange("priority", value)
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Priority" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {APPOINTMENT_PRIORITY.map((priority) => (
-                              <SelectItem key={priority} value={priority}>
-                                {priority}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
                       </div>
 
                       <div className="flex justify-end gap-4 pt-4">
@@ -853,8 +695,8 @@ export default function Appointments() {
                           disabled={mutation.isPending}
                         >
                           {mutation.isPending
-                            ? "Scheduling..."
-                            : "Schedule Appointment"}
+                            ? "Create Vital..."
+                            : "Create Vital"}
                         </Button>
                       </div>
                     </form>
