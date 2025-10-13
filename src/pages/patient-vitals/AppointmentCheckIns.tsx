@@ -282,12 +282,12 @@ export default function AppointmentCheckIns() {
             <div className="grid gap-4">
               {isLoadingAppointments || isFetchingAppointments ? (
                 <p className="text-sm text-muted-foreground text-center mt-4">
-                  Loading Appointments...
+                  Loading Vitals...
                 </p>
               ) : appointments.length === 0 ? (
                 <div className="text-center py-10">
                   <p className="text-muted-foreground text-sm">
-                    No appointments found.
+                    No vitals found.
                   </p>
                 </div>
               ) : (
