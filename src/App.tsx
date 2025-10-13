@@ -33,6 +33,7 @@ import EmailVerification from "./pages/EmailVerification";
 import Settings from "./pages/Settings";
 import ForgotPassword from "./pages/ForgotPassword";
 import PatientVitals from "./pages/patient-vitals/PatientVitals";
+import AppointmentCheckIns from "./pages/patient-vitals/AppointmentCheckIns";
 
 const queryClient = new QueryClient();
 
@@ -110,6 +111,10 @@ const App = () => (
           <Route path="/dashboard/settings" element={<Settings />} />
 
           {/* Patient vitals  routes */}
+          <Route
+            path="/dashboard/appointment-check-ins"
+            element={<AppointmentCheckIns />}
+          />
           <Route path="/dashboard/patient-vitals" element={<PatientVitals />} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

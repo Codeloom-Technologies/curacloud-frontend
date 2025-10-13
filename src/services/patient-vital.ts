@@ -46,6 +46,19 @@ export const fetchPatientVital = async (
   return { vitals: data, meta };
 };
 
+export const updatePatientVital = async (id: number, payload: any) => {
+  const response = await apiClient(`/patient-vitals/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+
+  if (!response) {
+    const error = await response;
+    throw new Error(error.message || "Failed to create vital ");
+  }
+  return response;
+};
+
 // export const fetchAppointmentCalender = async (): Promise<any | any> => {
 //   const response = await apiClient(`/appointments/calendar`);
 

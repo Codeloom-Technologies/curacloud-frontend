@@ -53,11 +53,10 @@ const navigationItems = [
     href: "/dashboard/patient-vitals",
     children: [
       {
-        title: "Vitals",
-        href: "/dashboard/patient-vitals",
+        title: "Appointments",
+        href: "/dashboard/appointment-check-ins",
       },
-      // { title: "Results Entry", href: "/dashboard/lab/results" },
-      // { title: "Lab Reports", href: "/dashboard/lab/reports" },
+      { title: "Vitals Entries", href: "/dashboard/patient-vitals" },
     ],
   },
   {
