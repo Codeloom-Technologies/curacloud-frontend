@@ -132,6 +132,14 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "radiology",
     "pharmacy",
     "settings",
+    "staff",
+    "staff.register",
+    "staff.records",
+    "billing",
+    "billing.invoices",
+    "billing.payments",
+    "billing.reports",
+    "reports",
   ],
 
   // HR Manager - Staff and HR management
@@ -158,13 +166,7 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
   ],
 
   // IT Support - Technical and system settings
-  it_support: [
-    "dashboard",
-    "staff",
-    "staff.records",
-    "reports",
-    "settings",
-  ],
+  it_support: ["dashboard", "staff", "staff.records", "reports", "settings"],
 
   // Inventory Manager - Inventory and supplies
   inventory_manager: [
