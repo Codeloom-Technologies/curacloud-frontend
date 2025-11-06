@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useAuthStore } from "@/store/authStore";
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -17,27 +17,13 @@ interface HeaderProps {
 
 export function Header({ onMenuClick }: HeaderProps) {
   const navigate = useNavigate();
-
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    // Get the user data from localStorage
-    const storedUser = localStorage.getItem("authUser");
-
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setUser(parsedUser);
-      } catch (error) {
-        console.error("Error parsing user from localStorage:", error);
-      }
-    }
-  }, []);
+  const { user, clearAuth } = useAuthStore();
 
   const logout = () => {
-    localStorage.clear();
+    clearAuth();
     navigate("/auth/login");
   };
+  
   const settings = () => {
     navigate("/dashboard/settings");
   };
@@ -91,13 +77,9 @@ export function Header({ onMenuClick }: HeaderProps) {
             <DropdownMenuContent className="w-56" align="end">
               <div className="flex items-center justify-start gap-2 p-2">
                 <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium">
-                    {user?.fullName
-                      ? `${user.fullName}`
-                      : user?.email || "User"}
-                  </p>
+                  <p className="font-medium">{user?.email || "User"}</p>
                   <p className="text-xs text-muted-foreground">
-                    {user?.roles?.[0]?.name.toUpperCase() || "Healthcare Staff"}
+                    {user?.roles?.[0]?.name || "Healthcare Staff"}
                   </p>
                 </div>
               </div>

@@ -1,17 +1,17 @@
-import { LoginApiPayload } from "@/types/auth";
+import { LoginApiPayload, LoginResponse } from "@/types/auth";
 import { apiClient } from "@/lib/api-client";
 
-export const submitLogging = async (payload: LoginApiPayload) => {
+export const submitLogging = async (payload: LoginApiPayload): Promise<LoginResponse["data"]> => {
   const response = await apiClient("/auth/login", {
     method: "POST",
     body: JSON.stringify(payload),
   });
 
-  if (!response) {
-    const error = await response;
-    throw new Error(error.message || "Failed to authenticate ");
+  if (!response || !response.data) {
+    throw new Error(response?.message || "Failed to authenticate");
   }
-  return response;
+  
+  return response.data;
 };
 
 export const mapFormToLoginApiPayload = (formData: any): LoginApiPayload => {

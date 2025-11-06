@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,16 +16,25 @@ import { LoginApiPayload } from "@/types/auth";
 import { mapFormToLoginApiPayload, submitLogging } from "@/services/auth";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/store/authStore";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { setAuth, isAuthenticated } = useAuthStore();
 
   const [formData, setFormData] = useState<LoginApiPayload>({
     email: "",
     password: "",
   });
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, navigate]);
 
   const updateFormData = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -34,13 +43,14 @@ export default function Login() {
   const mutation = useMutation({
     mutationFn: submitLogging,
     onSuccess: (data) => {
+      // Store auth data in zustand store
+      setAuth(data.user, data.accessToken);
+      
       toast({
         title: "Login Successful",
-        description: "Welcome back to Curacloud",
-        variant: "success",
+        description: `Welcome back, ${data.user.roles[0]?.name || "User"}`,
       });
-      localStorage.setItem("authUser", JSON.stringify(data.user));
-      localStorage.setItem("authToken", JSON.stringify(data.accessToken));
+      
       navigate("/dashboard");
     },
     onError: (error: Error) => {
