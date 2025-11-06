@@ -93,7 +93,7 @@ const testimonials = [
     name: "Dr. Sarah Johnson",
     role: "Chief Medical Officer",
     hospital: "Metro General Hospital",
-    image: doctorTestimonial,
+    image: "/placeholder.svg",
     rating: 5,
     quote:
       "Curacloud HMS has transformed how we manage patient care. The intuitive interface and comprehensive features have improved our efficiency by 40%.",
@@ -102,7 +102,7 @@ const testimonials = [
     name: "Michael Rodriguez",
     role: "Head Nurse",
     hospital: "City Medical Center",
-    image: nurseTestimonial,
+    image: "/placeholder.svg",
     rating: 5,
     quote:
       "The scheduling system is a game-changer. We've reduced patient wait times significantly and our staff coordination has never been better.",

@@ -105,6 +105,7 @@ export const updateStaff = async (
 
 export const getAllDoctors = async () => {
   const response = await apiClient("/staffs/doctors");
+
   if (!response) {
     const error = await response;
     throw new Error(error.message || "Failed to fetch doctors");
