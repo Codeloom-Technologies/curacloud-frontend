@@ -45,12 +45,13 @@ export default function Login() {
     onSuccess: (data) => {
       // Store auth data in zustand store
       setAuth(data.user, data.accessToken);
-      
+
       toast({
+        variant: "success",
         title: "Login Successful",
         description: `Welcome back, ${data.user.roles[0]?.name || "User"}`,
       });
-      
+
       navigate("/dashboard");
     },
     onError: (error: Error) => {
