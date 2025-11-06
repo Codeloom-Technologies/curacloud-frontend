@@ -44,7 +44,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import dashboardPreview from "@/assets/hms-dashboard-preview.jpg";
 import doctorTestimonial from "@/assets/doctor-testimonial-1.jpg";
 import nurseTestimonial from "@/assets/nurse-testimonial-1.jpg";
@@ -1116,12 +1116,12 @@ export default function LandingPage() {
                   </a>
                 </li>
                 <li>
-                  <a
-                    href="#"
+                  <Link
+                    to="/privacy-policy"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Privacy Policy
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <a

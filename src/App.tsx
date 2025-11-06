@@ -34,6 +34,7 @@ import Settings from "./pages/Settings";
 import ForgotPassword from "./pages/ForgotPassword";
 import PatientVitals from "./pages/patient-vitals/PatientVitals";
 import AppointmentCheckIns from "./pages/patient-vitals/AppointmentCheckIns";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +46,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/auth/onboarding" element={<Onboarding />} />
           <Route path="/auth/verify-email" element={<EmailVerification />} />
           <Route path="/auth/reset-password" element={<ForgotPassword />} />
