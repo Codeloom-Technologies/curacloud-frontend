@@ -294,7 +294,7 @@ export default function LandingPage() {
                       className="w-full"
                       onClick={() => {
                         setMobileMenuOpen(false);
-                        navigate("/login");
+                        navigate("/auth/login");
                       }}
                     >
                       Sign In
