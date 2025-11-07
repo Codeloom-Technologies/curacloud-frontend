@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { User, Lock, Bell, Shield, Moon, Sun } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -33,6 +33,7 @@ import {
   fetchCountries,
   fetchStates,
 } from "@/services/onboarding";
+import { fetchUserById } from "@/services/user";
 
 export default function Settings() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -41,18 +42,43 @@ export default function Settings() {
   const [smsNotifications, setSmsNotifications] = useState(false);
   const [appointmentReminders, setAppointmentReminders] = useState(true);
   const { toast } = useToast();
-
+  const [userId, setUserId] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [_, setSelectedState] = useState<number | null>(null);
+
+  /* ============================
+   * FETCH COUNTRIES
+  ================================
+   */
+  const {
+    data: countries = [],
+    isLoading: loadingCountries,
+    isFetching: isFetchingCountries,
+  } = useQuery({
+    queryKey: ["countries"],
+    queryFn: fetchCountries,
+  });
+
+  /* ============================
+   * FETCH STATE
+  ================================
+   */
+  const {
+    data: states = [],
+    isLoading: loadingState,
+    isFetching: isFetchingStates,
+  } = useQuery({
+    queryKey: ["states", selectedCountry?.id],
+    queryFn: () => fetchStates(selectedCountry!.id),
+    enabled: !!selectedCountry,
+  });
 
   const [formData, setFormData] = useState({
     title: "",
     firstName: "",
     lastName: "",
-    email: "",
-    phoneNumber: "",
-    roleId: "",
-    departmentId: "",
+    username: "",
+    bio: "",
     gender: "",
     dateOfBirth: "",
     address: "",
@@ -60,6 +86,71 @@ export default function Settings() {
     stateId: "",
     countryId: "",
   });
+  /* ============================
+   * FETCH CITIES
+  ================================
+   */
+  const { data: cities = [], isLoading: loadingCities } = useQuery({
+    queryKey: ["cities", formData.stateId],
+    queryFn: () => fetchCities(Number(formData.stateId)),
+    enabled: !!formData.stateId,
+  });
+
+  useEffect(() => {
+    const authUser = localStorage.getItem("authUser");
+    const user = JSON.parse(authUser);
+    setUserId(user.reference);
+  }, [userId]);
+
+  const {
+    data: userData,
+    isLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: ["user", userId],
+    queryFn: () => fetchUserById(userId!),
+    enabled: !!userId,
+  });
+
+  console.log(userData);
+
+  // Update form data when user data loads
+  useEffect(() => {
+    if (userData) {
+      const address = userData.address || {};
+      const user = userData || {};
+
+      const updatedFormData = {
+        title: user.title || "",
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        gender: user.gender || "",
+        dateOfBirth: user.dateOfBirth,
+        username: user.username || "",
+        address: {
+          street: formData.address || "",
+        },
+        city: user.city || "",
+        state: user.state?.toString() || "",
+        countryId: user.countryId || "",
+        stateId: user.stateId || "",
+        cityId: user.cityId || "",
+        bio: user.bio || "",
+      };
+
+      setFormData(updatedFormData);
+
+      // Set selected country for dropdown
+      if (userData.countryId && countries.length > 0) {
+        const country = countries.find(
+          (c: Country) => c.id === userData.countryId
+        );
+        setSelectedCountry(country || null);
+      }
+
+      setSelectedState(userData.stateId || null);
+    }
+  }, [userData, countries]);
 
   const handleSaveProfile = () => {
     toast({
@@ -88,42 +179,6 @@ export default function Settings() {
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
-
-  /* ============================
-   * FETCH COUNTRIES
-  ================================
-   */
-  const {
-    data: countries = [],
-    isLoading: loadingCountries,
-    isFetching: isFetchingCountries,
-  } = useQuery({
-    queryKey: ["countries"],
-    queryFn: fetchCountries,
-  });
-
-  /* ============================
-   * FETCH STATE
-  ================================
-   */
-  const {
-    data: states = [],
-    isLoading: loadingState,
-    isFetching: isFetchingStates,
-  } = useQuery({
-    queryKey: ["states", selectedCountry?.id],
-    queryFn: () => fetchStates(selectedCountry!.id),
-    enabled: !!selectedCountry,
-  });
-  /* ============================
-   * FETCH CITIES
-  ================================
-   */
-  const { data: cities = [], isLoading: loadingCities } = useQuery({
-    queryKey: ["cities", formData.stateId],
-    queryFn: () => fetchCities(Number(formData.stateId)),
-    enabled: !!formData.stateId,
-  });
 
   return (
     <div className="flex h-screen bg-background">
@@ -188,10 +243,10 @@ export default function Settings() {
                         <Label htmlFor="title">Title * </Label>
                         <Select
                           required={true}
-                          // value={formData.title}
-                          // onValueChange={(value) =>
-                          //   setFormData({ ...formData, title: value })
-                          // }
+                          value={formData.title}
+                          onValueChange={(value) =>
+                            setFormData({ ...formData, title: value })
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select Title" />
@@ -207,11 +262,26 @@ export default function Settings() {
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="firstName">First Name</Label>
-                        <Input id="firstName" placeholder="John" />
+                        <Input
+                          required
+                          id="firstName"
+                          placeholder="John"
+                          value={formData.firstName}
+                          onChange={(e) =>
+                            handleInputChange("firstName", e.target.value)
+                          }
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="lastName">Last Name</Label>
-                        <Input id="lastName" placeholder="Doe" />
+                        <Input
+                          id="lastName"
+                          placeholder="Doe"
+                          value={formData.lastName}
+                          onChange={(e) =>
+                            handleInputChange("lastName", e.target.value)
+                          }
+                        />
                       </div>
                     </div>
 
@@ -220,10 +290,10 @@ export default function Settings() {
                         <Label htmlFor="gender">Gender *</Label>
                         <Select
                           required={true}
-                          // value={formData.gender}
-                          // onValueChange={(value) =>
-                          //   setFormData({ ...formData, gender: value })
-                          // }
+                          value={formData.gender}
+                          onValueChange={(value) =>
+                            setFormData({ ...formData, gender: value })
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select gender" />
@@ -240,6 +310,10 @@ export default function Settings() {
                       <div className="space-y-2">
                         <Label htmlFor="username">Username</Label>
                         <Input
+                          value={formData.username}
+                          onChange={(e) =>
+                            handleInputChange("username", e.target.value)
+                          }
                           id="username"
                           type="text"
                           placeholder="darkmode"
@@ -373,6 +447,10 @@ export default function Settings() {
                       <Label htmlFor="bio">Bio</Label>
                       <Textarea
                         id="bio"
+                        value={formData.bio}
+                        onChange={(e) =>
+                          handleInputChange("bio", e.target.value)
+                        }
                         placeholder="Tell us about yourself..."
                         className="min-h-[100px]"
                       />
@@ -381,6 +459,10 @@ export default function Settings() {
                     <div className="space-y-2">
                       <Label htmlFor="bio">Address</Label>
                       <Textarea
+                        value={formData.address}
+                        onChange={(e) =>
+                          handleInputChange("address", e.target.value)
+                        }
                         id="address"
                         placeholder="Type address here"
                         className="min-h-[100px]"
