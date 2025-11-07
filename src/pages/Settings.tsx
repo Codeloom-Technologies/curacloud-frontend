@@ -18,6 +18,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { GENDERS, TITLES } from "@/constants";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import {
+  Country,
+  fetchCities,
+  fetchCountries,
+  fetchStates,
+} from "@/services/onboarding";
 
 export default function Settings() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -26,6 +41,25 @@ export default function Settings() {
   const [smsNotifications, setSmsNotifications] = useState(false);
   const [appointmentReminders, setAppointmentReminders] = useState(true);
   const { toast } = useToast();
+
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const [_, setSelectedState] = useState<number | null>(null);
+
+  const [formData, setFormData] = useState({
+    title: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    roleId: "",
+    departmentId: "",
+    gender: "",
+    dateOfBirth: "",
+    address: "",
+    cityId: "",
+    stateId: "",
+    countryId: "",
+  });
 
   const handleSaveProfile = () => {
     toast({
@@ -50,6 +84,46 @@ export default function Settings() {
       variant: "success",
     });
   };
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  /* ============================
+   * FETCH COUNTRIES
+  ================================
+   */
+  const {
+    data: countries = [],
+    isLoading: loadingCountries,
+    isFetching: isFetchingCountries,
+  } = useQuery({
+    queryKey: ["countries"],
+    queryFn: fetchCountries,
+  });
+
+  /* ============================
+   * FETCH STATE
+  ================================
+   */
+  const {
+    data: states = [],
+    isLoading: loadingState,
+    isFetching: isFetchingStates,
+  } = useQuery({
+    queryKey: ["states", selectedCountry?.id],
+    queryFn: () => fetchStates(selectedCountry!.id),
+    enabled: !!selectedCountry,
+  });
+  /* ============================
+   * FETCH CITIES
+  ================================
+   */
+  const { data: cities = [], isLoading: loadingCities } = useQuery({
+    queryKey: ["cities", formData.stateId],
+    queryFn: () => fetchCities(Number(formData.stateId)),
+    enabled: !!formData.stateId,
+  });
 
   return (
     <div className="flex h-screen bg-background">
@@ -109,7 +183,28 @@ export default function Settings() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="title">Title * </Label>
+                        <Select
+                          required={true}
+                          // value={formData.title}
+                          // onValueChange={(value) =>
+                          //   setFormData({ ...formData, title: value })
+                          // }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Title" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TITLES.map((title) => (
+                              <SelectItem key={title} value={title}>
+                                {title}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                       <div className="space-y-2">
                         <Label htmlFor="firstName">First Name</Label>
                         <Input id="firstName" placeholder="John" />
@@ -120,27 +215,158 @@ export default function Settings() {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="john.doe@hospital.com"
-                      />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="gender">Gender *</Label>
+                        <Select
+                          required={true}
+                          // value={formData.gender}
+                          // onValueChange={(value) =>
+                          //   setFormData({ ...formData, gender: value })
+                          // }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select gender" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {GENDERS.map((gender) => (
+                              <SelectItem key={gender} value={gender}>
+                                {gender}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="username">Username</Label>
+                        <Input
+                          id="username"
+                          type="text"
+                          placeholder="darkmode"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="dateOfBirth">Date of Birth *</Label>
+                        <Input
+                          id="dateOfBirth"
+                          name="dateOfBirth"
+                          type="date"
+                          value={formData.dateOfBirth}
+                          onChange={(e) =>
+                            handleInputChange("dateOfBirth", e.target.value)
+                          }
+                          required
+                        />
+                      </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        type="tel"
-                        placeholder="+1 (555) 000-0000"
-                      />
-                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="country">Country *</Label>
+                        <Select
+                          value={formData.countryId}
+                          onValueChange={(value) => {
+                            handleInputChange("countryId", value);
+                            const country = countries.find(
+                              (c) => c.id === Number(value)
+                            );
+                            setSelectedCountry(country || null);
+                            setSelectedState(null);
+                            handleInputChange("stateId", "");
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue
+                              placeholder={
+                                loadingCountries || isFetchingCountries
+                                  ? "Loading..."
+                                  : "Select Country"
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {countries.map((country) => (
+                              <SelectItem
+                                key={country.id}
+                                value={country.id.toString()}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <img
+                                    src={country.flag.svg}
+                                    alt={country.name}
+                                    className="w-5 h-4 object-cover"
+                                  />
+                                  <span>{country.name}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="state">State *</Label>
+                        <Select
+                          value={formData.stateId}
+                          onValueChange={(value) => {
+                            handleInputChange("stateId", value);
+                            setSelectedState(Number(value));
+                          }}
+                          disabled={!selectedCountry}
+                        >
+                          <SelectTrigger>
+                            <SelectValue
+                              placeholder={
+                                loadingState || isFetchingStates
+                                  ? "Loading..."
+                                  : "Select State"
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {states.map((state) => (
+                              <SelectItem
+                                key={state.id}
+                                value={state.id.toString()}
+                              >
+                                {state.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="specialty">Specialty</Label>
-                      <Input id="specialty" placeholder="General Practice" />
+                      <div>
+                        <Label htmlFor="city">City</Label>
+                        <Select
+                          value={formData.cityId}
+                          onValueChange={(value) => {
+                            const city = cities.find(
+                              (c) => c.id === Number(value)
+                            );
+                            setFormData((prev) => ({
+                              ...prev,
+                              cityId: value,
+                              city: city?.name || "",
+                            }));
+                          }}
+                          disabled={!formData.stateId}
+                        >
+                          <SelectTrigger id="city">
+                            <SelectValue
+                              placeholder={
+                                loadingCities ? "Loading..." : "Select city"
+                              }
+                            />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {cities.map((city) => (
+                              <SelectItem key={city.id} value={String(city.id)}>
+                                {city.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -148,6 +374,15 @@ export default function Settings() {
                       <Textarea
                         id="bio"
                         placeholder="Tell us about yourself..."
+                        className="min-h-[100px]"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="bio">Address</Label>
+                      <Textarea
+                        id="address"
+                        placeholder="Type address here"
                         className="min-h-[100px]"
                       />
                     </div>
