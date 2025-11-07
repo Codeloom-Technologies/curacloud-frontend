@@ -237,7 +237,7 @@ export default function Login() {
                 </div>
                 <div className="p-2 rounded bg-muted text-center">
                   <p className="font-medium">Receptionist</p>
-                  <p className="text-muted-foreground">receptionist@demo.com</p>
+                  <p className="text-muted-foreground">reception@demo.com</p>
                 </div>
               </div>
             </CardContent>
