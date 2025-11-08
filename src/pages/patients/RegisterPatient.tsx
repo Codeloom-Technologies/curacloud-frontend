@@ -205,7 +205,7 @@ export default function RegisterPatient() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate("/patients")}
+                onClick={() => navigate("/dashboard/patients")}
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Directory
