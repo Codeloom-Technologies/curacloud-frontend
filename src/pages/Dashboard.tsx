@@ -15,6 +15,7 @@ import {
   Clock,
   AlertTriangle,
   CheckCircle,
+  WorkflowIcon,
 } from "lucide-react";
 import heroImage from "@/assets/hms-hero.jpg";
 import { useQuery } from "@tanstack/react-query";
@@ -110,6 +111,15 @@ export default function Dashboard() {
         (statsData?.byGenderGrowth.Female || 0) > 0
           ? "positive"
           : ("negative" as const),
+    },
+
+    {
+      title: "Total Staffs",
+      icon: WorkflowIcon,
+      value: statsData?.totalStaffs?.toString() || "0",
+      change: `${statsData?.totalStaffs || 0}% growth this month`,
+      changeType:
+        (statsData?.totalStaffs || 0) > 0 ? "positive" : ("negative" as const),
     },
   ];
 
