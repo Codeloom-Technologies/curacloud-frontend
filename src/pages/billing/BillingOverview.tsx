@@ -17,13 +17,21 @@ const BillingOverview = () => {
   ];
 
   return (
-    <div className="min-h-screen flex w-full bg-background">
-      <Sidebar />
-      
-      <div className="flex-1 flex flex-col">
+    <div className="flex h-screen bg-background">
+      {/* Sidebar */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform md:relative md:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <Sidebar />
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
         
-        <main className="flex-1 p-6">
+        <main className="flex-1 overflow-y-auto p-6">
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-foreground">Billing Overview</h1>
             <p className="text-muted-foreground">Monitor revenue, invoices, and payment status</p>
@@ -98,9 +106,10 @@ const BillingOverview = () => {
         </main>
       </div>
 
+      {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
