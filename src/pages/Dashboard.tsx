@@ -17,47 +17,108 @@ import {
   CheckCircle,
 } from "lucide-react";
 import heroImage from "@/assets/hms-hero.jpg";
+import { useQuery } from "@tanstack/react-query";
+import { patientStatsTotalPerProvider } from "@/services/patient";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const {
+    data: statsData,
+    isLoading: isStatsLoading,
+    isFetching: isStatsFetching,
+  } = useQuery({
+    queryKey: ["patientStatsTotalPerProvider"],
+    queryFn: () => patientStatsTotalPerProvider(),
+  });
+
+  console.log(statsData);
+
   const stats = [
     {
       title: "Total Patients",
-      value: "2,847",
-      change: "+12% from last month",
-      changeType: "positive" as const,
+      value: statsData?.totalPatients?.toString() || "0",
+      change: `${statsData?.newPatientsGrowth || 0}% growth this month`,
+      changeType:
+        (statsData?.newPatientsGrowth || 0) >= 0
+          ? "positive"
+          : ("negative" as const as any),
       icon: Users,
     },
     {
-      title: "Today's Appointments",
-      value: "156",
-      change: "8 pending check-ins",
-      changeType: "neutral" as const,
+      title: "Active Patients",
+      value: statsData?.activePatients?.toString() || "0",
+      change: `${
+        statsData?.newActivePatientsLastMonth || 0
+      }% growth this month`,
+      changeType:
+        (statsData?.newActivePatientsLastMonth || 0) >= 0
+          ? "positive"
+          : ("negative" as const),
       icon: Calendar,
     },
     {
-      title: "Bed Occupancy",
-      value: "85%",
-      change: "12 beds available",
-      changeType: "neutral" as const,
-      icon: Bed,
+      title: "Total Appointments",
+      value: statsData?.totalAppointments?.toString() || "0",
+      change: `${
+        statsData?.totalAppointmentsLastMonth || 0
+      }% growth this month`,
+      changeType:
+        (statsData?.totalAppointments || 0) > 0
+          ? "positive"
+          : ("negative" as const),
+      icon: Clock,
+    },
+    {
+      title: "Today's Appointments",
+      value: statsData?.pendingCheckIns?.toString() || "0",
+      change: "Require attention",
+      changeType:
+        (statsData?.pendingCheckIns || 0) > 0
+          ? "positive"
+          : ("negative" as const),
+      icon: Clock,
     },
     {
       title: "Monthly Revenue",
-      value: "₦284,500",
-      change: "+8.2% from last month",
-      changeType: "positive" as const,
       icon: DollarSign,
+      value: statsData?.monthlyRevenue?.toString() || "0",
+      change: `${
+        statsData?.newmonthlyRevenueLastMonth || 0
+      }% growth this month`,
+      changeType:
+        (statsData?.monthlyRevenue || 0) > 0
+          ? "positive"
+          : ("negative" as const),
+    },
+    {
+      title: "Male",
+      icon: TrendingUp,
+      value: statsData?.byGender.Male?.toString() || "0",
+      change: `${statsData?.byGenderGrowth.Male || 0}% growth this month`,
+      changeType:
+        (statsData?.byGenderGrowth.Male || 0) > 0
+          ? "positive"
+          : ("negative" as const),
+    },
+    {
+      title: "Female",
+      icon: TrendingUp,
+      value: statsData?.byGender.Female?.toString() || "0",
+      change: `${statsData?.byGenderGrowth.Female || 0}% growth this month`,
+      changeType:
+        (statsData?.byGenderGrowth.Female || 0) > 0
+          ? "positive"
+          : ("negative" as const),
     },
   ];
 
   const departmentMetrics = [
-    { name: "Emergency", occupancy: 92, color: "bg-red-500" },
-    { name: "ICU", occupancy: 78, color: "bg-orange-500" },
-    { name: "General Ward", occupancy: 65, color: "bg-blue-500" },
-    { name: "Pediatrics", occupancy: 45, color: "bg-green-500" },
-    { name: "Maternity", occupancy: 88, color: "bg-purple-500" },
+    { name: "Emergency", occupancy: 0, color: "bg-red-500" },
+    { name: "ICU", occupancy: 0, color: "bg-orange-500" },
+    { name: "General Ward", occupancy: 0, color: "bg-blue-500" },
+    { name: "Pediatrics", occupancy: 0, color: "bg-green-500" },
+    { name: "Maternity", occupancy: 0, color: "bg-purple-500" },
   ];
 
   return (
@@ -109,13 +170,35 @@ export default function Dashboard() {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {isStatsLoading || isStatsFetching
+              ? // Loading skeleton
+                Array(4)
+                  .fill(0)
+                  .map((_, index) => (
+                    <Card key={index} className="animate-pulse">
+                      <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                          <div className="space-y-2">
+                            <div className="h-4 bg-gray-200 rounded w-20"></div>
+                            <div className="h-8 bg-gray-200 rounded w-16"></div>
+                            <div className="h-3 bg-gray-200 rounded w-24"></div>
+                          </div>
+                          <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+              : // Actual stats cards
+                stats.map((stat, index) => <StatsCard key={index} {...stat} />)}
+          </div>
+          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {stats.map((stat, index) => (
               <StatsCard key={index} {...stat} />
             ))}
-          </div>
+          </div> */}
 
           {/* Main Dashboard Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
             {/* Quick Actions */}
             <QuickActions />
 
@@ -186,11 +269,10 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <RecentActivity />
+            {/* Recent Activity */}
+            <div>
+              <RecentActivity />
+            </div>
           </div>
         </main>
       </div>
