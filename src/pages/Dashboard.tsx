@@ -210,7 +210,7 @@ export default function Dashboard() {
                   Department Occupancy
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              {/* <CardContent className="space-y-4">
                 {departmentMetrics.map((dept) => (
                   <div key={dept.name} className="space-y-2">
                     <div className="flex justify-between text-sm">
@@ -220,7 +220,7 @@ export default function Dashboard() {
                     <Progress value={dept.occupancy} className="h-2" />
                   </div>
                 ))}
-              </CardContent>
+              </CardContent> */}
             </Card>
 
             {/* Alerts & Notifications */}
@@ -231,7 +231,7 @@ export default function Dashboard() {
                   System Alerts
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
+              {/* <CardContent className="space-y-3">
                 <div className="flex items-start gap-3 p-3 rounded-lg bg-red-50 border border-red-200">
                   <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
                   <div>
@@ -267,7 +267,7 @@ export default function Dashboard() {
                     </p>
                   </div>
                 </div>
-              </CardContent>
+              </CardContent> */}
             </Card>
             {/* Recent Activity */}
             <div>

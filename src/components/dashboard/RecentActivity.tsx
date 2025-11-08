@@ -59,7 +59,7 @@ export function RecentActivity() {
       <CardHeader>
         <CardTitle>Recent Activity</CardTitle>
       </CardHeader>
-      <CardContent>
+      {/* <CardContent>
         <div className="space-y-4">
           {recentActivities.map((activity) => (
             <div key={activity.id} className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted/50 transition-colors">
@@ -88,7 +88,7 @@ export function RecentActivity() {
             </div>
           ))}
         </div>
-      </CardContent>
+      </CardContent> */}
     </Card>
   );
 }
