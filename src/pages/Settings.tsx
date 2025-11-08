@@ -33,7 +33,7 @@ import {
   fetchCountries,
   fetchStates,
 } from "@/services/onboarding";
-import { fetchUserById } from "@/services/user";
+import { fetchUserById, updateUserAccount, changePassword } from "@/services/user";
 
 export default function Settings() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -45,6 +45,11 @@ export default function Settings() {
   const [userId, setUserId] = useState("");
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [_, setSelectedState] = useState<number | null>(null);
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
   /* ============================
    * FETCH COUNTRIES
@@ -117,28 +122,21 @@ export default function Settings() {
   // Update form data when user data loads
   useEffect(() => {
     if (userData) {
-      const address = userData.address || {};
       const user = userData || {};
 
-      const updatedFormData = {
+      setFormData({
         title: user.title || "",
         firstName: user.firstName || "",
         lastName: user.lastName || "",
         gender: user.gender || "",
-        dateOfBirth: user.dateOfBirth,
+        dateOfBirth: user.dateOfBirth || "",
         username: user.username || "",
-        address: {
-          street: formData.address || "",
-        },
-        city: user.city || "",
-        state: user.state?.toString() || "",
-        countryId: user.countryId || "",
-        stateId: user.stateId || "",
-        cityId: user.cityId || "",
+        address: user.address?.street || "",
+        cityId: user.cityId?.toString() || "",
+        stateId: user.stateId?.toString() || "",
+        countryId: user.countryId?.toString() || "",
         bio: user.bio || "",
-      };
-
-      setFormData(updatedFormData);
+      });
 
       // Set selected country for dropdown
       if (userData.countryId && countries.length > 0) {
@@ -152,20 +150,75 @@ export default function Settings() {
     }
   }, [userData, countries]);
 
+  // Update profile mutation
+  const updateProfileMutation = useMutation({
+    mutationFn: () =>
+      updateUserAccount(userId, {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        gender: formData.gender,
+        dateOfBirth: formData.dateOfBirth,
+        countryId: Number(formData.countryId),
+        stateId: Number(formData.stateId),
+        cityId: formData.cityId ? Number(formData.cityId) : undefined,
+        username: formData.username,
+        title: formData.title,
+        address: {
+          street: formData.address,
+        },
+      }),
+    onSuccess: () => {
+      toast({
+        title: "Profile updated",
+        description: "Your profile information has been saved successfully.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Update failed",
+        description: error.message || "Failed to update profile",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Change password mutation
+  const changePasswordMutation = useMutation({
+    mutationFn: () => changePassword(passwordData),
+    onSuccess: () => {
+      toast({
+        title: "Password changed",
+        description: "Your password has been updated successfully.",
+      });
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Password change failed",
+        description: error.message || "Failed to change password",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSaveProfile = () => {
-    toast({
-      title: "Profile updated",
-      description: "Your profile information has been saved successfully.",
-      variant: "success",
-    });
+    updateProfileMutation.mutate();
   };
 
   const handleChangePassword = () => {
-    toast({
-      title: "Password changed",
-      description: "Your password has been updated successfully.",
-      variant: "success",
-    });
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast({
+        title: "Password mismatch",
+        description: "New password and confirm password do not match",
+        variant: "destructive",
+      });
+      return;
+    }
+    changePasswordMutation.mutate();
   };
 
   const handleSaveNotifications = () => {
@@ -472,7 +525,12 @@ export default function Settings() {
                     <Separator />
 
                     <div className="flex justify-end">
-                      <Button onClick={handleSaveProfile}>Save Changes</Button>
+                      <Button 
+                        onClick={handleSaveProfile}
+                        disabled={updateProfileMutation.isPending || isLoading}
+                      >
+                        {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -493,19 +551,34 @@ export default function Settings() {
                         <Label htmlFor="currentPassword">
                           Current Password
                         </Label>
-                        <Input id="currentPassword" type="password" />
+                        <Input 
+                          id="currentPassword" 
+                          type="password"
+                          value={passwordData.currentPassword}
+                          onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                        />
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="newPassword">New Password</Label>
-                        <Input id="newPassword" type="password" />
+                        <Input 
+                          id="newPassword" 
+                          type="password"
+                          value={passwordData.newPassword}
+                          onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                        />
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="confirmPassword">
                           Confirm New Password
                         </Label>
-                        <Input id="confirmPassword" type="password" />
+                        <Input 
+                          id="confirmPassword" 
+                          type="password"
+                          value={passwordData.confirmPassword}
+                          onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                        />
                       </div>
 
                       <Alert>
@@ -518,8 +591,11 @@ export default function Settings() {
                       </Alert>
 
                       <div className="flex justify-end">
-                        <Button onClick={handleChangePassword}>
-                          Update Password
+                        <Button 
+                          onClick={handleChangePassword}
+                          disabled={changePasswordMutation.isPending}
+                        >
+                          {changePasswordMutation.isPending ? "Updating..." : "Update Password"}
                         </Button>
                       </div>
                     </CardContent>
