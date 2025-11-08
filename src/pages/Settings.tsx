@@ -33,7 +33,12 @@ import {
   fetchCountries,
   fetchStates,
 } from "@/services/onboarding";
-import { fetchUserById, updateUserAccount, changePassword } from "@/services/user";
+import {
+  fetchUserById,
+  updateUserAccount,
+  changePassword,
+} from "@/services/user";
+import { useNavigate } from "react-router-dom";
 
 export default function Settings() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -50,6 +55,7 @@ export default function Settings() {
     newPassword: "",
     confirmPassword: "",
   });
+  const navigate = useNavigate();
 
   /* ============================
    * FETCH COUNTRIES
@@ -169,6 +175,7 @@ export default function Settings() {
       }),
     onSuccess: () => {
       toast({
+        variant: "success",
         title: "Profile updated",
         description: "Your profile information has been saved successfully.",
       });
@@ -187,6 +194,7 @@ export default function Settings() {
     mutationFn: () => changePassword(passwordData),
     onSuccess: () => {
       toast({
+        variant: "success",
         title: "Password changed",
         description: "Your password has been updated successfully.",
       });
@@ -219,6 +227,7 @@ export default function Settings() {
       return;
     }
     changePasswordMutation.mutate();
+    navigate("/auth/login");
   };
 
   const handleSaveNotifications = () => {
@@ -525,11 +534,13 @@ export default function Settings() {
                     <Separator />
 
                     <div className="flex justify-end">
-                      <Button 
+                      <Button
                         onClick={handleSaveProfile}
                         disabled={updateProfileMutation.isPending || isLoading}
                       >
-                        {updateProfileMutation.isPending ? "Saving..." : "Save Changes"}
+                        {updateProfileMutation.isPending
+                          ? "Saving..."
+                          : "Save Changes"}
                       </Button>
                     </div>
                   </CardContent>
@@ -551,21 +562,31 @@ export default function Settings() {
                         <Label htmlFor="currentPassword">
                           Current Password
                         </Label>
-                        <Input 
-                          id="currentPassword" 
+                        <Input
+                          id="currentPassword"
                           type="password"
                           value={passwordData.currentPassword}
-                          onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                          onChange={(e) =>
+                            setPasswordData({
+                              ...passwordData,
+                              currentPassword: e.target.value,
+                            })
+                          }
                         />
                       </div>
 
                       <div className="space-y-2">
                         <Label htmlFor="newPassword">New Password</Label>
-                        <Input 
-                          id="newPassword" 
+                        <Input
+                          id="newPassword"
                           type="password"
                           value={passwordData.newPassword}
-                          onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                          onChange={(e) =>
+                            setPasswordData({
+                              ...passwordData,
+                              newPassword: e.target.value,
+                            })
+                          }
                         />
                       </div>
 
@@ -573,11 +594,16 @@ export default function Settings() {
                         <Label htmlFor="confirmPassword">
                           Confirm New Password
                         </Label>
-                        <Input 
-                          id="confirmPassword" 
+                        <Input
+                          id="confirmPassword"
                           type="password"
                           value={passwordData.confirmPassword}
-                          onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                          onChange={(e) =>
+                            setPasswordData({
+                              ...passwordData,
+                              confirmPassword: e.target.value,
+                            })
+                          }
                         />
                       </div>
 
@@ -591,11 +617,13 @@ export default function Settings() {
                       </Alert>
 
                       <div className="flex justify-end">
-                        <Button 
+                        <Button
                           onClick={handleChangePassword}
                           disabled={changePasswordMutation.isPending}
                         >
-                          {changePasswordMutation.isPending ? "Updating..." : "Update Password"}
+                          {changePasswordMutation.isPending
+                            ? "Updating..."
+                            : "Update Password"}
                         </Button>
                       </div>
                     </CardContent>
