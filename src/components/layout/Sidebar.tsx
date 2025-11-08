@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Permission } from "@/config/acl";
@@ -187,6 +187,20 @@ export function Sidebar({ className }: SidebarProps) {
       }))
       .filter((item) => !item.children || item.children.length > 0);
   }, [hasPermission]);
+
+  // Auto-expand groups that contain the active route
+  useEffect(() => {
+    filteredNavigationItems.forEach((item) => {
+      if (item.children) {
+        const hasActiveChild = item.children.some(
+          (child) => location.pathname === child.href
+        );
+        if (hasActiveChild && !expandedItems.includes(item.title)) {
+          setExpandedItems((prev) => [...prev, item.title]);
+        }
+      }
+    });
+  }, [location.pathname, filteredNavigationItems]);
 
   const toggleExpanded = (title: string) => {
     setExpandedItems((prev) =>
