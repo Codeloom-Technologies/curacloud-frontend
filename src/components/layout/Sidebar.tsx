@@ -179,7 +179,7 @@ const navigationItems = [
         permission: "pharmacy.dispensing" as Permission,
       },
       { 
-        title: "Stock Management", 
+        title: "Stock", 
         href: "/dashboard/pharmacy/stock",
         permission: "pharmacy.stock" as Permission,
       },
