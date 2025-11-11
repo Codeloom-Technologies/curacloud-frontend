@@ -158,6 +158,34 @@ const navigationItems = [
     ],
   },
   {
+    title: "Pharmacy",
+    icon: Pill,
+    href: "/dashboard/pharmacy",
+    permission: "pharmacy" as Permission,
+    children: [
+      { 
+        title: "Inventory", 
+        href: "/dashboard/pharmacy/inventory",
+        permission: "pharmacy.inventory" as Permission,
+      },
+      { 
+        title: "Prescriptions", 
+        href: "/dashboard/pharmacy/prescriptions",
+        permission: "pharmacy.prescriptions" as Permission,
+      },
+      { 
+        title: "Dispensing", 
+        href: "/dashboard/pharmacy/dispensing",
+        permission: "pharmacy.dispensing" as Permission,
+      },
+      { 
+        title: "Stock Management", 
+        href: "/dashboard/pharmacy/stock",
+        permission: "pharmacy.stock" as Permission,
+      },
+    ],
+  },
+  {
     title: "Settings",
     icon: Settings,
     href: "/dashboard/settings",

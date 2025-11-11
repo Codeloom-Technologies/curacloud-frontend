@@ -35,6 +35,10 @@ import ForgotPassword from "./pages/ForgotPassword";
 import PatientVitals from "./pages/patient-vitals/PatientVitals";
 import AppointmentCheckIns from "./pages/patient-vitals/AppointmentCheckIns";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import PharmacyInventory from "./pages/pharmacy/PharmacyInventory";
+import PrescriptionProcessing from "./pages/pharmacy/PrescriptionProcessing";
+import MedicationDispensing from "./pages/pharmacy/MedicationDispensing";
+import StockManagement from "./pages/pharmacy/StockManagement";
 
 const queryClient = new QueryClient();
 
@@ -118,6 +122,24 @@ const App = () => (
             element={<AppointmentCheckIns />}
           />
           <Route path="/dashboard/patient-vitals" element={<PatientVitals />} />
+
+          {/* Pharmacy Routes */}
+          <Route
+            path="/dashboard/pharmacy/inventory"
+            element={<PharmacyInventory />}
+          />
+          <Route
+            path="/dashboard/pharmacy/prescriptions"
+            element={<PrescriptionProcessing />}
+          />
+          <Route
+            path="/dashboard/pharmacy/dispensing"
+            element={<MedicationDispensing />}
+          />
+          <Route
+            path="/dashboard/pharmacy/stock"
+            element={<StockManagement />}
+          />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

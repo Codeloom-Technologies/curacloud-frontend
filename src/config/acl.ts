@@ -20,6 +20,10 @@ export type Permission =
   | "laboratory.reports"
   | "radiology"
   | "pharmacy"
+  | "pharmacy.inventory"
+  | "pharmacy.prescriptions"
+  | "pharmacy.dispensing"
+  | "pharmacy.stock"
   | "inventory"
   | "billing"
   | "billing.invoices"
@@ -54,6 +58,10 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "laboratory.reports",
     "radiology",
     "pharmacy",
+    "pharmacy.inventory",
+    "pharmacy.prescriptions",
+    "pharmacy.dispensing",
+    "pharmacy.stock",
     "inventory",
     "billing",
     "billing.invoices",
@@ -131,6 +139,10 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "laboratory.reports",
     "radiology",
     "pharmacy",
+    "pharmacy.inventory",
+    "pharmacy.prescriptions",
+    "pharmacy.dispensing",
+    "pharmacy.stock",
     "settings",
     "staff",
     "staff.register",
@@ -173,6 +185,8 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "dashboard",
     "inventory",
     "pharmacy",
+    "pharmacy.inventory",
+    "pharmacy.stock",
     "laboratory",
     "laboratory.orders",
     "reports",
@@ -227,6 +241,10 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "patients.records",
     "prescriptions",
     "pharmacy",
+    "pharmacy.inventory",
+    "pharmacy.prescriptions",
+    "pharmacy.dispensing",
+    "pharmacy.stock",
     "inventory",
     "settings",
   ],
@@ -317,5 +335,9 @@ export const navigationPermissions: Record<string, Permission> = {
   "/dashboard/staff": "staff",
   "/dashboard/staff/register": "staff.register",
   "/dashboard/staff/records": "staff.records",
+  "/dashboard/pharmacy/inventory": "pharmacy.inventory",
+  "/dashboard/pharmacy/prescriptions": "pharmacy.prescriptions",
+  "/dashboard/pharmacy/dispensing": "pharmacy.dispensing",
+  "/dashboard/pharmacy/stock": "pharmacy.stock",
   "/dashboard/settings": "settings",
 };
