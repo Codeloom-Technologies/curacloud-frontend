@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/button";
@@ -25,11 +25,26 @@ import { Textarea } from "@/components/ui/textarea";
 import { Search, Plus, Package, AlertTriangle } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
+import {
+  createPharmacyInventory,
+  fetchPharmacyInventories,
+} from "@/services/pharmacy";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export default function PharmacyInventory() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
   const [formData, setFormData] = useState({
     medicationName: "",
     genericName: "",
@@ -42,43 +57,36 @@ export default function PharmacyInventory() {
     location: "",
     description: "",
   });
+  const perPage = 10;
 
   const queryClient = useQueryClient();
 
-  // Mock data - replace with actual API call
-  const { data: inventory = [], isLoading } = useQuery({
-    queryKey: ["pharmacy-inventory", searchQuery],
-    queryFn: async () => {
-      // Replace with actual API call
-      return [
-        {
-          id: "1",
-          medicationName: "Paracetamol 500mg",
-          genericName: "Acetaminophen",
-          manufacturer: "PharmaCorp",
-          batchNumber: "B12345",
-          quantity: 500,
-          unitPrice: 2.5,
-          expiryDate: "2025-12-31",
-          reorderLevel: 100,
-          location: "Shelf A1",
-          status: "In Stock",
-        },
-      ];
-    },
+  // Fixed useQuery hook
+  const {
+    data: responseData,
+    isLoading,
+    refetch,
+    isFetching,
+  } = useQuery({
+    queryKey: ["pharmacy-inventory", currentPage, debouncedSearch],
+    queryFn: () =>
+      fetchPharmacyInventories(currentPage, perPage, debouncedSearch),
+    // keepPreviousData: true,
   });
 
+  // Extract data from response
+  const inventories = responseData?.inventories || [];
+  const meta = responseData?.meta || {};
+  const totalPages = meta.lastPage ?? 1;
+
   const addMedicationMutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
-      // Replace with actual API call
-      console.log("Adding medication:", data);
-      return data;
-    },
+    mutationFn: createPharmacyInventory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["pharmacy-inventory"] });
       toast({
         title: "Success",
         description: "Medication added to inventory successfully",
+        variant: "success",
       });
       setIsAddDialogOpen(false);
       setFormData({
@@ -94,34 +102,78 @@ export default function PharmacyInventory() {
         description: "",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to add medication",
+        description:
+          error.response?.data?.message || "Failed to add medication",
         variant: "destructive",
       });
     },
   });
 
+  // Debounce search term
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setCurrentPage(1); // Reset to first page when searching
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    addMedicationMutation.mutate(formData);
+
+    // Convert string values to numbers
+    const payload = {
+      ...formData,
+      quantity: parseInt(formData.quantity),
+      unitPrice: parseFloat(formData.unitPrice),
+      reorderLevel: formData.reorderLevel
+        ? parseInt(formData.reorderLevel)
+        : undefined,
+    };
+
+    addMedicationMutation.mutate(payload);
   };
 
   const getStockStatus = (quantity: number, reorderLevel: number) => {
-    if (quantity === 0) return { label: "Out of Stock", variant: "destructive" };
+    if (quantity === 0)
+      return { label: "Out of Stock", variant: "destructive" as const };
     if (quantity <= reorderLevel)
-      return { label: "Low Stock", variant: "secondary" };
-    return { label: "In Stock", variant: "default" };
+      return { label: "Low Stock", variant: "secondary" as const };
+    return { label: "In Stock", variant: "default" as const };
   };
+
+  // Calculate summary stats
+  const totalItems = meta.total || inventories.length;
+
+  const lowStockCount = inventories.filter(
+    (item) => item.quantity <= (item.reorderLevel || 10)
+  ).length;
+  const totalValue = inventories.reduce(
+    (sum, item) => sum + item.quantity * item.unitPrice,
+    0
+  );
 
   return (
     <div className="min-h-screen flex w-full bg-background">
-      <Sidebar
-        className={`${
+      {/* Sidebar */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform md:relative md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0 transition-transform duration-300 ease-in-out fixed lg:static z-30 h-screen`}
-      />
+        }`}
+      >
+        <Sidebar />
+      </div>
+
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-20 lg:hidden"
@@ -215,6 +267,7 @@ export default function PharmacyInventory() {
                           id="quantity"
                           type="number"
                           required
+                          min="0"
                           value={formData.quantity}
                           onChange={(e) =>
                             setFormData({
@@ -230,6 +283,7 @@ export default function PharmacyInventory() {
                           id="unitPrice"
                           type="number"
                           step="0.01"
+                          min="0"
                           required
                           value={formData.unitPrice}
                           onChange={(e) =>
@@ -260,6 +314,7 @@ export default function PharmacyInventory() {
                         <Input
                           id="reorderLevel"
                           type="number"
+                          min="0"
                           value={formData.reorderLevel}
                           onChange={(e) =>
                             setFormData({
@@ -327,7 +382,7 @@ export default function PharmacyInventory() {
                   <Package className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{inventory.length}</div>
+                  <div className="text-2xl font-bold">{totalItems}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -338,12 +393,7 @@ export default function PharmacyInventory() {
                   <AlertTriangle className="h-4 w-4 text-warning" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
-                    {
-                      inventory.filter((item) => item.quantity <= item.reorderLevel)
-                        .length
-                    }
-                  </div>
+                  <div className="text-2xl font-bold">{lowStockCount}</div>
                 </CardContent>
               </Card>
               <Card>
@@ -355,13 +405,7 @@ export default function PharmacyInventory() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    $
-                    {inventory
-                      .reduce(
-                        (sum, item) => sum + item.quantity * item.unitPrice,
-                        0
-                      )
-                      .toFixed(2)}
+                    ₦{totalValue.toFixed(2)}
                   </div>
                 </CardContent>
               </Card>
@@ -402,31 +446,43 @@ export default function PharmacyInventory() {
                           Loading...
                         </TableCell>
                       </TableRow>
-                    ) : inventory.length === 0 ? (
+                    ) : inventories.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={8} className="text-center">
                           No medications found
                         </TableCell>
                       </TableRow>
                     ) : (
-                      inventory.map((item) => {
+                      inventories.map((item) => {
                         const status = getStockStatus(
                           item.quantity,
-                          item.reorderLevel
+                          item.reorderLevel || 10
                         );
                         return (
                           <TableRow key={item.id}>
                             <TableCell className="font-medium">
-                              {item.medicationName}
+                              {item.medication_name || item.medicationName}
                             </TableCell>
-                            <TableCell>{item.genericName}</TableCell>
-                            <TableCell>{item.batchNumber}</TableCell>
-                            <TableCell>{item.quantity}</TableCell>
-                            <TableCell>${item.unitPrice}</TableCell>
-                            <TableCell>{item.expiryDate}</TableCell>
-                            <TableCell>{item.location}</TableCell>
                             <TableCell>
-                              <Badge variant={status.variant as any}>
+                              {item.generic_name || item.genericName}
+                            </TableCell>
+                            <TableCell>
+                              {item.batch_number || item.batchNumber}
+                            </TableCell>
+                            <TableCell>{item.quantity}</TableCell>
+                            <TableCell>
+                              ${item.unit_price || item.unitPrice}
+                            </TableCell>
+                            <TableCell>
+                              {new Date(
+                                item.expiry_date || item.expiryDate
+                              ).toLocaleDateString()}
+                            </TableCell>
+                            <TableCell>
+                              {item.storage_location || item.location}
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant={status.variant}>
                                 {status.label}
                               </Badge>
                             </TableCell>
@@ -436,6 +492,55 @@ export default function PharmacyInventory() {
                     )}
                   </TableBody>
                 </Table>
+
+                {/* Pagination */}
+                {!isLoading && inventories.length > 0 && (
+                  <div className="mt-6 flex justify-center">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() =>
+                              currentPage > 1 &&
+                              handlePageChange(currentPage - 1)
+                            }
+                            className={
+                              currentPage === 1
+                                ? "pointer-events-none opacity-50"
+                                : "cursor-pointer"
+                            }
+                          />
+                        </PaginationItem>
+
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                          <PaginationItem key={i}>
+                            <PaginationLink
+                              onClick={() => handlePageChange(i + 1)}
+                              isActive={currentPage === i + 1}
+                              className="cursor-pointer"
+                            >
+                              {i + 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ))}
+
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() =>
+                              currentPage < totalPages &&
+                              handlePageChange(currentPage + 1)
+                            }
+                            className={
+                              currentPage === totalPages
+                                ? "pointer-events-none opacity-50"
+                                : "cursor-pointer"
+                            }
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

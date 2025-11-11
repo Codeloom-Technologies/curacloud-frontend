@@ -35,13 +35,13 @@ const navigationItems = [
     href: "/patients",
     permission: "patients" as Permission,
     children: [
-      { 
-        title: "Patient Directory", 
+      {
+        title: "Patient Directory",
         href: "/dashboard/patients",
         permission: "patients" as Permission,
       },
-      { 
-        title: "Register Patient", 
+      {
+        title: "Register Patient",
         href: "/dashboard/patients/register",
         permission: "patients.register" as Permission,
       },
@@ -53,18 +53,18 @@ const navigationItems = [
     href: "/dashboard/appointments",
     permission: "appointments" as Permission,
     children: [
-      { 
-        title: "Schedule", 
+      {
+        title: "Schedule",
         href: "/dashboard/appointments",
         permission: "appointments" as Permission,
       },
-      { 
-        title: "Calendar View", 
+      {
+        title: "Calendar View",
         href: "/dashboard/appointments/calendar",
         permission: "appointments.calendar" as Permission,
       },
-      { 
-        title: "Check-in Queue", 
+      {
+        title: "Check-in Queue",
         href: "/dashboard/appointments/checkin",
         permission: "appointments.checkin" as Permission,
       },
@@ -81,8 +81,8 @@ const navigationItems = [
         href: "/dashboard/appointment-check-ins",
         permission: "patient-vitals.appointments" as Permission,
       },
-      { 
-        title: "Vitals Entries", 
+      {
+        title: "Vitals Entries",
         href: "/dashboard/patient-vitals",
         permission: "patient-vitals" as Permission,
       },
@@ -94,18 +94,18 @@ const navigationItems = [
     href: "/dashboard/medical-records",
     permission: "medical-records" as Permission,
     children: [
-      { 
-        title: "Consultations", 
+      {
+        title: "Consultations",
         href: "/dashboard/consultations",
         permission: "consultations" as Permission,
       },
-      { 
-        title: "Prescriptions", 
+      {
+        title: "Prescriptions",
         href: "/dashboard/prescriptions",
         permission: "prescriptions" as Permission,
       },
-      { 
-        title: "Medical History", 
+      {
+        title: "Medical History",
         href: "/dashboard/medical-history",
         permission: "medical-history" as Permission,
       },
@@ -117,43 +117,25 @@ const navigationItems = [
     href: "/dashboard/billing",
     permission: "billing" as Permission,
     children: [
-      { 
-        title: "Overview", 
+      {
+        title: "Overview",
         href: "/dashboard/billing",
         permission: "billing" as Permission,
       },
-      { 
-        title: "Invoices", 
+      {
+        title: "Invoices",
         href: "/dashboard/billing/invoices",
         permission: "billing.invoices" as Permission,
       },
-      { 
-        title: "Payment Processing", 
+      {
+        title: "Payment Processing",
         href: "/dashboard/billing/payments",
         permission: "billing.payments" as Permission,
       },
-      { 
-        title: "Reports", 
+      {
+        title: "Reports",
         href: "/dashboard/billing/reports",
         permission: "billing.reports" as Permission,
-      },
-    ],
-  },
-  {
-    title: "HR & Staff",
-    icon: UserCheck,
-    href: "/dashboard/staff",
-    permission: "staff" as Permission,
-    children: [
-      { 
-        title: "Staff Directory", 
-        href: "/dashboard/staff",
-        permission: "staff" as Permission,
-      },
-      { 
-        title: "Register Staff", 
-        href: "/dashboard/staff/register",
-        permission: "staff.register" as Permission,
       },
     ],
   },
@@ -163,25 +145,43 @@ const navigationItems = [
     href: "/dashboard/pharmacy",
     permission: "pharmacy" as Permission,
     children: [
-      { 
-        title: "Inventory", 
+      {
+        title: "Inventory",
         href: "/dashboard/pharmacy/inventory",
         permission: "pharmacy.inventory" as Permission,
       },
-      { 
-        title: "Prescriptions", 
+      {
+        title: "Prescriptions",
         href: "/dashboard/pharmacy/prescriptions",
         permission: "pharmacy.prescriptions" as Permission,
       },
-      { 
-        title: "Dispensing", 
+      {
+        title: "Dispensing",
         href: "/dashboard/pharmacy/dispensing",
         permission: "pharmacy.dispensing" as Permission,
       },
-      { 
-        title: "Stock", 
+      {
+        title: "Stock",
         href: "/dashboard/pharmacy/stock",
         permission: "pharmacy.stock" as Permission,
+      },
+    ],
+  },
+  {
+    title: "HR & Staff",
+    icon: UserCheck,
+    href: "/dashboard/staff",
+    permission: "staff" as Permission,
+    children: [
+      {
+        title: "Staff Directory",
+        href: "/dashboard/staff",
+        permission: "staff" as Permission,
+      },
+      {
+        title: "Register Staff",
+        href: "/dashboard/staff/register",
+        permission: "staff.register" as Permission,
       },
     ],
   },
@@ -302,7 +302,7 @@ export function Sidebar({ className }: SidebarProps) {
                       <div className="ml-6 mt-1 space-y-1">
                         {item.children.map((child) => {
                           const isChildActive = isActiveRoute(child.href);
-                          
+
                           return (
                             <Button
                               key={child.title}

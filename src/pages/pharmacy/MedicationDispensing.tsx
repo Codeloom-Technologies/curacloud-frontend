@@ -70,11 +70,20 @@ export default function MedicationDispensing() {
 
   return (
     <div className="min-h-screen flex w-full bg-background">
-      <Sidebar
+      {/* <Sidebar
         className={`${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0 transition-transform duration-300 ease-in-out fixed lg:static z-30 h-screen`}
-      />
+      /> */}
+      {/* Sidebar */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform md:relative md:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <Sidebar />
+      </div>
+
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-20 lg:hidden"
@@ -166,7 +175,9 @@ export default function MedicationDispensing() {
                           <SelectItem value="med1">
                             Paracetamol 500mg
                           </SelectItem>
-                          <SelectItem value="med2">Amoxicillin 250mg</SelectItem>
+                          <SelectItem value="med2">
+                            Amoxicillin 250mg
+                          </SelectItem>
                           <SelectItem value="med3">Ibuprofen 400mg</SelectItem>
                         </SelectContent>
                       </Select>

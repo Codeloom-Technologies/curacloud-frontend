@@ -132,11 +132,20 @@ export default function StockManagement() {
 
   return (
     <div className="min-h-screen flex w-full bg-background">
-      <Sidebar
+      {/* <Sidebar
         className={`${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0 transition-transform duration-300 ease-in-out fixed lg:static z-30 h-screen`}
-      />
+      /> */}
+      {/* Sidebar */}
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform md:relative md:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <Sidebar />
+      </div>
+
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-20 lg:hidden"
@@ -274,7 +283,9 @@ export default function StockManagement() {
               </Card>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Stock In</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Stock In
+                  </CardTitle>
                   <TrendingUp className="h-4 w-4 text-green-600" />
                 </CardHeader>
                 <CardContent>
@@ -346,7 +357,9 @@ export default function StockManagement() {
                           <TableCell className="font-medium">
                             {movement.medicationName}
                           </TableCell>
-                          <TableCell>{getMovementBadge(movement.type)}</TableCell>
+                          <TableCell>
+                            {getMovementBadge(movement.type)}
+                          </TableCell>
                           <TableCell>{movement.quantity}</TableCell>
                           <TableCell>{movement.previousStock}</TableCell>
                           <TableCell>{movement.newStock}</TableCell>
