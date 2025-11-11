@@ -45,3 +45,13 @@ export const fetchPharmacyInventories = async (
   const { data, meta } = response;
   return { inventories: data, meta };
 };
+
+export const fetchInventorySummary = async (): Promise<any | any> => {
+  const response = await apiClient(`/pharmacies/inventories/inventory/summary`);
+
+  if (!response) {
+    const error = await response;
+    throw new Error(error.message || "Failed to fetch inventories");
+  }
+  return response;
+};

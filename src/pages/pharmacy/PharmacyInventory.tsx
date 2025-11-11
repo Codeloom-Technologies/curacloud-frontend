@@ -28,6 +28,7 @@ import { toast } from "@/hooks/use-toast";
 import {
   createPharmacyInventory,
   fetchPharmacyInventories,
+  fetchInventorySummary,
 } from "@/services/pharmacy";
 import {
   Pagination,
@@ -37,6 +38,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatNaira } from "@/lib/formatters";
 
 export default function PharmacyInventory() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -49,7 +52,7 @@ export default function PharmacyInventory() {
     medicationName: "",
     genericName: "",
     manufacturer: "",
-    batchNumber: "",
+    // batchNumber: "",
     quantity: "",
     unitPrice: "",
     expiryDate: "",
@@ -65,19 +68,28 @@ export default function PharmacyInventory() {
   const {
     data: responseData,
     isLoading,
-    refetch,
     isFetching,
   } = useQuery({
     queryKey: ["pharmacy-inventory", currentPage, debouncedSearch],
     queryFn: () =>
       fetchPharmacyInventories(currentPage, perPage, debouncedSearch),
-    // keepPreviousData: true,
   });
 
   // Extract data from response
   const inventories = responseData?.inventories || [];
   const meta = responseData?.meta || {};
   const totalPages = meta.lastPage ?? 1;
+
+  const {
+    data: statsData,
+    isLoading: isLoadingStats,
+    isFetching: isFetchingStats,
+  } = useQuery({
+    queryKey: ["pharmacy-inventory-stats"],
+    queryFn: () => fetchInventorySummary(),
+  });
+
+  console.log(statsData);
 
   const addMedicationMutation = useMutation({
     mutationFn: createPharmacyInventory,
@@ -93,7 +105,7 @@ export default function PharmacyInventory() {
         medicationName: "",
         genericName: "",
         manufacturer: "",
-        batchNumber: "",
+        // batchNumber: "",
         quantity: "",
         unitPrice: "",
         expiryDate: "",
@@ -151,17 +163,6 @@ export default function PharmacyInventory() {
       return { label: "Low Stock", variant: "secondary" as const };
     return { label: "In Stock", variant: "default" as const };
   };
-
-  // Calculate summary stats
-  const totalItems = meta.total || inventories.length;
-
-  const lowStockCount = inventories.filter(
-    (item) => item.quantity <= (item.reorderLevel || 10)
-  ).length;
-  const totalValue = inventories.reduce(
-    (sum, item) => sum + item.quantity * item.unitPrice,
-    0
-  );
 
   return (
     <div className="min-h-screen flex w-full bg-background">
@@ -249,14 +250,14 @@ export default function PharmacyInventory() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="batchNumber">Batch Number</Label>
+                        <Label htmlFor="location">Storage Location</Label>
                         <Input
-                          id="batchNumber"
-                          value={formData.batchNumber}
+                          id="location"
+                          value={formData.location}
                           onChange={(e) =>
                             setFormData({
                               ...formData,
-                              batchNumber: e.target.value,
+                              location: e.target.value,
                             })
                           }
                         />
@@ -324,7 +325,7 @@ export default function PharmacyInventory() {
                           }
                         />
                       </div>
-                      <div className="space-y-2 col-span-2">
+                      {/* <div className="space-y-2 col-span-2">
                         <Label htmlFor="location">Storage Location</Label>
                         <Input
                           id="location"
@@ -336,7 +337,7 @@ export default function PharmacyInventory() {
                             })
                           }
                         />
-                      </div>
+                      </div> */}
                       <div className="space-y-2 col-span-2">
                         <Label htmlFor="description">Description</Label>
                         <Textarea
@@ -373,7 +374,7 @@ export default function PharmacyInventory() {
               </Dialog>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -382,7 +383,13 @@ export default function PharmacyInventory() {
                   <Package className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{totalItems}</div>
+                  <div className="text-2xl font-bold">
+                    {isLoadingStats || isFetchingStats ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      statsData.totalItems || 0
+                    )}
+                  </div>
                 </CardContent>
               </Card>
               <Card>
@@ -393,7 +400,13 @@ export default function PharmacyInventory() {
                   <AlertTriangle className="h-4 w-4 text-warning" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{lowStockCount}</div>
+                  <div className="text-2xl font-bold">
+                    {isLoadingStats || isFetchingStats ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      statsData.lowStockCount || 0
+                    )}
+                  </div>
                 </CardContent>
               </Card>
               <Card>
@@ -405,7 +418,28 @@ export default function PharmacyInventory() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    ₦{totalValue.toFixed(2)}
+                    {isLoadingStats || isFetchingStats ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      formatNaira(statsData.totalValue)
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Expiring Stock Alerts
+                  </CardTitle>
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {isLoadingStats || isFetchingStats ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      `${statsData.expiringCount} ` || 0
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -434,6 +468,7 @@ export default function PharmacyInventory() {
                       <TableHead>Batch #</TableHead>
                       <TableHead>Quantity</TableHead>
                       <TableHead>Unit Price</TableHead>
+                      <TableHead>Total Price</TableHead>
                       <TableHead>Expiry</TableHead>
                       <TableHead>Location</TableHead>
                       <TableHead>Status</TableHead>
@@ -471,7 +506,10 @@ export default function PharmacyInventory() {
                             </TableCell>
                             <TableCell>{item.quantity}</TableCell>
                             <TableCell>
-                              ${item.unit_price || item.unitPrice}
+                              {item.unit_price || formatNaira(item.unitPrice)}
+                            </TableCell>
+                            <TableCell>
+                              {item.total_price || formatNaira(item.totalPrice)}
                             </TableCell>
                             <TableCell>
                               {new Date(
