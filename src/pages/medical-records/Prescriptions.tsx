@@ -352,7 +352,9 @@ export default function Prescriptions() {
             {/* Page Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold">Prescriptions</h1>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                  Prescriptions{" "}
+                </h1>
                 <p className="text-muted-foreground">
                   Manage patient prescriptions and medications
                 </p>

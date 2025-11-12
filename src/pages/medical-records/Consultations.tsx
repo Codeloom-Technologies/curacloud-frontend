@@ -82,7 +82,7 @@ export default function Consultations() {
 
     return () => clearTimeout(handler);
   }, [searchTerm]);
-  
+
   // Pagination handler
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
@@ -108,7 +108,7 @@ export default function Consultations() {
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
-  
+
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -262,7 +262,9 @@ export default function Consultations() {
             {/* Page Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold">Medical Consultations</h1>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                  Medical Consultations{" "}
+                </h1>
                 <p className="text-muted-foreground">
                   Manage patient consultations and medical visits
                 </p>

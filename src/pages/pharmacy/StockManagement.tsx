@@ -207,7 +207,9 @@ export default function StockManagement() {
           <div className="max-w-7xl mx-auto space-y-6">
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-3xl font-bold">Stock Management</h1>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                  Stock Management{" "}
+                </h1>
                 <p className="text-muted-foreground">
                   Track and manage medication stock movements
                 </p>

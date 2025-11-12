@@ -6,9 +6,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Search, Download, Eye, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -18,11 +39,41 @@ const Invoices = () => {
   const { toast } = useToast();
 
   const invoices = [
-    { id: "INV-2024001", patient: "John Doe", date: "2024-03-15", amount: "$450.00", status: "Paid" },
-    { id: "INV-2024002", patient: "Jane Smith", date: "2024-03-14", amount: "$780.00", status: "Pending" },
-    { id: "INV-2024003", patient: "Bob Johnson", date: "2024-03-13", amount: "$320.00", status: "Paid" },
-    { id: "INV-2024004", patient: "Alice Williams", date: "2024-03-12", amount: "$1,250.00", status: "Overdue" },
-    { id: "INV-2024005", patient: "Charlie Brown", date: "2024-03-11", amount: "$590.00", status: "Paid" },
+    {
+      id: "INV-2024001",
+      patient: "John Doe",
+      date: "2024-03-15",
+      amount: "$450.00",
+      status: "Paid",
+    },
+    {
+      id: "INV-2024002",
+      patient: "Jane Smith",
+      date: "2024-03-14",
+      amount: "$780.00",
+      status: "Pending",
+    },
+    {
+      id: "INV-2024003",
+      patient: "Bob Johnson",
+      date: "2024-03-13",
+      amount: "$320.00",
+      status: "Paid",
+    },
+    {
+      id: "INV-2024004",
+      patient: "Alice Williams",
+      date: "2024-03-12",
+      amount: "$1,250.00",
+      status: "Overdue",
+    },
+    {
+      id: "INV-2024005",
+      patient: "Charlie Brown",
+      date: "2024-03-11",
+      amount: "$590.00",
+      status: "Paid",
+    },
   ];
 
   const handleCreateInvoice = (e: React.FormEvent) => {
@@ -48,12 +99,16 @@ const Invoices = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        
+
         <main className="flex-1 overflow-y-auto p-6">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Invoices</h1>
-              <p className="text-muted-foreground">Manage patient billing and invoices</p>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                Invoices{" "}
+              </h1>
+              <p className="text-muted-foreground">
+                Manage patient billing and invoices
+              </p>
             </div>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
@@ -104,15 +159,15 @@ const Invoices = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="due-date">Due Date</Label>
-                      <Input
-                        id="due-date"
-                        type="date"
-                        required
-                      />
+                      <Input id="due-date" type="date" required />
                     </div>
                   </div>
                   <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setDialogOpen(false)}
+                    >
                       Cancel
                     </Button>
                     <Button type="submit">Create Invoice</Button>
@@ -128,10 +183,7 @@ const Invoices = () => {
               <div className="flex gap-4 mt-4">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search invoices..."
-                    className="pl-10"
-                  />
+                  <Input placeholder="Search invoices..." className="pl-10" />
                 </div>
                 <Button variant="outline">
                   <Download className="mr-2 h-4 w-4" />
@@ -154,16 +206,20 @@ const Invoices = () => {
                 <TableBody>
                   {invoices.map((invoice) => (
                     <TableRow key={invoice.id}>
-                      <TableCell className="font-medium">{invoice.id}</TableCell>
+                      <TableCell className="font-medium">
+                        {invoice.id}
+                      </TableCell>
                       <TableCell>{invoice.patient}</TableCell>
                       <TableCell>{invoice.date}</TableCell>
                       <TableCell>{invoice.amount}</TableCell>
                       <TableCell>
-                        <Badge 
+                        <Badge
                           variant={
-                            invoice.status === "Paid" ? "default" : 
-                            invoice.status === "Pending" ? "secondary" : 
-                            "destructive"
+                            invoice.status === "Paid"
+                              ? "default"
+                              : invoice.status === "Pending"
+                              ? "secondary"
+                              : "destructive"
                           }
                         >
                           {invoice.status}

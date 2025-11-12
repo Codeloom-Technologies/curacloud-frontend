@@ -269,7 +269,9 @@ export default function MedicationDispensing() {
           <div className="max-w-4xl mx-auto space-y-6">
             {/* Header */}
             <div>
-              <h1 className="text-3xl font-bold">Medication Dispensing</h1>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                Medication Dispensing{" "}
+              </h1>
               <p className="text-muted-foreground">
                 Dispense medications from prescription #
                 {prescriptionData?.reference}

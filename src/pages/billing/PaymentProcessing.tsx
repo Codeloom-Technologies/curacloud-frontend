@@ -1,11 +1,23 @@
 import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CreditCard, Banknote, Smartphone } from "lucide-react";
 
 const PaymentProcessing = () => {
@@ -25,11 +37,15 @@ const PaymentProcessing = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        
+
         <main className="flex-1 overflow-y-auto p-6">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-foreground">Payment Processing</h1>
-            <p className="text-muted-foreground">Process patient payments and transactions</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+              Payment Processing{" "}
+            </h1>
+            <p className="text-muted-foreground">
+              Process patient payments and transactions
+            </p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-3 mb-6">
@@ -40,7 +56,7 @@ const PaymentProcessing = () => {
                 <CardDescription>Credit or Debit card</CardDescription>
               </CardHeader>
             </Card>
-            
+
             <Card className="cursor-pointer hover:border-primary transition-colors">
               <CardHeader className="text-center">
                 <Banknote className="h-12 w-12 mx-auto mb-2 text-primary" />
@@ -48,7 +64,7 @@ const PaymentProcessing = () => {
                 <CardDescription>Cash transaction</CardDescription>
               </CardHeader>
             </Card>
-            
+
             <Card className="cursor-pointer hover:border-primary transition-colors">
               <CardHeader className="text-center">
                 <Smartphone className="h-12 w-12 mx-auto mb-2 text-primary" />
@@ -126,8 +142,12 @@ const PaymentProcessing = () => {
                 </div>
 
                 <div className="flex gap-3 pt-4">
-                  <Button type="submit" className="flex-1">Process Payment</Button>
-                  <Button type="button" variant="outline">Cancel</Button>
+                  <Button type="submit" className="flex-1">
+                    Process Payment
+                  </Button>
+                  <Button type="button" variant="outline">
+                    Cancel
+                  </Button>
                 </div>
               </form>
             </CardContent>

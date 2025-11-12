@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, FileText, CreditCard, TrendingUp } from "lucide-react";
@@ -10,10 +16,30 @@ const BillingOverview = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const stats = [
-    { title: "Total Revenue", value: "$45,231.89", change: "+20.1%", icon: DollarSign },
-    { title: "Outstanding", value: "$12,234.50", change: "-8%", icon: FileText },
-    { title: "Payments Today", value: "$3,543.00", change: "+15%", icon: CreditCard },
-    { title: "Monthly Growth", value: "+12.5%", change: "+4.2%", icon: TrendingUp },
+    {
+      title: "Total Revenue",
+      value: "$45,231.89",
+      change: "+20.1%",
+      icon: DollarSign,
+    },
+    {
+      title: "Outstanding",
+      value: "$12,234.50",
+      change: "-8%",
+      icon: FileText,
+    },
+    {
+      title: "Payments Today",
+      value: "$3,543.00",
+      change: "+15%",
+      icon: CreditCard,
+    },
+    {
+      title: "Monthly Growth",
+      value: "+12.5%",
+      change: "+4.2%",
+      icon: TrendingUp,
+    },
   ];
 
   return (
@@ -30,26 +56,39 @@ const BillingOverview = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
-        
+
         <main className="flex-1 overflow-y-auto p-6">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-foreground">Billing Overview</h1>
-            <p className="text-muted-foreground">Monitor revenue, invoices, and payment status</p>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+              Billing Overview{" "}
+            </h1>
+            <p className="text-muted-foreground">
+              Monitor revenue, invoices, and payment status
+            </p>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-6">
             {stats.map((stat) => (
               <Card key={stat.title}>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    {stat.title}
+                  </CardTitle>
                   <stat.icon className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{stat.value}</div>
                   <p className="text-xs text-muted-foreground">
-                    <span className={stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}>
+                    <span
+                      className={
+                        stat.change.startsWith("+")
+                          ? "text-green-600"
+                          : "text-red-600"
+                      }
+                    >
                       {stat.change}
-                    </span> from last month
+                    </span>{" "}
+                    from last month
                   </p>
                 </CardContent>
               </Card>
@@ -65,13 +104,20 @@ const BillingOverview = () => {
               <CardContent>
                 <div className="space-y-4">
                   {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="flex items-center justify-between border-b pb-3">
+                    <div
+                      key={i}
+                      className="flex items-center justify-between border-b pb-3"
+                    >
                       <div>
                         <p className="font-medium">INV-{2024000 + i}</p>
-                        <p className="text-sm text-muted-foreground">Patient #{1000 + i}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Patient #{1000 + i}
+                        </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold">${(Math.random() * 1000).toFixed(2)}</p>
+                        <p className="font-semibold">
+                          ${(Math.random() * 1000).toFixed(2)}
+                        </p>
                         <Badge variant={i % 2 === 0 ? "default" : "secondary"}>
                           {i % 2 === 0 ? "Paid" : "Pending"}
                         </Badge>

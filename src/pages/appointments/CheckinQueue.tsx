@@ -185,7 +185,9 @@ export default function CheckinQueue() {
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Page Header */}
             <div>
-              <h1 className="text-3xl font-bold">Check-in Queue</h1>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                Check-in Queue{" "}
+              </h1>
               <p className="text-muted-foreground">
                 Manage patient check-ins and appointment flow
               </p>

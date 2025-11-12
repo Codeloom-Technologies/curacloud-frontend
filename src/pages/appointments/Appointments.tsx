@@ -325,7 +325,9 @@ export default function Appointments() {
             {/* Page Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold">Appointment Scheduling</h1>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                  Appointment Scheduling{" "}
+                </h1>
                 <p className="text-muted-foreground">
                   Manage and schedule patient appointments
                 </p>
