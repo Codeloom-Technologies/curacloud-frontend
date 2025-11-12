@@ -484,7 +484,7 @@ export default function PrescriptionProcessing() {
                               "processed" && (
                               <Button
                                 type="button"
-                                variant="ghost"
+                                variant="default"
                                 size="sm"
                                 onClick={() =>
                                   navigate(

@@ -742,13 +742,8 @@ export default function Prescriptions() {
                   </Card>
                 ))
               )}{" "}
-            </div>
-
-            {/* Pagination */}
-            {!isFetchingPrescriptions &&
-              !isLoadingPrescriptions &&
-              prescriptions.length > 0 &&
-              totalPages > 1 && (
+              {/* Pagination */}
+              {!isFetchingPrescriptions && !isLoadingPrescriptions && (
                 <div className="mt-6 flex justify-center">
                   <Pagination>
                     <PaginationContent>
@@ -791,6 +786,7 @@ export default function Prescriptions() {
                   </Pagination>
                 </div>
               )}
+            </div>
 
             {/* New Prescription Form Modal */}
             {showNewPrescriptionForm && (

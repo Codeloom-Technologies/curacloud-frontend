@@ -17,7 +17,10 @@ import { Package, User, Calendar, Pill } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { useParams, useNavigate } from "react-router-dom";
-import { getPrescriptionByRef, updateStatus } from "@/services/prescription";
+import {
+  getPrescriptionByRef,
+  updateDispensedStatus,
+} from "@/services/prescription";
 
 interface MedicationItem {
   id: string;
@@ -102,10 +105,14 @@ export default function MedicationDispensing() {
 
   const dispenseMedicationMutation = useMutation({
     mutationFn: () => {
-      if (!prescriptionData?.id) {
+      if (!selectedMedication?.id) {
         throw new Error("Prescription ID is required");
       }
-      return updateStatus(prescriptionData.id, "dispensed");
+      return updateDispensedStatus(
+        selectedMedication.id as any,
+        "dispensed",
+        formData.quantityDispensed
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["prescriptions"] });
@@ -120,9 +127,12 @@ export default function MedicationDispensing() {
       });
 
       // Navigate back after successful dispense
-      setTimeout(() => {
-        navigate("/dashboard/pharmacy/prescriptions");
-      }, 2000);
+      navigate(`/dashboard/pharmacy/dispensing/${id}`);
+      setFormData((prev) => ({
+        ...prev,
+        quantityDispensed: "",
+        instructions: "",
+      }));
     },
     onError: (error: any) => {
       toast({
@@ -360,17 +370,19 @@ export default function MedicationDispensing() {
                           <SelectValue placeholder="Choose medication to dispense" />
                         </SelectTrigger>
                         <SelectContent>
-                          {prescriptionData?.items?.map(
-                            (medication: MedicationItem, index: number) => (
-                              <SelectItem
-                                key={index}
-                                value={medication.medicationName}
-                              >
-                                {medication.medicationName} -{" "}
-                                {medication.dosage}
-                              </SelectItem>
-                            )
-                          )}
+                          {prescriptionData?.items
+                            ?.filter((val) => val.status !== "dispensed")
+                            .map(
+                              (medication: MedicationItem, index: number) => (
+                                <SelectItem
+                                  key={index}
+                                  value={medication.medicationName}
+                                >
+                                  {medication.medicationName} -{" "}
+                                  {medication.dosage}
+                                </SelectItem>
+                              )
+                            )}
                         </SelectContent>
                       </Select>
                     </div>
