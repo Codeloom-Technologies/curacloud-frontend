@@ -155,11 +155,11 @@ const navigationItems = [
         href: "/dashboard/pharmacy/prescriptions",
         permission: "pharmacy.prescriptions" as Permission,
       },
-      {
-        title: "Dispensing",
-        href: "/dashboard/pharmacy/dispensing",
-        permission: "pharmacy.dispensing" as Permission,
-      },
+      // {
+      //   title: "Dispensing",
+      //   href: "/dashboard/pharmacy/dispensing",
+      //   permission: "pharmacy.dispensing" as Permission,
+      // },
       {
         title: "Stock",
         href: "/dashboard/pharmacy/stock",

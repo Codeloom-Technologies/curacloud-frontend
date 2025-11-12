@@ -75,7 +75,6 @@ export default function StockManagement() {
     queryKey: ["pharmacy-inventory-medications"],
     queryFn: () => getStockMedications(),
   });
-  console.log(medicationResponse);
 
   const queryClient = useQueryClient();
   const perPage = 10;
@@ -109,6 +108,7 @@ export default function StockManagement() {
     data: responseData,
     isLoading: isLoadingStocks,
     isFetching: isFetchingStock,
+    refetch,
   } = useQuery({
     queryKey: ["pharmacy-inventory-stocks", currentPage, debouncedSearch],
     queryFn: () => getStockHistory(currentPage, perPage, debouncedSearch),
@@ -122,12 +122,14 @@ export default function StockManagement() {
   const adjustStockMutation = useMutation({
     mutationFn: adjustStock,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["stock-movements"] });
+      refetch();
+      // queryClient.invalidateQueries({ queryKey: ["stock-movements"] });
       queryClient.invalidateQueries({
         queryKey: [
-          "pharmacy-inventory",
           "pharmacy-summary-stats",
           "pharmacy-inventory-stats",
+          "pharmacy-inventory-stocks",
+          "stock-movements",
         ],
       });
       toast({

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/button";
@@ -13,14 +13,40 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Package } from "lucide-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Package, User, Calendar, Pill } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
+import { useParams, useNavigate } from "react-router-dom";
+import { getPrescriptionByRef, updateStatus } from "@/services/prescription";
+
+interface MedicationItem {
+  id: string;
+  medicationName: string;
+  dosage: string;
+  frequency: string;
+  duration: string;
+  instructions?: string;
+}
+
+interface FormData {
+  prescriptionId: string;
+  patientId: string;
+  medicationId: string;
+  quantityDispensed: string;
+  dispensedBy: string;
+  instructions: string;
+  notes: string;
+}
 
 export default function MedicationDispensing() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [formData, setFormData] = useState({
+  const [selectedMedication, setSelectedMedication] =
+    useState<MedicationItem | null>(null);
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const [formData, setFormData] = useState<FormData>({
     prescriptionId: "",
     patientId: "",
     medicationId: "",
@@ -30,34 +56,78 @@ export default function MedicationDispensing() {
     notes: "",
   });
 
-  const queryClient = useQueryClient();
+  // Fetch prescription data
+  const {
+    data: prescriptionData,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["get-prescription-by-ref", id],
+    queryFn: () => getPrescriptionByRef(id!),
+    enabled: !!id,
+  });
+
+  // Initialize form data when prescription data is loaded
+  useEffect(() => {
+    if (prescriptionData) {
+      const user = localStorage.getItem("authUser");
+      const parsedUser = user ? JSON.parse(user) : null;
+
+      setFormData((prev) => ({
+        ...prev,
+        prescriptionId: prescriptionData.reference || prescriptionData.id || "",
+        patientId:
+          prescriptionData.patient?.medicalRecordNumber ||
+          prescriptionData.patientId ||
+          "",
+        dispensedBy: parsedUser?.fullName || "",
+        notes: prescriptionData.notes || "",
+      }));
+    }
+  }, [prescriptionData]);
+
+  // Handle medication selection
+  const handleMedicationSelect = (medicationName: string) => {
+    const medication = prescriptionData?.items?.find(
+      (item: MedicationItem) => item.medicationName === medicationName
+    );
+    setSelectedMedication(medication || null);
+    setFormData((prev) => ({
+      ...prev,
+      medicationId: medicationName,
+      instructions: medication?.instructions || "",
+    }));
+  };
 
   const dispenseMedicationMutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
-      // Replace with actual API call
-      console.log("Dispensing medication:", data);
-      return data;
+    mutationFn: () => {
+      if (!prescriptionData?.id) {
+        throw new Error("Prescription ID is required");
+      }
+      return updateStatus(prescriptionData.id, "dispensed");
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dispensing-records"] });
+      queryClient.invalidateQueries({ queryKey: ["prescriptions"] });
+      queryClient.invalidateQueries({
+        queryKey: ["get-prescription-by-ref", id],
+      });
+
       toast({
         title: "Success",
         description: "Medication dispensed successfully",
+        variant: "success",
       });
-      setFormData({
-        prescriptionId: "",
-        patientId: "",
-        medicationId: "",
-        quantityDispensed: "",
-        dispensedBy: "",
-        instructions: "",
-        notes: "",
-      });
+
+      // Navigate back after successful dispense
+      setTimeout(() => {
+        navigate("/dashboard/pharmacy/prescriptions");
+      }, 2000);
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to dispense medication",
+        description: error.message || "Failed to dispense medication",
         variant: "destructive",
       });
     },
@@ -65,16 +135,107 @@ export default function MedicationDispensing() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    dispenseMedicationMutation.mutate(formData);
+
+    // Validation
+    if (!formData.quantityDispensed || !formData.medicationId) {
+      toast({
+        title: "Validation Error",
+        description: "Please select a medication and enter quantity",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (parseInt(formData.quantityDispensed) <= 0) {
+      toast({
+        title: "Validation Error",
+        description: "Quantity must be greater than 0",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    dispenseMedicationMutation.mutate();
   };
+
+  const resetForm = () => {
+    setFormData({
+      prescriptionId: prescriptionData?.reference || "",
+      patientId: prescriptionData?.patient?.medicalRecordNumber || "",
+      medicationId: "",
+      quantityDispensed: "",
+      dispensedBy: formData.dispensedBy, // Keep the dispensedBy name
+      instructions: "",
+      notes: prescriptionData?.notes || "",
+    });
+    setSelectedMedication(null);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex w-full bg-background">
+        <Sidebar />
+        <div className="flex-1 flex flex-col">
+          <Header />
+          <main className="flex-1 overflow-y-auto p-6">
+            <div className="max-w-4xl mx-auto space-y-6">
+              <div className="animate-pulse">
+                <div className="h-8 bg-muted rounded w-1/3 mb-2"></div>
+                <div className="h-4 bg-muted rounded w-1/2"></div>
+              </div>
+              <Card>
+                <CardContent className="p-6">
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-4 bg-muted rounded w-1/4"></div>
+                    <div className="h-10 bg-muted rounded"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-screen flex w-full bg-background">
+        <Sidebar />
+        <div className="flex-1 flex flex-col">
+          <Header />
+          <main className="flex-1 overflow-y-auto p-6">
+            <div className="max-w-4xl mx-auto space-y-6">
+              <Card>
+                <CardContent className="p-6 text-center">
+                  <div className="text-red-600 mb-4">
+                    <Package className="h-16 w-16 mx-auto mb-2" />
+                    <h3 className="text-lg font-semibold">
+                      Prescription Not Found
+                    </h3>
+                  </div>
+                  <p className="text-muted-foreground mb-4">
+                    {error?.message ||
+                      "The prescription you're looking for doesn't exist or has been removed."}
+                  </p>
+                  <Button
+                    onClick={() =>
+                      navigate("/dashboard/pharmacy/prescription-processing")
+                    }
+                  >
+                    Back to Prescriptions
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex w-full bg-background">
-      {/* <Sidebar
-        className={`${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } lg:translate-x-0 transition-transform duration-300 ease-in-out fixed lg:static z-30 h-screen`}
-      /> */}
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform md:relative md:translate-x-0 ${
@@ -96,30 +257,71 @@ export default function MedicationDispensing() {
 
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-4xl mx-auto space-y-6">
+            {/* Header */}
             <div>
               <h1 className="text-3xl font-bold">Medication Dispensing</h1>
               <p className="text-muted-foreground">
-                Dispense medications to patients
+                Dispense medications from prescription #
+                {prescriptionData?.reference}
               </p>
             </div>
 
+            {/* Prescription Summary */}
             <Card>
               <CardHeader>
-                <CardTitle>Search Prescription</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Prescription Summary
+                </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                  <Input
-                    placeholder="Search by prescription ID or patient name..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <div className="font-medium">Patient</div>
+                      <div className="text-muted-foreground">
+                        {prescriptionData?.patient?.user?.firstName}{" "}
+                        {prescriptionData?.patient?.user?.lastName}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <div className="font-medium">Date</div>
+                      <div className="text-muted-foreground">
+                        {prescriptionData?.createdAt
+                          ? new Date(
+                              prescriptionData.createdAt
+                            ).toLocaleDateString()
+                          : "N/A"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Pill className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                      <div className="font-medium">Medications</div>
+                      <div className="text-muted-foreground">
+                        {prescriptionData?.items?.length || 0} medications
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full bg-muted-foreground"></div>
+                    <div>
+                      <div className="font-medium">Status</div>
+                      <div className="text-muted-foreground capitalize">
+                        {prescriptionData?.status || "pending"}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
+            {/* Dispensing Form */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -128,57 +330,47 @@ export default function MedicationDispensing() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="prescriptionId">Prescription ID *</Label>
+                      <Label htmlFor="prescriptionId">Prescription ID</Label>
                       <Input
                         id="prescriptionId"
-                        required
+                        readOnly
                         value={formData.prescriptionId}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            prescriptionId: e.target.value,
-                          })
-                        }
-                        placeholder="Enter prescription ID"
+                        className="bg-muted"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="patientId">Patient ID *</Label>
+                      <Label htmlFor="patientId">Patient ID</Label>
                       <Input
                         id="patientId"
-                        required
+                        readOnly
                         value={formData.patientId}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            patientId: e.target.value,
-                          })
-                        }
-                        placeholder="Enter patient ID"
+                        className="bg-muted"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="medicationId">Medication *</Label>
+                      <Label htmlFor="medicationId">Select Medication *</Label>
                       <Select
                         value={formData.medicationId}
-                        onValueChange={(value) =>
-                          setFormData({ ...formData, medicationId: value })
-                        }
+                        onValueChange={handleMedicationSelect}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select medication" />
+                          <SelectValue placeholder="Choose medication to dispense" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="med1">
-                            Paracetamol 500mg
-                          </SelectItem>
-                          <SelectItem value="med2">
-                            Amoxicillin 250mg
-                          </SelectItem>
-                          <SelectItem value="med3">Ibuprofen 400mg</SelectItem>
+                          {prescriptionData?.items?.map(
+                            (medication: MedicationItem, index: number) => (
+                              <SelectItem
+                                key={index}
+                                value={medication.medicationName}
+                              >
+                                {medication.medicationName} -{" "}
+                                {medication.dosage}
+                              </SelectItem>
+                            )
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -189,6 +381,7 @@ export default function MedicationDispensing() {
                       <Input
                         id="quantityDispensed"
                         type="number"
+                        min="1"
                         required
                         value={formData.quantityDispensed}
                         onChange={(e) =>
@@ -201,69 +394,111 @@ export default function MedicationDispensing() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="dispensedBy">Dispensed By *</Label>
+                      <Label htmlFor="dispensedBy">Dispensed By</Label>
                       <Input
                         id="dispensedBy"
-                        required
+                        readOnly
                         value={formData.dispensedBy}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            dispensedBy: e.target.value,
-                          })
-                        }
-                        placeholder="Pharmacist name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="instructions">Instructions</Label>
-                      <Textarea
-                        id="instructions"
-                        value={formData.instructions}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            instructions: e.target.value,
-                          })
-                        }
-                        placeholder="Dispensing instructions"
-                        rows={3}
-                      />
-                    </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="notes">Additional Notes</Label>
-                      <Textarea
-                        id="notes"
-                        value={formData.notes}
-                        onChange={(e) =>
-                          setFormData({ ...formData, notes: e.target.value })
-                        }
-                        placeholder="Any additional notes"
-                        rows={3}
+                        className="bg-muted"
                       />
                     </div>
                   </div>
-                  <div className="flex justify-end gap-2">
+
+                  {/* Selected Medication Details */}
+                  {selectedMedication && (
+                    <Card className="bg-muted/50">
+                      <CardContent className="p-4">
+                        <h4 className="font-medium mb-2">
+                          Selected Medication Details
+                        </h4>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="font-medium">Dosage:</span>
+                            <p className="text-muted-foreground">
+                              {selectedMedication.dosage}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="font-medium">Frequency:</span>
+                            <p className="text-muted-foreground">
+                              {selectedMedication.frequency}
+                            </p>
+                          </div>
+                          <div>
+                            <span className="font-medium">Duration:</span>
+                            <p className="text-muted-foreground">
+                              {selectedMedication.duration}
+                            </p>
+                          </div>
+                          {selectedMedication.instructions && (
+                            <div className="col-span-2">
+                              <span className="font-medium">Instructions:</span>
+                              <p className="text-muted-foreground">
+                                {selectedMedication.instructions}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label htmlFor="instructions">
+                      Dispensing Instructions
+                    </Label>
+                    <Textarea
+                      id="instructions"
+                      value={formData.instructions}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          instructions: e.target.value,
+                        })
+                      }
+                      placeholder="Additional dispensing instructions..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="notes">Additional Notes</Label>
+                    <Textarea
+                      id="notes"
+                      readOnly
+                      value={formData.notes}
+                      onChange={(e) =>
+                        setFormData({ ...formData, notes: e.target.value })
+                      }
+                      placeholder="Any additional notes for this dispensing..."
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4">
                     <Button
                       type="button"
                       variant="outline"
                       onClick={() =>
-                        setFormData({
-                          prescriptionId: "",
-                          patientId: "",
-                          medicationId: "",
-                          quantityDispensed: "",
-                          dispensedBy: "",
-                          instructions: "",
-                          notes: "",
-                        })
+                        navigate("/dashboard/pharmacy/prescriptions")
                       }
                     >
-                      Clear
+                      Cancel
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={resetForm}
+                      disabled={dispenseMedicationMutation.isPending}
+                    >
+                      Reset
                     </Button>
                     <Button
                       type="submit"
-                      disabled={dispenseMedicationMutation.isPending}
+                      disabled={
+                        dispenseMedicationMutation.isPending ||
+                        !formData.medicationId
+                      }
                     >
                       {dispenseMedicationMutation.isPending
                         ? "Dispensing..."

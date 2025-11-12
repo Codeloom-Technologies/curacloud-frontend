@@ -48,3 +48,22 @@ export const getPrescriptionStats = async () => {
   const response = await apiClient(`/prescriptions/stats`);
   return response;
 };
+
+export const updateStatus = async (id: number, status: string) => {
+  console.log({ id }, { status });
+  const response = await apiClient(`/prescriptions/${id}/status`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+
+  if (!response) {
+    const error = await response;
+    throw new Error(error.message || "Failed to update status ");
+  }
+  return response;
+};
+
+export const getPrescriptionByRef = async (reference: string) => {
+  const response = await apiClient(`/prescriptions/${reference}`);
+  return response;
+};

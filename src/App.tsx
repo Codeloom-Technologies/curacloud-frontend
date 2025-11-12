@@ -133,7 +133,7 @@ const App = () => (
             element={<PrescriptionProcessing />}
           />
           <Route
-            path="/dashboard/pharmacy/dispensing"
+            path="/dashboard/pharmacy/dispensing/:id"
             element={<MedicationDispensing />}
           />
           <Route
