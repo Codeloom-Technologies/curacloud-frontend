@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Button } from "@/components/ui/button";
@@ -28,76 +28,121 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, TrendingUp, TrendingDown, Package } from "lucide-react";
+import {
+  Search,
+  TrendingUp,
+  TrendingDown,
+  Package,
+  PercentCircle,
+} from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
+import {
+  adjustStock,
+  getStockHistory,
+  getStockMedications,
+  getStockSummary,
+} from "@/services/pharmacy";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 export default function StockManagement() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
   const [isAdjustDialogOpen, setIsAdjustDialogOpen] = useState(false);
   const [selectedMedication, setSelectedMedication] = useState<any>(null);
+
   const [adjustmentData, setAdjustmentData] = useState({
-    type: "add",
+    type: "Stock In",
     quantity: "",
     reason: "",
   });
 
-  const queryClient = useQueryClient();
+  const {
+    data: medicationResponse,
+    isLoading: isLoadingMedication,
+    isFetching: isFetchingMedication,
+  } = useQuery({
+    queryKey: ["pharmacy-inventory-medications"],
+    queryFn: () => getStockMedications(),
+  });
+  console.log(medicationResponse);
 
-  // Mock data - replace with actual API call
-  const { data: stockMovements = [], isLoading } = useQuery({
-    queryKey: ["stock-movements", searchQuery],
-    queryFn: async () => {
-      // Replace with actual API call
-      return [
-        {
-          id: "1",
-          medicationName: "Paracetamol 500mg",
-          type: "in",
-          quantity: 500,
-          previousStock: 200,
-          newStock: 700,
-          reason: "New stock received",
-          date: "2024-01-15",
-          performedBy: "John Doe",
-        },
-        {
-          id: "2",
-          medicationName: "Amoxicillin 250mg",
-          type: "out",
-          quantity: 50,
-          previousStock: 300,
-          newStock: 250,
-          reason: "Prescription dispensing",
-          date: "2024-01-15",
-          performedBy: "Jane Smith",
-        },
-      ];
-    },
+  const queryClient = useQueryClient();
+  const perPage = 10;
+
+  const {
+    data: statsData,
+    isLoading: isLoadingStats,
+    isFetching: isFetchingStats,
+  } = useQuery({
+    queryKey: ["pharmacy-summary-stats"],
+    queryFn: () => getStockSummary(),
   });
 
+  // Debounce search term
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setCurrentPage(1); // Reset to first page when searching
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const {
+    data: responseData,
+    isLoading: isLoadingStocks,
+    isFetching: isFetchingStock,
+  } = useQuery({
+    queryKey: ["pharmacy-inventory-stocks", currentPage, debouncedSearch],
+    queryFn: () => getStockHistory(currentPage, perPage, debouncedSearch),
+  });
+
+  // Extract data from response
+  const inventories = responseData?.inventories || [];
+  const meta = responseData?.meta || {};
+  const totalPages = meta.lastPage ?? 1;
+
   const adjustStockMutation = useMutation({
-    mutationFn: async (data: any) => {
-      // Replace with actual API call
-      console.log("Adjusting stock:", data);
-      return data;
-    },
+    mutationFn: adjustStock,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["stock-movements"] });
-      queryClient.invalidateQueries({ queryKey: ["pharmacy-inventory"] });
+      queryClient.invalidateQueries({
+        queryKey: [
+          "pharmacy-inventory",
+          "pharmacy-summary-stats",
+          "pharmacy-inventory-stats",
+        ],
+      });
       toast({
         title: "Success",
         description: "Stock adjusted successfully",
+        variant: "success",
       });
       setIsAdjustDialogOpen(false);
-      setAdjustmentData({ type: "add", quantity: "", reason: "" });
+      setAdjustmentData({ type: "Stock In", quantity: "", reason: "" });
       setSelectedMedication(null);
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to adjust stock",
+        description: error.message || "Failed to adjust stock",
         variant: "destructive",
       });
     },
@@ -107,14 +152,14 @@ export default function StockManagement() {
     e.preventDefault();
     if (selectedMedication) {
       adjustStockMutation.mutate({
-        medicationId: selectedMedication.id,
+        inventoryId: selectedMedication.id,
         ...adjustmentData,
-      });
+      } as any);
     }
   };
 
   const getMovementBadge = (type: string) => {
-    if (type === "in") {
+    if (type === "Stock In") {
       return (
         <Badge variant="default" className="bg-green-100 text-green-800">
           <TrendingUp className="h-3 w-3 mr-1" />
@@ -183,18 +228,35 @@ export default function StockManagement() {
                     <div className="space-y-2">
                       <Label htmlFor="medication">Medication *</Label>
                       <Select
-                        value={selectedMedication?.id}
-                        onValueChange={(value) =>
-                          setSelectedMedication({ id: value })
-                        }
+                        required={true}
+                        value={selectedMedication?.id || ""}
+                        onValueChange={(value) => {
+                          const selectedMed = medicationResponse.find(
+                            (med) => med.id === value
+                          );
+                          if (selectedMed) {
+                            setSelectedMedication({
+                              id: selectedMed.id,
+                              medicationName: selectedMed.medicationName,
+                            });
+                          }
+                        }}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select medication" />
+                          <SelectValue
+                            placeholder={
+                              isLoadingMedication || isFetchingMedication
+                                ? "Loading..."
+                                : "Select Medication"
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="1">Paracetamol 500mg</SelectItem>
-                          <SelectItem value="2">Amoxicillin 250mg</SelectItem>
-                          <SelectItem value="3">Ibuprofen 400mg</SelectItem>
+                          {medicationResponse?.map((value) => (
+                            <SelectItem key={value?.id} value={value?.id}>
+                              {value?.medicationName}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -210,8 +272,10 @@ export default function StockManagement() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="add">Add Stock</SelectItem>
-                          <SelectItem value="remove">Remove Stock</SelectItem>
+                          <SelectItem value="Stock In">Add Stock</SelectItem>
+                          <SelectItem value="Stock Out">
+                            Remove Stock
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -267,7 +331,7 @@ export default function StockManagement() {
               </Dialog>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -277,7 +341,11 @@ export default function StockManagement() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {stockMovements.length}
+                    {isLoadingStats || isFetchingStats ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      statsData.totalAdjustments || 0
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -290,7 +358,11 @@ export default function StockManagement() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {stockMovements.filter((m: any) => m.type === "in").length}
+                    {isLoadingStats || isFetchingStats ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      statsData.totalStockIns || 0
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -303,7 +375,33 @@ export default function StockManagement() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {stockMovements.filter((m: any) => m.type === "out").length}
+                    <div className="text-2xl font-bold">
+                      {isLoadingStats || isFetchingStats ? (
+                        <Skeleton className="h-8 w-16" />
+                      ) : (
+                        statsData.totalStockOuts || 0
+                      )}
+                    </div>{" "}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Net Movement
+                  </CardTitle>
+                  <PercentCircle className="h-4 w-4 text-red-600" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    <div className="text-2xl font-bold">
+                      {isLoadingStats || isFetchingStats ? (
+                        <Skeleton className="h-8 w-16" />
+                      ) : (
+                        statsData.netMovement || 0
+                      )}
+                    </div>{" "}
                   </div>
                 </CardContent>
               </Card>
@@ -338,38 +436,90 @@ export default function StockManagement() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {isLoading ? (
+                    {isLoadingStocks || isFetchingStock ? (
                       <TableRow>
                         <TableCell colSpan={8} className="text-center">
                           Loading...
                         </TableCell>
                       </TableRow>
-                    ) : stockMovements.length === 0 ? (
+                    ) : inventories.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={8} className="text-center">
                           No stock movements found
                         </TableCell>
                       </TableRow>
                     ) : (
-                      stockMovements.map((movement: any) => (
+                      inventories.map((movement: any) => (
                         <TableRow key={movement.id}>
-                          <TableCell>{movement.date}</TableCell>
+                          <TableCell>
+                            {new Date(movement.createdAt).toLocaleString()}
+                          </TableCell>
                           <TableCell className="font-medium">
-                            {movement.medicationName}
+                            {movement?.inventory.medicationName}
                           </TableCell>
                           <TableCell>
                             {getMovementBadge(movement.type)}
                           </TableCell>
                           <TableCell>{movement.quantity}</TableCell>
-                          <TableCell>{movement.previousStock}</TableCell>
+                          <TableCell>{movement.previousQuantity}</TableCell>
                           <TableCell>{movement.newStock}</TableCell>
                           <TableCell>{movement.reason}</TableCell>
-                          <TableCell>{movement.performedBy}</TableCell>
+                          <TableCell>
+                            {movement.performedByUser.fullName}
+                          </TableCell>
                         </TableRow>
                       ))
                     )}
                   </TableBody>
                 </Table>
+
+                {!isLoadingStocks && inventories.length > 0 && (
+                  <div className="mt-6 flex justify-center">
+                    <Pagination>
+                      <PaginationContent>
+                        <PaginationItem>
+                          <PaginationPrevious
+                            onClick={() =>
+                              currentPage > 1 &&
+                              handlePageChange(currentPage - 1)
+                            }
+                            className={
+                              currentPage === 1
+                                ? "pointer-events-none opacity-50"
+                                : "cursor-pointer"
+                            }
+                          />
+                        </PaginationItem>
+
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                          <PaginationItem key={i}>
+                            <PaginationLink
+                              onClick={() => handlePageChange(i + 1)}
+                              isActive={currentPage === i + 1}
+                              className="cursor-pointer"
+                            >
+                              {i + 1}
+                            </PaginationLink>
+                          </PaginationItem>
+                        ))}
+
+                        <PaginationItem>
+                          <PaginationNext
+                            onClick={() =>
+                              currentPage < totalPages &&
+                              handlePageChange(currentPage + 1)
+                            }
+                            className={
+                              currentPage === totalPages
+                                ? "pointer-events-none opacity-50"
+                                : "cursor-pointer"
+                            }
+                          />
+                        </PaginationItem>
+                      </PaginationContent>
+                    </Pagination>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

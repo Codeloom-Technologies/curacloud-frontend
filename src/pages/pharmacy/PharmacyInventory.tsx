@@ -64,7 +64,6 @@ export default function PharmacyInventory() {
 
   const queryClient = useQueryClient();
 
-  // Fixed useQuery hook
   const {
     data: responseData,
     isLoading,
@@ -88,8 +87,6 @@ export default function PharmacyInventory() {
     queryKey: ["pharmacy-inventory-stats"],
     queryFn: () => fetchInventorySummary(),
   });
-
-  console.log(statsData);
 
   const addMedicationMutation = useMutation({
     mutationFn: createPharmacyInventory,
