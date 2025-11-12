@@ -24,17 +24,15 @@ export const createPrescription = async (payload: {
 export const getPrescriptions = async (
   page: number = 1,
   perPage: number = 5,
-  search: string = ""
+  search: string = "",
+  statusFilter: string
 ) => {
   const queryParams = new URLSearchParams({
     page: page.toString(),
     perPage: perPage.toString(),
+    ...(search && { search }),
+    ...(statusFilter && statusFilter !== "all" && { status: statusFilter }),
   });
-
-  if (search && search.trim() !== "") {
-    queryParams.append("search", search.trim());
-  }
-
   const response = await apiClient(`/prescriptions?${queryParams}`, {
     method: "GET",
   });
@@ -43,6 +41,10 @@ export const getPrescriptions = async (
     throw new Error(error.message || "Failed to create Prescriptions ");
   }
   const { data, meta } = response;
-  console.log({ data });
   return { prescriptions: data, meta };
+};
+
+export const getPrescriptionStats = async () => {
+  const response = await apiClient(`/prescriptions/stats`);
+  return response;
 };
