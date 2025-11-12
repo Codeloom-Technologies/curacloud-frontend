@@ -77,7 +77,7 @@ export default function PharmacyInventory() {
   // Extract data from response
   const inventories = responseData?.inventories || [];
   const meta = responseData?.meta || {};
-  const totalPages = meta.lastPage ?? 1;
+  const totalPages = meta?.lastPage ?? 1;
 
   const {
     data: statsData,
@@ -384,7 +384,7 @@ export default function PharmacyInventory() {
                     {isLoadingStats || isFetchingStats ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
-                      statsData.totalItems || 0
+                      statsData?.totalItems || 0
                     )}
                   </div>
                 </CardContent>
@@ -401,7 +401,7 @@ export default function PharmacyInventory() {
                     {isLoadingStats || isFetchingStats ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
-                      statsData.lowStockCount || 0
+                      statsData?.lowStockCount || 0
                     )}
                   </div>
                 </CardContent>
@@ -418,7 +418,7 @@ export default function PharmacyInventory() {
                     {isLoadingStats || isFetchingStats ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
-                      formatNaira(statsData.totalValue)
+                      formatNaira(statsData?.totalValue)
                     )}
                   </div>
                 </CardContent>

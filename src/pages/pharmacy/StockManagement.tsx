@@ -117,7 +117,7 @@ export default function StockManagement() {
   // Extract data from response
   const inventories = responseData?.inventories || [];
   const meta = responseData?.meta || {};
-  const totalPages = meta.lastPage ?? 1;
+  const totalPages = meta?.lastPage ?? 1;
 
   const adjustStockMutation = useMutation({
     mutationFn: adjustStock,
@@ -231,13 +231,13 @@ export default function StockManagement() {
                         required={true}
                         value={selectedMedication?.id || ""}
                         onValueChange={(value) => {
-                          const selectedMed = medicationResponse.find(
-                            (med) => med.id === value
+                          const selectedMed = medicationResponse?.find(
+                            (med) => med?.id === value
                           );
                           if (selectedMed) {
                             setSelectedMedication({
-                              id: selectedMed.id,
-                              medicationName: selectedMed.medicationName,
+                              id: selectedMed?.id,
+                              medicationName: selectedMed?.medicationName,
                             });
                           }
                         }}
@@ -344,7 +344,7 @@ export default function StockManagement() {
                     {isLoadingStats || isFetchingStats ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
-                      statsData.totalAdjustments || 0
+                      statsData?.totalAdjustments || 0
                     )}
                   </div>
                 </CardContent>
@@ -361,7 +361,7 @@ export default function StockManagement() {
                     {isLoadingStats || isFetchingStats ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
-                      statsData.totalStockIns || 0
+                      statsData?.totalStockIns || 0
                     )}
                   </div>
                 </CardContent>
@@ -379,7 +379,7 @@ export default function StockManagement() {
                       {isLoadingStats || isFetchingStats ? (
                         <Skeleton className="h-8 w-16" />
                       ) : (
-                        statsData.totalStockOuts || 0
+                        statsData?.totalStockOuts || 0
                       )}
                     </div>{" "}
                   </div>
@@ -399,7 +399,7 @@ export default function StockManagement() {
                       {isLoadingStats || isFetchingStats ? (
                         <Skeleton className="h-8 w-16" />
                       ) : (
-                        statsData.netMovement || 0
+                        statsData?.netMovement || 0
                       )}
                     </div>{" "}
                   </div>
