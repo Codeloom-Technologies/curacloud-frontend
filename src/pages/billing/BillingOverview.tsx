@@ -143,10 +143,6 @@ const BillingOverview = () => {
     );
   };
 
-  const formatCurrency = (amount: number) => {
-    return `₦${amount.toLocaleString()}`;
-  };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-NG", {
       day: "numeric",
@@ -360,7 +356,7 @@ const BillingOverview = () => {
                           </div>
                           <div className="text-right">
                             <p className="font-semibold text-sm">
-                              {formatCurrency(invoice?.amount)}
+                              {formatNaira(invoice?.amount)}
                             </p>
                             {getStatusBadge(invoice?.status)}
                           </div>
@@ -455,7 +451,7 @@ const BillingOverview = () => {
                         </div>
                         <div className="flex justify-between items-center">
                           <span className="text-sm text-muted-foreground">
-                            Un Paid
+                            Unpaid
                           </span>
                           <span className="font-medium">
                             {invoiceMonthyStats?.unpaid || 0}
