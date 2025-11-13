@@ -20,8 +20,13 @@ import {
   Clock,
   Download,
   Plus,
+  AlertCircle,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { fetchRecentBillings, getInvoiceStats } from "@/services/billing";
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatNaira } from "@/lib/formatters";
 
 const BillingOverview = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -63,45 +68,29 @@ const BillingOverview = () => {
     },
   ];
 
-  const recentInvoices = [
-    {
-      id: 1,
-      number: "INV-241215001",
-      patient: "John Doe",
-      amount: 25000,
-      status: "paid",
-      date: "2024-12-15",
-    },
-    {
-      id: 2,
-      number: "INV-241215002",
-      patient: "Jane Smith",
-      amount: 15000,
-      status: "pending",
-      date: "2024-12-15",
-    },
-    {
-      id: 3,
-      number: "INV-241214001",
-      patient: "Bob Johnson",
-      amount: 35000,
-      status: "paid",
-      date: "2024-12-14",
-    },
-    {
-      id: 4,
-      number: "INV-241214002",
-      patient: "Sarah Wilson",
-      amount: 18000,
-      status: "overdue",
-      date: "2024-12-10",
-    },
-  ];
+  const {
+    data: recentInvoices,
+    isLoading: isLoadingInvoices,
+    isFetching: isFetchingInvoices,
+  } = useQuery({
+    queryKey: ["recent-invoices"],
+    queryFn: () => fetchRecentBillings(),
+  });
+
+  const {
+    data: invoiceStats,
+    isFetching: isFetchingInvoiceStats,
+    isLoading: isLoadingInvoiceStats,
+  } = useQuery({
+    queryKey: ["invoice-stats"],
+    queryFn: () => getInvoiceStats(),
+  });
 
   const getStatusBadge = (status: string) => {
     const variants = {
       paid: { variant: "default" as const, icon: CheckCircle2, text: "Paid" },
       pending: { variant: "secondary" as const, icon: Clock, text: "Pending" },
+      unPaid: { variant: "secondary" as const, icon: Clock, text: "Un Paid" },
       overdue: {
         variant: "destructive" as const,
         icon: AlertTriangle,
@@ -240,56 +229,102 @@ const BillingOverview = () => {
                   </Button>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    {recentInvoices.map((invoice) => (
-                      <div
-                        key={invoice.id}
-                        className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"
-                        onClick={() =>
-                          navigate(`/dashboard/billing/invoices/${invoice.id}`)
-                        }
+                  {isLoadingInvoices || isFetchingInvoices ? (
+                    // Loading state
+                    <div className="space-y-4">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3 rounded-lg border"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-muted animate-pulse">
+                              <div className="h-4 w-4 bg-muted-foreground/20 rounded"></div>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="h-4 w-20 bg-muted-foreground/20 rounded animate-pulse"></div>
+                              <div className="h-3 w-16 bg-muted-foreground/20 rounded animate-pulse"></div>
+                              <div className="h-3 w-12 bg-muted-foreground/20 rounded animate-pulse"></div>
+                            </div>
+                          </div>
+                          <div className="text-right space-y-2">
+                            <div className="h-4 w-16 bg-muted-foreground/20 rounded animate-pulse"></div>
+                            <div className="h-6 w-12 bg-muted-foreground/20 rounded animate-pulse"></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : recentInvoices?.length === 0 ? (
+                    // Empty state
+                    <div className="text-center py-8">
+                      <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
+                      <p className="text-muted-foreground">
+                        No recent invoices found
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                        onClick={() => navigate("/dashboard/billing/invoices")}
                       >
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`p-2 rounded-lg ${
-                              invoice.status === "paid"
-                                ? "bg-green-100 dark:bg-green-900/20"
-                                : invoice.status === "overdue"
-                                ? "bg-red-100 dark:bg-red-900/20"
-                                : "bg-blue-100 dark:bg-blue-900/20"
-                            }`}
-                          >
-                            <FileText
-                              className={`h-4 w-4 ${
+                        View All Invoices
+                      </Button>
+                    </div>
+                  ) : (
+                    // Data state
+                    <div className="space-y-4">
+                      {recentInvoices?.map((invoice) => (
+                        <div
+                          key={invoice.id}
+                          className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"
+                          onClick={() =>
+                            navigate(
+                              `/dashboard/billing/invoices/${invoice.invoiceId}`
+                            )
+                          }
+                        >
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`p-2 rounded-lg ${
                                 invoice.status === "paid"
-                                  ? "text-green-600"
+                                  ? "bg-green-100 dark:bg-green-900/20"
                                   : invoice.status === "overdue"
-                                  ? "text-red-600"
-                                  : "text-blue-600"
+                                  ? "bg-red-100 dark:bg-red-900/20"
+                                  : "bg-blue-100 dark:bg-blue-900/20"
                               }`}
-                            />
+                            >
+                              <FileText
+                                className={`h-4 w-4 ${
+                                  invoice.status === "paid"
+                                    ? "text-green-600"
+                                    : invoice.status === "overdue"
+                                    ? "text-red-600"
+                                    : "text-blue-600"
+                                }`}
+                              />
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm">
+                                {invoice?.invoiceId}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {invoice.patient?.user?.fullName}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {formatDate(invoice?.billingDate)}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-sm">
-                              {invoice.number}
+                          <div className="text-right">
+                            <p className="font-semibold text-sm">
+                              {formatCurrency(invoice?.amount)}
                             </p>
-                            <p className="text-sm text-muted-foreground">
-                              {invoice.patient}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {formatDate(invoice.date)}
-                            </p>
+                            {getStatusBadge(invoice?.status)}
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-sm">
-                            {formatCurrency(invoice.amount)}
-                          </p>
-                          {getStatusBadge(invoice.status)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
@@ -336,32 +371,72 @@ const BillingOverview = () => {
                     <CardDescription>This month's performance</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">
-                        Paid Invoices
-                      </span>
-                      <span className="font-medium">24</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">
-                        Pending
-                      </span>
-                      <span className="font-medium">8</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-muted-foreground">
-                        Overdue
-                      </span>
-                      <span className="font-medium text-red-600">3</span>
-                    </div>
-                    <div className="pt-3 border-t">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">
-                          Total Processed
-                        </span>
-                        <span className="font-bold">₦1,245,890</span>
+                    {isFetchingInvoiceStats || isLoadingInvoiceStats ? (
+                      // Loading state
+                      <div className="space-y-4">
+                        {Array.from({ length: 4 }).map((_, index) => (
+                          <div
+                            key={index}
+                            className="flex justify-between items-center"
+                          >
+                            <Skeleton className="h-4 w-24" />
+                            <Skeleton className="h-6 w-12" />
+                          </div>
+                        ))}
+                        <div className="pt-3 border-t">
+                          <div className="flex justify-between items-center">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-6 w-16" />
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    ) : !invoiceStats ? (
+                      // Empty/Error state
+                      <div className="text-center py-6">
+                        <AlertCircle className="h-8 w-8 text-muted-foreground/50 mx-auto mb-2" />
+                        <p className="text-muted-foreground text-sm">
+                          No payment data available
+                        </p>
+                      </div>
+                    ) : (
+                      // Data state
+                      <>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">
+                            Paid Invoices
+                          </span>
+                          <span className="font-medium">
+                            {invoiceStats?.paid || 0}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">
+                            Un Paid
+                          </span>
+                          <span className="font-medium">
+                            {invoiceStats?.unpaid || 0}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">
+                            Overdue
+                          </span>
+                          <span className="font-medium text-red-600">
+                            {invoiceStats?.overdue || 0}
+                          </span>
+                        </div>
+                        <div className="pt-3 border-t">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium">
+                              Total Processed
+                            </span>
+                            <span className="font-bold">
+                              {formatNaira(invoiceStats?.totalRevenue || 0)}
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               </div>

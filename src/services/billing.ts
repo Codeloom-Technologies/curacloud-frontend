@@ -82,3 +82,15 @@ export const getInvoiceByInvoiceId = async (id: string) => {
 
   return response;
 };
+
+export const fetchRecentBillings = async (): Promise<any | any> => {
+  const response = await apiClient(`/invoices/recent/invoices`);
+
+  if (!response) {
+    const error = await response;
+    throw new Error(error.message || "Failed to fetch billings");
+  }
+
+  return response;
+};
+// await new Promise((r) => setTimeout(r, 6000)); // ⏳ simulate  delay in s
