@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,75 +42,82 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { fetchPatientByMRN } from "@/services/patient";
+import {
+  createInvoice,
+  fetchAllBillings,
+  getInvoiceStats,
+} from "@/services/billing";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Invoices = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [debouncedId, setDebouncedId] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
+
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const invoices = [
-    {
-      id: "INV-241215001",
-      patient: "John Doe",
-      patientId: "MRN001",
-      date: "2024-12-15",
-      dueDate: "2024-12-22",
-      amount: 45000,
-      status: "paid",
-      service: "Consultation & Lab Tests",
-    },
-    {
-      id: "INV-241215002",
-      patient: "Jane Smith",
-      patientId: "MRN002",
-      date: "2024-12-15",
-      dueDate: "2024-12-25",
-      amount: 78000,
-      status: "pending",
-      service: "Dental Procedure",
-    },
-    {
-      id: "INV-241214001",
-      patient: "Bob Johnson",
-      patientId: "MRN003",
-      date: "2024-12-14",
-      dueDate: "2024-12-21",
-      amount: 32000,
-      status: "paid",
-      service: "General Checkup",
-    },
-    {
-      id: "INV-241214002",
-      patient: "Alice Williams",
-      patientId: "MRN004",
-      date: "2024-12-14",
-      dueDate: "2024-12-18",
-      amount: 125000,
-      status: "overdue",
-      service: "Surgical Procedure",
-    },
-    {
-      id: "INV-241213001",
-      patient: "Charlie Brown",
-      patientId: "MRN005",
-      date: "2024-12-13",
-      dueDate: "2024-12-20",
-      amount: 59000,
-      status: "paid",
-      service: "Specialist Consultation",
-    },
-  ];
+  const [formData, setFormData] = useState({
+    patientId: "",
+    amount: "",
+    notes: "",
+    service: "",
+    dueDate: "",
+  });
 
-  const patients = [
-    { id: "1", name: "John Doe", mrn: "MRN001" },
-    { id: "2", name: "Jane Smith", mrn: "MRN002" },
-    { id: "3", name: "Bob Johnson", mrn: "MRN003" },
-    { id: "4", name: "Alice Williams", mrn: "MRN004" },
-    { id: "5", name: "Charlie Brown", mrn: "MRN005" },
-  ];
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      if (formData.patientId) setDebouncedId(formData.patientId.trim());
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [formData.patientId]);
+
+  const {
+    data: patient,
+    isFetching,
+    isError,
+    isSuccess,
+  } = useQuery({
+    queryKey: ["fetchPatientByMRN", debouncedId],
+    queryFn: () => fetchPatientByMRN(debouncedId),
+    enabled: !!debouncedId,
+  });
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setCurrentPage(1);
+    }, 500);
+
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
+  const {
+    data: invoiceStats,
+    isFetching: isFetchingInvoiceStats,
+    isLoading: isLoadingInvoiceStats,
+  } = useQuery({
+    queryKey: ["invoice-stats", debouncedId],
+    queryFn: () => getInvoiceStats(),
+  });
 
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -137,33 +144,35 @@ const Invoices = () => {
     });
   };
 
-  const filteredInvoices = invoices.filter((invoice) => {
-    const matchesSearch =
-      invoice.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      invoice.patient.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      invoice.patientId.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesStatus =
-      statusFilter === "all" || invoice.status === statusFilter;
-
-    return matchesSearch && matchesStatus;
+  const mutation = useMutation({
+    mutationFn: createInvoice,
+    onSuccess: () => {
+      toast({
+        title: "Invoice Created",
+        description: "New invoice has been created successfully.",
+        variant: "success",
+      });
+      setDialogOpen(false);
+      setFormData({
+        patientId: "",
+        amount: "",
+        notes: "",
+        service: "",
+        dueDate: "",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Invoice Failed",
+        description: error.message || "Failed to create Invoice",
+        variant: "destructive",
+      });
+    },
   });
 
   const handleCreateInvoice = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Invoice Created",
-      description: "New invoice has been created successfully.",
-      variant: "success",
-    });
-    setDialogOpen(false);
-  };
-
-  const handleSendInvoice = (invoiceId: string) => {
-    toast({
-      title: "Invoice Sent",
-      description: `Invoice ${invoiceId} has been sent to the patient.`,
-    });
+    mutation.mutate({ ...formData, patientId: patient?.id } as any);
   };
 
   const handleDownloadInvoice = (invoiceId: string) => {
@@ -171,6 +180,35 @@ const Invoices = () => {
       title: "Download Started",
       description: `Downloading invoice ${invoiceId}...`,
     });
+  };
+
+  const handleSendInvoice = (invoiceId: string) => {
+    toast({
+      title: "Sending",
+      description: `sending invoice ${invoiceId}...`,
+    });
+  };
+
+  const {
+    data: invoicesData,
+    isLoading: isLoadingInvoices,
+    isFetching: isFetchingInvoices,
+  } = useQuery({
+    queryKey: ["invoices", currentPage, debouncedSearch, statusFilter],
+    queryFn: () =>
+      fetchAllBillings(currentPage, 10, debouncedSearch, statusFilter),
+  });
+
+  const invoices = invoicesData?.invoices ?? [];
+
+  const meta = invoicesData?.meta ?? {};
+  const totalPages = meta?.lastPage ?? 1;
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
   };
 
   return (
@@ -217,24 +255,33 @@ const Invoices = () => {
                   <form onSubmit={handleCreateInvoice}>
                     <div className="grid gap-4 py-4">
                       <div className="space-y-2">
-                        <Label htmlFor="patient">Patient *</Label>
-                        <Select required>
-                          <SelectTrigger id="patient">
-                            <SelectValue placeholder="Select patient" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {patients.map((patient) => (
-                              <SelectItem key={patient.id} value={patient.id}>
-                                <div className="flex flex-col">
-                                  <span>{patient.name}</span>
-                                  <span className="text-xs text-muted-foreground">
-                                    {patient.mrn}
-                                  </span>
-                                </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <div>
+                          <Label htmlFor="patientId">Patient ID *</Label>
+                          <Input
+                            id="patientId"
+                            placeholder="P001"
+                            required
+                            value={formData.patientId}
+                            onChange={(e) =>
+                              handleInputChange("patientId", e.target.value)
+                            }
+                          />
+                          {isFetching && (
+                            <p className="text-xs text-blue-500 mt-1 animate-pulse">
+                              Fetching patient info...
+                            </p>
+                          )}
+                          {isError && (
+                            <p className="text-xs text-red-500 mt-1">
+                              Unable to fetch patient info
+                            </p>
+                          )}
+                          {isSuccess && (
+                            <p className="text-xs text-green-500 mt-1">
+                              Patient found {patient?.user?.fullName}
+                            </p>
+                          )}
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="amount">Amount (₦) *</Label>
@@ -245,6 +292,10 @@ const Invoices = () => {
                           step="0.01"
                           min="0"
                           required
+                          value={formData.amount}
+                          onChange={(e) =>
+                            handleInputChange("amount", e.target.value)
+                          }
                         />
                       </div>
                       <div className="space-y-2">
@@ -253,12 +304,17 @@ const Invoices = () => {
                           id="service"
                           placeholder="e.g., Consultation, Lab Test"
                           required
+                          value={formData.service}
+                          onChange={(e) =>
+                            handleInputChange("service", e.target.value)
+                          }
                         />
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor="invoice-date">Invoice Date</Label>
                           <Input
+                            readOnly
                             id="invoice-date"
                             type="date"
                             defaultValue={
@@ -269,7 +325,15 @@ const Invoices = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="due-date">Due Date *</Label>
-                          <Input id="due-date" type="date" required />
+                          <Input
+                            id="due-date"
+                            type="date"
+                            required
+                            value={formData.dueDate}
+                            onChange={(e) =>
+                              handleInputChange("dueDate", e.target.value)
+                            }
+                          />
                         </div>
                       </div>
                       <div className="space-y-2">
@@ -277,6 +341,10 @@ const Invoices = () => {
                         <Input
                           id="notes"
                           placeholder="Additional notes (optional)"
+                          value={formData.notes}
+                          onChange={(e) =>
+                            handleInputChange("notes", e.target.value)
+                          }
                         />
                       </div>
                     </div>
@@ -304,7 +372,13 @@ const Invoices = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{invoices.length}</div>
+                  <div className="text-2xl font-bold">
+                    {isFetchingInvoiceStats || isLoadingInvoiceStats ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      invoiceStats?.total || 0
+                    )}
+                  </div>
                 </CardContent>
               </Card>
               <Card>
@@ -313,7 +387,11 @@ const Invoices = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-green-600">
-                    {invoices.filter((i) => i.status === "paid").length}
+                    {isFetchingInvoiceStats || isLoadingInvoiceStats ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      invoiceStats?.paid || 0
+                    )}{" "}
                   </div>
                 </CardContent>
               </Card>
@@ -323,7 +401,11 @@ const Invoices = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-yellow-600">
-                    {invoices.filter((i) => i.status === "pending").length}
+                    {isFetchingInvoiceStats || isLoadingInvoiceStats ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      invoiceStats?.unpaid || 0
+                    )}{" "}
                   </div>
                 </CardContent>
               </Card>
@@ -333,7 +415,11 @@ const Invoices = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-red-600">
-                    {invoices.filter((i) => i.status === "overdue").length}
+                    {isFetchingInvoiceStats || isLoadingInvoiceStats ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      invoiceStats?.overdue || 0
+                    )}{" "}
                   </div>
                 </CardContent>
               </Card>
@@ -390,7 +476,7 @@ const Invoices = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredInvoices.length === 0 ? (
+                    {invoices.length === 0 ? (
                       <TableRow>
                         <TableCell
                           colSpan={7}
@@ -400,7 +486,7 @@ const Invoices = () => {
                         </TableCell>
                       </TableRow>
                     ) : (
-                      filteredInvoices.map((invoice) => (
+                      invoices.map((invoice) => (
                         <TableRow
                           key={invoice.id}
                           className="hover:bg-muted/50"
@@ -408,20 +494,22 @@ const Invoices = () => {
                           <TableCell className="font-medium">
                             <div className="flex items-center gap-2">
                               <FileText className="h-4 w-4 text-muted-foreground" />
-                              {invoice.id}
+                              {invoice.invoiceId}
                             </div>
                           </TableCell>
                           <TableCell>
                             <div>
                               <div className="font-medium">
-                                {invoice.patient}
+                                {invoice?.patient?.user?.fullName}
                               </div>
                               <div className="text-sm text-muted-foreground">
-                                {invoice.patientId}
+                                {invoice?.patient?.medicalRecordNumber}
                               </div>
                             </div>
                           </TableCell>
-                          <TableCell>{formatDate(invoice.date)}</TableCell>
+                          <TableCell>
+                            {formatDate(invoice?.billingDate)}
+                          </TableCell>
                           <TableCell>
                             <div
                               className={
@@ -446,7 +534,7 @@ const Invoices = () => {
                                 size="sm"
                                 onClick={() =>
                                   navigate(
-                                    `/dashboard/billing/invoices/${invoice.id}`
+                                    `/dashboard/billing/invoices/${invoice.invoiceId}`
                                   )
                                 }
                               >
@@ -477,6 +565,50 @@ const Invoices = () => {
                 </Table>
               </CardContent>
             </Card>
+            {/* Pagination */}
+            {!isFetchingInvoices && !isLoadingInvoices && (
+              <div className="mt-6 flex justify-center">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        className={
+                          currentPage === 1
+                            ? "pointer-events-none opacity-50"
+                            : "cursor-pointer"
+                        }
+                      />
+                    </PaginationItem>
+
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (page) => (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            onClick={() => handlePageChange(page)}
+                            isActive={currentPage === page}
+                            className="cursor-pointer"
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      )
+                    )}
+
+                    <PaginationItem>
+                      <PaginationNext
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        className={
+                          currentPage === totalPages
+                            ? "pointer-events-none opacity-50"
+                            : "cursor-pointer"
+                        }
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
           </div>
         </main>
       </div>
