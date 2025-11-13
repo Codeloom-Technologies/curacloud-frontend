@@ -123,6 +123,7 @@ const Invoices = () => {
     const variants = {
       paid: { variant: "default" as const, label: "Paid" },
       pending: { variant: "secondary" as const, label: "Pending" },
+      unpaid: { variant: "secondary" as const, label: "Un Paid" },
       overdue: { variant: "destructive" as const, label: "Overdue" },
       draft: { variant: "outline" as const, label: "Draft" },
     };
@@ -173,6 +174,7 @@ const Invoices = () => {
   const handleCreateInvoice = (e: React.FormEvent) => {
     e.preventDefault();
     mutation.mutate({ ...formData, patientId: patient?.id } as any);
+    refetch();
   };
 
   const handleDownloadInvoice = (invoiceId: string) => {
@@ -193,6 +195,7 @@ const Invoices = () => {
     data: invoicesData,
     isLoading: isLoadingInvoices,
     isFetching: isFetchingInvoices,
+    refetch,
   } = useQuery({
     queryKey: ["invoices", currentPage, debouncedSearch, statusFilter],
     queryFn: () =>
