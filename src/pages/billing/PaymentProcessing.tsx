@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import {
@@ -26,43 +26,142 @@ import {
   Building,
   CheckCircle2,
   AlertCircle,
+  Search,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { markInvoiceAsPaid, fetchAllBillings } from "@/services/billing";
+import { useToast } from "@/hooks/use-toast";
 
 const PaymentProcessing = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
-    useState<string>("");
-  const [selectedPatient, setSelectedPatient] = useState<string>("");
-  const [selectedInvoice, setSelectedInvoice] = useState<string>("");
+    useState<string>("cash");
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string>("");
+  const [selectedInvoiceData, setSelectedInvoiceData] = useState<any>(null);
+  const [invoiceSearchQuery, setInvoiceSearchQuery] = useState("");
+  const [debouncedInvoiceSearch, setDebouncedInvoiceSearch] = useState("");
+  const { toast } = useToast();
 
-  // Mock data - replace with API calls
-  const patients = [
-    { id: "1", name: "John Doe", mrn: "MRN001" },
-    { id: "2", name: "Jane Smith", mrn: "MRN002" },
-    { id: "3", name: "Bob Johnson", mrn: "MRN003" },
-  ];
+  const [formData, setFormData] = useState({
+    paymentReference: "",
+    notes: "",
+    insuranceId: "",
+  });
 
-  const invoices = [
-    { id: "1", number: "INV-2024001", amount: 5000, status: "unpaid" },
-    { id: "2", number: "INV-2024002", amount: 7500, status: "unpaid" },
-    { id: "3", number: "INV-2024003", amount: 12000, status: "paid" },
-  ];
+  // Debounce invoice search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedInvoiceSearch(invoiceSearchQuery.trim());
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [invoiceSearchQuery]);
 
-  // const getInvoiceBadge = (status: string) => {
-  //   switch (status) {
-  //     case "paid":
-  //       return <Badge variant="success">Paid</Badge>;
-  //     case "unpaid":
-  //       return <Badge variant="destructive">Unpaid</Badge>;
-  //     default:
-  //       return <Badge variant="secondary">{status}</Badge>;
-  //   }
-  // };
+  // Fetch all invoices with search
+  const {
+    data: invoicesData,
+    isLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: ["invoices", "unpaid", debouncedInvoiceSearch],
+    queryFn: () => fetchAllBillings(1, 50, debouncedInvoiceSearch, "unpaid"),
+  });
 
-  const getSelectedInvoiceAmount = () => {
-    const invoice = invoices.find((inv) => inv.id === selectedInvoice);
-    return invoice ? invoice.amount : 0;
+  const handleInputChange = (field: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  // Mutation for marking invoice as paid
+  const markAsPaidMutation = useMutation({
+    mutationFn: (paymentData: any) =>
+      markInvoiceAsPaid(selectedInvoiceId as any, paymentData),
+    onSuccess: () => {
+      toast({
+        title: "Payment Processed Successfully",
+        description: "Invoice has been marked as paid.",
+        variant: "success",
+      });
+      // Reset form
+      setFormData({
+        paymentReference: "",
+        notes: "",
+        insuranceId: "",
+      });
+      setSelectedInvoiceId("");
+      setSelectedInvoiceData(null);
+      setSelectedPaymentMethod("cash");
+      setInvoiceSearchQuery("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Payment Failed",
+        description: error.message || "Failed to process payment",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!selectedInvoiceId || !selectedPaymentMethod) {
+      toast({
+        title: "Missing Information",
+        description: "Please select an invoice and payment method",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const paymentData = {
+      paymentMethod: selectedPaymentMethod,
+      paymentReference: formData.paymentReference,
+      notes: formData.notes,
+      insuranceId:
+        selectedPaymentMethod === "insurance"
+          ? formData.insuranceId
+          : undefined,
+      amount: selectedInvoiceData?.amount || 0,
+    };
+
+    markAsPaidMutation.mutate(paymentData);
+  };
+
+  const getStatusBadge = (status: string) => {
+    const variants = {
+      paid: { variant: "default" as const, label: "Paid" },
+      pending: { variant: "secondary" as const, label: "Pending" },
+      overdue: { variant: "destructive" as const, label: "Overdue" },
+      unpaid: { variant: "destructive" as const, label: "Unpaid" },
+      draft: { variant: "outline" as const, label: "Draft" },
+    };
+
+    const config =
+      variants[status as keyof typeof variants] || variants.pending;
+    return <Badge variant={config.variant}>{config.label}</Badge>;
+  };
+
+  const formatCurrency = (amount: number) => {
+    return `₦${amount?.toLocaleString() || "0"}`;
+  };
+
+  const handleInvoiceSelect = (invoiceId: string) => {
+    setSelectedInvoiceId(invoiceId);
+    const invoice = invoicesData?.invoices?.find(
+      (i) => String(i.id) === invoiceId
+    );
+    setSelectedInvoiceData(invoice || null);
+  };
+  const handleClearAll = () => {
+    setSelectedPaymentMethod("cash");
+    setSelectedInvoiceId("");
+    setSelectedInvoiceData(null);
+    setInvoiceSearchQuery("");
+    setFormData({
+      paymentReference: "",
+      notes: "",
+      insuranceId: "",
+    });
   };
 
   return (
@@ -245,56 +344,103 @@ const PaymentProcessing = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid gap-4 md:grid-cols-2">
-                    {/* Patient Selection */}
+                    {/* Patient Selection (Auto-filled from invoice) */}
                     <div className="space-y-2">
-                      <Label htmlFor="patient">Patient *</Label>
-                      <Select
-                        value={selectedPatient}
-                        onValueChange={setSelectedPatient}
-                      >
-                        <SelectTrigger id="patient">
-                          <SelectValue placeholder="Select patient" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {patients.map((patient) => (
-                            <SelectItem key={patient.id} value={patient.id}>
-                              <div className="flex flex-col">
-                                <span>{patient.name}</span>
-                                <span className="text-xs text-muted-foreground">
-                                  {patient.mrn}
-                                </span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Label htmlFor="patient">Patient</Label>
+                      <Input
+                        id="patient"
+                        value={
+                          selectedInvoiceData?.patient?.user?.fullName ||
+                          "Select invoice to auto-fill"
+                        }
+                        readOnly
+                        className="bg-muted"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Auto-filled from selected invoice
+                      </p>
                     </div>
 
-                    {/* Invoice Selection */}
+                    {/* Invoice Selection with Search */}
                     <div className="space-y-2">
                       <Label htmlFor="invoice">Invoice *</Label>
                       <Select
-                        value={selectedInvoice}
-                        onValueChange={setSelectedInvoice}
+                        value={selectedInvoiceId}
+                        onValueChange={handleInvoiceSelect}
                       >
                         <SelectTrigger id="invoice">
-                          <SelectValue placeholder="Select invoice" />
+                          <SelectValue placeholder="Search and select invoice">
+                            {selectedInvoiceData ? (
+                              <div className="flex items-center justify-between w-full">
+                                <span>{selectedInvoiceData.invoiceId}</span>
+                                <span className="text-sm text-muted-foreground">
+                                  {formatCurrency(selectedInvoiceData.amount)}
+                                </span>
+                              </div>
+                            ) : null}
+                          </SelectValue>{" "}
                         </SelectTrigger>
                         <SelectContent>
-                          {invoices
-                            .filter((inv) => inv.status === "unpaid")
-                            .map((invoice) => (
-                              <SelectItem key={invoice.id} value={invoice.id}>
-                                <div className="flex justify-between items-center w-full">
-                                  <span>{invoice.number}</span>
-                                  <span className="text-sm font-medium">
-                                    ₦{invoice.amount.toLocaleString()}
+                          {/* Search Input */}
+                          <div className="p-2">
+                            <div className="relative">
+                              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                placeholder="Search by invoice ID or patient..."
+                                className="pl-8"
+                                value={invoiceSearchQuery}
+                                onChange={(e) =>
+                                  setInvoiceSearchQuery(e.target.value)
+                                }
+                                onClick={(e) => e.stopPropagation()}
+                              />
+                            </div>
+                          </div>
+
+                          {/* Loading State */}
+                          {(isLoading || isFetching) && (
+                            <div className="p-4 text-center text-sm text-muted-foreground">
+                              Loading invoices...
+                            </div>
+                          )}
+
+                          {/* No Results */}
+                          {!isLoading &&
+                            invoicesData?.invoices?.length === 0 && (
+                              <div className="p-4 text-center text-sm text-muted-foreground">
+                                No unpaid invoices found
+                              </div>
+                            )}
+
+                          {/* Invoice List */}
+                          {invoicesData?.invoices?.map((invoice) => (
+                            <SelectItem key={invoice.id} value={invoice.id}>
+                              <div className="flex flex-col gap-1">
+                                <div className="flex justify-between items-start">
+                                  <span className="font-medium">
+                                    {invoice.invoiceId}
+                                  </span>
+                                  <span className="text-sm font-semibold">
+                                    {formatCurrency(invoice.amount)}
                                   </span>
                                 </div>
-                              </SelectItem>
-                            ))}
+                                <div className="flex justify-between items-center">
+                                  <span className="text-xs text-muted-foreground">
+                                    {invoice.patient?.user?.fullName}
+                                  </span>
+                                  {getStatusBadge(invoice.status)}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  Due:{" "}
+                                  {new Date(
+                                    invoice.dueDate
+                                  ).toLocaleDateString()}
+                                </div>
+                              </div>
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -305,7 +451,7 @@ const PaymentProcessing = () => {
                       <Input
                         id="amount"
                         type="number"
-                        value={getSelectedInvoiceAmount()}
+                        value={selectedInvoiceData?.amount || ""}
                         readOnly
                         className="bg-muted"
                       />
@@ -331,59 +477,43 @@ const PaymentProcessing = () => {
                     </div>
 
                     {/* Dynamic Fields based on Payment Method */}
-                    {selectedPaymentMethod === "card" && (
-                      <>
-                        <div className="space-y-2">
-                          <Label htmlFor="cardNumber">Card Number *</Label>
-                          <Input
-                            id="cardNumber"
-                            placeholder="1234 5678 9012 3456"
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label htmlFor="expiry">Expiry Date *</Label>
-                            <Input id="expiry" placeholder="MM/YY" />
-                          </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="cvv">CVV *</Label>
-                            <Input id="cvv" placeholder="123" />
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {selectedPaymentMethod === "mobile" && (
-                      <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="phoneNumber">Phone Number *</Label>
-                        <Input
-                          id="phoneNumber"
-                          placeholder="+234 800 000 0000"
-                        />
-                      </div>
-                    )}
-
                     {selectedPaymentMethod === "insurance" && (
                       <div className="space-y-2 md:col-span-2">
                         <Label htmlFor="insuranceId">Insurance ID *</Label>
                         <Input
                           id="insuranceId"
+                          value={formData.insuranceId}
+                          onChange={(e) =>
+                            handleInputChange("insuranceId", e.target.value)
+                          }
                           placeholder="Insurance policy number"
+                          required
                         />
                       </div>
                     )}
 
                     {/* Common Fields */}
                     <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="reference">
-                        Reference Number{" "}
-                        {selectedPaymentMethod !== "cash" && "*"}
-                      </Label>
-                      <Input
-                        id="reference"
-                        placeholder="Transaction reference number"
-                        required={selectedPaymentMethod !== "cash"}
-                      />
+                      {selectedPaymentMethod !== "card" ? (
+                        <Label htmlFor="reference">
+                          Reference Number{" "}
+                          {selectedPaymentMethod !== "cash" && "*"}
+                        </Label>
+                      ) : null}
+                      {selectedPaymentMethod !== "card" ? (
+                        <Input
+                          id="reference"
+                          value={formData.paymentReference}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "paymentReference",
+                              e.target.value
+                            )
+                          }
+                          placeholder="Transaction reference number"
+                          required={selectedPaymentMethod !== "cash"}
+                        />
+                      ) : null}
                     </div>
 
                     <div className="space-y-2 md:col-span-2">
@@ -392,6 +522,10 @@ const PaymentProcessing = () => {
                         id="notes"
                         placeholder="Additional payment notes..."
                         rows={3}
+                        value={formData.notes}
+                        onChange={(e) =>
+                          handleInputChange("notes", e.target.value)
+                        }
                       />
                     </div>
                   </div>
@@ -402,25 +536,27 @@ const PaymentProcessing = () => {
                       className="flex-1"
                       disabled={
                         !selectedPaymentMethod ||
-                        !selectedPatient ||
-                        !selectedInvoice
+                        !selectedInvoiceId ||
+                        markAsPaidMutation.isPending
                       }
                     >
-                      Process{" "}
-                      {selectedPaymentMethod
-                        ? selectedPaymentMethod.charAt(0).toUpperCase() +
-                          selectedPaymentMethod.slice(1)
-                        : ""}{" "}
-                      Payment
+                      {markAsPaidMutation.isPending ? (
+                        "Processing..."
+                      ) : (
+                        <>
+                          Process{" "}
+                          {selectedPaymentMethod
+                            ? selectedPaymentMethod.charAt(0).toUpperCase() +
+                              selectedPaymentMethod.slice(1)
+                            : ""}{" "}
+                          Payment
+                        </>
+                      )}
                     </Button>
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={() => {
-                        setSelectedPaymentMethod("");
-                        setSelectedPatient("");
-                        setSelectedInvoice("");
-                      }}
+                      onClick={handleClearAll}
                     >
                       Clear All
                     </Button>

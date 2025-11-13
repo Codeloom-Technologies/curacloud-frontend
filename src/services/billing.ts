@@ -49,3 +49,36 @@ export const getInvoiceStats = async () => {
   }
   return response;
 };
+
+export const markInvoiceAsPaid = async (
+  id: number,
+  payload: {
+    paymentMethod: string;
+    paymentReference: number;
+  }
+) => {
+  const response = await apiClient(`/invoices/${id}/mark-paid`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+  if (!response) {
+    const error = await response;
+    throw new Error(error.message || "Failed to update billings ");
+  }
+
+  return response;
+};
+
+export const getInvoiceByInvoiceId = async (id: string) => {
+  const response = await apiClient(`/invoices/invoice/${id}`, {
+    method: "GET",
+  });
+
+  if (!response) {
+    const error = await response;
+    throw new Error(error.message || "Failed to update billings ");
+  }
+
+  return response;
+};
