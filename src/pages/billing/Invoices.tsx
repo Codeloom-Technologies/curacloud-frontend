@@ -121,7 +121,7 @@ const Invoices = () => {
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      paid: { variant: "default" as const, label: "Paid" },
+      paid: { variant: "success" as const, label: "Paid" },
       pending: { variant: "secondary" as const, label: "Pending" },
       unpaid: { variant: "secondary" as const, label: "Un Paid" },
       overdue: { variant: "destructive" as const, label: "Overdue" },

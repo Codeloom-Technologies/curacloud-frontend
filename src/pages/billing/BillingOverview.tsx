@@ -121,7 +121,7 @@ const BillingOverview = () => {
 
   const getStatusBadge = (status: string) => {
     const variants = {
-      paid: { variant: "default" as const, icon: CheckCircle2, text: "Paid" },
+      paid: { variant: "success" as const, icon: CheckCircle2, text: "Paid" },
       pending: { variant: "secondary" as const, icon: Clock, text: "Pending" },
       unpaid: { variant: "secondary" as const, icon: Clock, text: "Un Paid" },
       overdue: {

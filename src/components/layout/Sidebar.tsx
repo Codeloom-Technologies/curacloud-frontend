@@ -112,6 +112,29 @@ const navigationItems = [
     ],
   },
   {
+    title: "Pharmacy",
+    icon: Pill,
+    href: "/dashboard/pharmacy",
+    permission: "pharmacy" as Permission,
+    children: [
+      {
+        title: "Inventory",
+        href: "/dashboard/pharmacy/inventory",
+        permission: "pharmacy.inventory" as Permission,
+      },
+      {
+        title: "Prescriptions",
+        href: "/dashboard/pharmacy/prescriptions",
+        permission: "pharmacy.prescriptions" as Permission,
+      },
+      {
+        title: "Stock",
+        href: "/dashboard/pharmacy/stock",
+        permission: "pharmacy.stock" as Permission,
+      },
+    ],
+  },
+  {
     title: "Billing",
     icon: CreditCard,
     href: "/dashboard/billing",
@@ -136,34 +159,6 @@ const navigationItems = [
         title: "Reports",
         href: "/dashboard/billing/reports",
         permission: "billing.reports" as Permission,
-      },
-    ],
-  },
-  {
-    title: "Pharmacy",
-    icon: Pill,
-    href: "/dashboard/pharmacy",
-    permission: "pharmacy" as Permission,
-    children: [
-      {
-        title: "Inventory",
-        href: "/dashboard/pharmacy/inventory",
-        permission: "pharmacy.inventory" as Permission,
-      },
-      {
-        title: "Prescriptions",
-        href: "/dashboard/pharmacy/prescriptions",
-        permission: "pharmacy.prescriptions" as Permission,
-      },
-      // {
-      //   title: "Dispensing",
-      //   href: "/dashboard/pharmacy/dispensing",
-      //   permission: "pharmacy.dispensing" as Permission,
-      // },
-      {
-        title: "Stock",
-        href: "/dashboard/pharmacy/stock",
-        permission: "pharmacy.stock" as Permission,
       },
     ],
   },
