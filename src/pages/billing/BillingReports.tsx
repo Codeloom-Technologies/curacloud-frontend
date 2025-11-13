@@ -118,7 +118,7 @@ const BillingReports = () => {
         isLoadingInvoiceStats || isFetchingInvoiceStats
           ? "Loading..."
           : `${formatNaira(
-              (invoiceStats?.totalRevenue || 0).toLocaleString()
+              (invoiceStats?.totalRevenue || 0)?.toLocaleString()
             )}`,
       change: "-8.1%", // You might want to calculate this from previous month data
       icon: DollarSign,
@@ -130,7 +130,7 @@ const BillingReports = () => {
       value:
         isLoadingInvoiceStats || isFetchingInvoiceStats
           ? "Loading..."
-          : `${formatNaira((invoiceStats?.unpaid || 0).toLocaleString())}`,
+          : `${formatNaira((invoiceStats?.unpaid || 0)?.toLocaleString())}`,
       change: "-8.1%", // You might want to calculate this from previous month data
       icon: TrendingUp,
       description: "Unpaid invoices",
@@ -141,7 +141,7 @@ const BillingReports = () => {
       value:
         isLoadingInvoiceStats || isFetchingInvoiceStats
           ? "Loading..."
-          : `₦${(invoiceStats?.total || 0).toLocaleString()}`,
+          : `₦${(invoiceStats?.total || 0)?.toLocaleString()}`,
       change: "-8.1%", // You might want to calculate this from previous month data
       icon: Users,
       description: "This month",
@@ -193,7 +193,7 @@ const BillingReports = () => {
           <p className="font-semibold">{label}</p>
           {payload.map((entry, index) => (
             <p key={index} style={{ color: entry.color }}>
-              {entry.name}: {entry.value.toLocaleString()}
+              {entry.name}: {entry?.value?.toLocaleString()}
             </p>
           ))}
         </div>
@@ -597,7 +597,9 @@ const BillingReports = () => {
                                   </Badge>
                                   <div className="text-right">
                                     <p className="font-semibold text-sm">
-                                      ₦{dept.revenue.toLocaleString()}
+                                      {formatNaira(
+                                        dept?.revenue?.toLocaleString()
+                                      )}
                                     </p>
                                   </div>
                                 </div>
@@ -623,11 +625,11 @@ const BillingReports = () => {
                               <div className="hidden group-hover:flex items-center justify-between mt-2 pt-2 border-t text-xs text-muted-foreground">
                                 <span>
                                   Last month: ₦
-                                  {(dept.revenue * 0.85).toLocaleString()}
+                                  {(dept?.revenue * 0.85)?.toLocaleString()}
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <Users className="h-3 w-3" />
-                                  {Math.round(dept.revenue / 2500)} patients
+                                  {Math.round(dept?.revenue / 2500)} patients
                                 </span>
                               </div>
                             </div>
@@ -653,7 +655,7 @@ const BillingReports = () => {
                                       (sum, dept) => sum + dept.revenue,
                                       0
                                     )
-                                    .toLocaleString()
+                                    ?.toLocaleString()
                                 )}
                               </p>
                               <p className="text-xs text-green-600 font-medium">
@@ -791,7 +793,9 @@ const BillingReports = () => {
                             </Pie>
                             <Tooltip
                               formatter={(value) => [
-                                `₦${Number(value).toLocaleString()}`,
+                                `${formatNaira(
+                                  Number(value)
+                                )?.toLocaleString()}`,
                                 "Revenue",
                               ]}
                               contentStyle={{
@@ -831,11 +835,11 @@ const BillingReports = () => {
                               </div>
                               <div className="text-right">
                                 <p className="font-semibold text-sm">
-                                  ₦{dept.revenue.toLocaleString()}
+                                  {formatNaira(dept?.revenue?.toLocaleString())}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
                                   {(
-                                    (dept.revenue /
+                                    (dept?.revenue /
                                       departmentData?.reduce(
                                         (sum, d) => sum + d.revenue,
                                         0
@@ -858,7 +862,7 @@ const BillingReports = () => {
                                 ₦
                                 {departmentData
                                   ?.reduce((sum, dept) => sum + dept.revenue, 0)
-                                  .toLocaleString()}
+                                  ?.toLocaleString()}
                               </span>
                             </div>
                           </div>
@@ -949,7 +953,11 @@ const BillingReports = () => {
                           </Pie>
                           <Tooltip
                             formatter={(value, name, props) => [
-                              `₦${props.payload.amount?.toLocaleString() || 0}`,
+                              `${
+                                formatNaira(
+                                  props.payload?.amount?.toLocaleString()
+                                ) || 0
+                              }`,
                               props.payload.name,
                             ]}
                           />
@@ -1028,7 +1036,7 @@ const BillingReports = () => {
                             <div className="text-right">
                               <p className="font-semibold">
                                 {formatNaira(
-                                  method.amount?.toLocaleString() || 0
+                                  method?.amount?.toLocaleString() || 0
                                 )}
                               </p>
                               <p className="text-sm text-muted-foreground">
