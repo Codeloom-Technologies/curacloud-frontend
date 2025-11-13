@@ -371,7 +371,7 @@ export default function Prescriptions() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {isLoadingStats && isFetchingStats ? (
+                    {isLoadingStats || isFetchingStats ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
                       statsData?.total || 0
@@ -388,7 +388,7 @@ export default function Prescriptions() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {isLoadingStats && isFetchingStats ? (
+                    {isLoadingStats || isFetchingStats ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
                       statsData?.active || 0
@@ -405,7 +405,7 @@ export default function Prescriptions() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {isLoadingStats && isFetchingStats ? (
+                    {isLoadingStats || isFetchingStats ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
                       statsData?.pending || 0
@@ -424,7 +424,7 @@ export default function Prescriptions() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">
-                    {isLoadingStats && isFetchingStats ? (
+                    {isLoadingStats || isFetchingStats ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
                       statsData?.dispensedToday || 0
@@ -443,7 +443,7 @@ export default function Prescriptions() {
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold flex items-center">
-                    {isLoadingStats && isFetchingStats ? (
+                    {isLoadingStats || isFetchingStats ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
                       statsData?.expiringSoon || 0

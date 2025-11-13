@@ -47,6 +47,8 @@ export const fetchPharmacyInventories = async (
   return { inventories: data, meta };
 };
 
+
+
 export const fetchInventorySummary = async (): Promise<any | any> => {
   const response = await apiClient(`/pharmacy/inventories/summary/inventory`);
 
