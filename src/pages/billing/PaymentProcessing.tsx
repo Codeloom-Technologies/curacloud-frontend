@@ -62,6 +62,7 @@ const PaymentProcessing = () => {
     data: invoicesData,
     isLoading,
     isFetching,
+    refetch,
   } = useQuery({
     queryKey: ["invoices", "unpaid", debouncedInvoiceSearch],
     queryFn: () => fetchAllBillings(1, 50, debouncedInvoiceSearch, "unpaid"),
@@ -125,6 +126,7 @@ const PaymentProcessing = () => {
     };
 
     markAsPaidMutation.mutate(paymentData);
+    refetch();
   };
 
   const getStatusBadge = (status: string) => {
@@ -199,7 +201,14 @@ const PaymentProcessing = () => {
                     ? "border-primary ring-2 ring-primary/20"
                     : "hover:border-primary/50"
                 }`}
-                onClick={() => setSelectedPaymentMethod("card")}
+                onClick={() => {
+                  toast({
+                    title: "Card Payment Unavailable",
+                    description: "Card payments are currently disabled",
+                    variant: "destructive",
+                  });
+                }}
+                // onClick={() => setSelectedPaymentMethod("card")}
               >
                 <CardHeader className="text-center p-4">
                   <div
@@ -292,7 +301,15 @@ const PaymentProcessing = () => {
                     ? "border-primary ring-2 ring-primary/20"
                     : "hover:border-primary/50"
                 }`}
-                onClick={() => setSelectedPaymentMethod("insurance")}
+                onClick={() => {
+                  toast({
+                    title: "Card Payment Unavailable",
+                    description: "Insurance are currently disabled",
+                    variant: "destructive",
+                  });
+                }}
+
+                // onClick={() => setSelectedPaymentMethod("insurance")}
               >
                 <CardHeader className="text-center p-4">
                   <div
