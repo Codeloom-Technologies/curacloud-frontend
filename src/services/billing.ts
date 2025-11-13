@@ -103,3 +103,33 @@ export const getStatsForMonth = async () => {
   }
   return response;
 };
+
+// services/billing.ts
+export const getRevenueData = async (): Promise<any[]> => {
+  const response = await apiClient("/invoices/monthly/revenue-data");
+  if (!response) {
+    const error = await response;
+    throw new Error(error.message || "Failed to fetch billings ");
+  }
+  return response;
+};
+
+export const getPaymentMethodData = async (): Promise<any[]> => {
+  const response = await apiClient("/invoices/billing/payment-methods");
+  if (!response) {
+    const error = await response;
+    console.log({ error });
+    throw new Error(error.message || "Failed to fetch billings ");
+  }
+  return response;
+};
+
+export const getDepartmentRevenueData = async (): Promise<any[]> => {
+  const response = await apiClient("/invoices/billing/department-revenue");
+  return response;
+};
+
+export const getReports = async (): Promise<any[]> => {
+  const response = await apiClient("/invoices/billing/reports");
+  return response;
+};

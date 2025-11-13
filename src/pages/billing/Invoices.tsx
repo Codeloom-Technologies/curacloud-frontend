@@ -455,7 +455,17 @@ const Invoices = () => {
                         <SelectItem value="overdue">Overdue</SelectItem>
                       </SelectContent>
                     </Select>
-                    <Button variant="outline" className="whitespace-nowrap">
+                    <Button
+                      variant="outline"
+                      className="whitespace-nowrap"
+                      onClick={() => {
+                        toast({
+                          title: "Export Unavailable",
+                          description: "Export are currently disabled",
+                          variant: "default",
+                        });
+                      }}
+                    >
                       <Download className="mr-2 h-4 w-4" />
                       Export
                     </Button>

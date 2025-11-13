@@ -31,10 +31,12 @@ import {
 } from "@/services/billing";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatNaira } from "@/lib/formatters";
+import { useToast } from "@/hooks/use-toast";
 
 const BillingOverview = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const {
     data: recentInvoices,
@@ -70,7 +72,9 @@ const BillingOverview = () => {
       value:
         isLoadingInvoiceStats || isFetchingInvoiceStats
           ? "Loading..."
-          : `₦${(invoiceStats?.totalRevenue || 0).toLocaleString()}`,
+          : `${formatNaira(
+              (invoiceStats?.totalRevenue || 0).toLocaleString()
+            )}`,
       change: "+15.2%", //TODO You might want to calculate this from previous month data
       icon: DollarSign,
       description: "This month",
@@ -81,7 +85,7 @@ const BillingOverview = () => {
       value:
         isLoadingInvoiceStats || isFetchingInvoiceStats
           ? "Loading..."
-          : `₦${(invoiceStats?.unpaid || 0).toLocaleString()}`,
+          : `${formatNaira((invoiceStats?.unpaid || 0).toLocaleString())}`,
       change: "-8.1%", // You might want to calculate this from previous month data
       icon: AlertTriangle,
       description: "Unpaid invoices",
@@ -92,7 +96,7 @@ const BillingOverview = () => {
       value:
         isLoadingInvoiceStats || isFetchingInvoiceStats
           ? "Loading..."
-          : `${invoiceStats?.paid || 0}`,
+          : `${formatNaira(invoiceStats?.paid || 0)}`,
       change: "+22%", // You might want to calculate this from previous month data
       icon: CreditCard,
       description: "Successful payments",
@@ -179,7 +183,17 @@ const BillingOverview = () => {
                 </p>
               </div>
               <div className="flex gap-2">
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    toast({
+                      title: "Export Unavailable",
+                      description: "Export are currently disabled",
+                      variant: "default",
+                    });
+                  }}
+                >
                   <Download className="h-4 w-4 mr-2" />
                   Export Report
                 </Button>
