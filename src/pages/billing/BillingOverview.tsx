@@ -123,7 +123,7 @@ const BillingOverview = () => {
     const variants = {
       paid: { variant: "default" as const, icon: CheckCircle2, text: "Paid" },
       pending: { variant: "secondary" as const, icon: Clock, text: "Pending" },
-      unPaid: { variant: "secondary" as const, icon: Clock, text: "Un Paid" },
+      unpaid: { variant: "secondary" as const, icon: Clock, text: "Un Paid" },
       overdue: {
         variant: "destructive" as const,
         icon: AlertTriangle,
