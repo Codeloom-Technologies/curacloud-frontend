@@ -24,49 +24,17 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { fetchRecentBillings, getInvoiceStats } from "@/services/billing";
+import {
+  fetchRecentBillings,
+  getInvoiceStats,
+  getStatsForMonth,
+} from "@/services/billing";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatNaira } from "@/lib/formatters";
 
 const BillingOverview = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
-
-  // Mock data - replace with API data
-  const stats = [
-    {
-      title: "Total Revenue",
-      value: "₦2,345,890",
-      change: "+15.2%",
-      icon: DollarSign,
-      description: "This month",
-      trend: "up",
-    },
-    {
-      title: "Outstanding",
-      value: "₦456,230",
-      change: "-8.1%",
-      icon: AlertTriangle,
-      description: "Unpaid invoices",
-      trend: "down",
-    },
-    {
-      title: "Payments Today",
-      value: "₦124,500",
-      change: "+22%",
-      icon: CreditCard,
-      description: "Successful payments",
-      trend: "up",
-    },
-    {
-      title: "Collection Rate",
-      value: "87.5%",
-      change: "+3.2%",
-      icon: TrendingUp,
-      description: "This month",
-      trend: "up",
-    },
-  ];
 
   const {
     data: recentInvoices,
@@ -85,6 +53,67 @@ const BillingOverview = () => {
     queryKey: ["invoice-stats"],
     queryFn: () => getInvoiceStats(),
   });
+
+  const {
+    data: invoiceMonthyStats,
+    isFetching: isFetchingInvoiceMonthlyStats,
+    isLoading: isLoadingInvoiceMonthlyStats,
+  } = useQuery({
+    queryKey: ["invoice-monthy-stats"],
+    queryFn: () => getStatsForMonth(),
+  });
+
+  // Map the API data to your stats structure
+  const stats = [
+    {
+      title: "Total Revenue",
+      value:
+        isLoadingInvoiceStats || isFetchingInvoiceStats
+          ? "Loading..."
+          : `₦${(invoiceStats?.totalRevenue || 0).toLocaleString()}`,
+      change: "+15.2%", //TODO You might want to calculate this from previous month data
+      icon: DollarSign,
+      description: "This month",
+      trend: "up",
+    },
+    {
+      title: "Outstanding",
+      value:
+        isLoadingInvoiceStats || isFetchingInvoiceStats
+          ? "Loading..."
+          : `₦${(invoiceStats?.unpaid || 0).toLocaleString()}`,
+      change: "-8.1%", // You might want to calculate this from previous month data
+      icon: AlertTriangle,
+      description: "Unpaid invoices",
+      trend: "down",
+    },
+    {
+      title: "Paid Invoices",
+      value:
+        isLoadingInvoiceStats || isFetchingInvoiceStats
+          ? "Loading..."
+          : `${invoiceStats?.paid || 0}`,
+      change: "+22%", // You might want to calculate this from previous month data
+      icon: CreditCard,
+      description: "Successful payments",
+      trend: "up",
+    },
+    {
+      title: "Collection Rate",
+      value:
+        isLoadingInvoiceStats || isFetchingInvoiceStats
+          ? "Loading..."
+          : invoiceStats?.total
+          ? `${Math.round(
+              ((invoiceStats?.paid || 0) / invoiceStats?.total) * 100
+            )}%`
+          : "0%",
+      change: "+3.2%", // You might want to calculate this from previous month data
+      icon: TrendingUp,
+      description: "This month",
+      trend: "up",
+    },
+  ];
 
   const getStatusBadge = (status: string) => {
     const variants = {
@@ -371,7 +400,8 @@ const BillingOverview = () => {
                     <CardDescription>This month's performance</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {isFetchingInvoiceStats || isLoadingInvoiceStats ? (
+                    {isFetchingInvoiceMonthlyStats ||
+                    isLoadingInvoiceMonthlyStats ? (
                       // Loading state
                       <div className="space-y-4">
                         {Array.from({ length: 4 }).map((_, index) => (
@@ -390,7 +420,7 @@ const BillingOverview = () => {
                           </div>
                         </div>
                       </div>
-                    ) : !invoiceStats ? (
+                    ) : !invoiceMonthyStats ? (
                       // Empty/Error state
                       <div className="text-center py-6">
                         <AlertCircle className="h-8 w-8 text-muted-foreground/50 mx-auto mb-2" />
@@ -406,7 +436,7 @@ const BillingOverview = () => {
                             Paid Invoices
                           </span>
                           <span className="font-medium">
-                            {invoiceStats?.paid || 0}
+                            {invoiceMonthyStats?.paid || 0}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -414,7 +444,7 @@ const BillingOverview = () => {
                             Un Paid
                           </span>
                           <span className="font-medium">
-                            {invoiceStats?.unpaid || 0}
+                            {invoiceMonthyStats?.unpaid || 0}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -422,7 +452,7 @@ const BillingOverview = () => {
                             Overdue
                           </span>
                           <span className="font-medium text-red-600">
-                            {invoiceStats?.overdue || 0}
+                            {invoiceMonthyStats?.overdue || 0}
                           </span>
                         </div>
                         <div className="pt-3 border-t">
@@ -431,7 +461,9 @@ const BillingOverview = () => {
                               Total Processed
                             </span>
                             <span className="font-bold">
-                              {formatNaira(invoiceStats?.totalRevenue || 0)}
+                              {formatNaira(
+                                invoiceMonthyStats?.totalRevenue || 0
+                              )}
                             </span>
                           </div>
                         </div>

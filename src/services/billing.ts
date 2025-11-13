@@ -94,3 +94,12 @@ export const fetchRecentBillings = async (): Promise<any | any> => {
   return response;
 };
 // await new Promise((r) => setTimeout(r, 6000)); // ⏳ simulate  delay in s
+
+export const getStatsForMonth = async () => {
+  const response = await apiClient("/invoices/stats/monthly");
+  if (!response) {
+    const error = await response;
+    throw new Error(error.message || "Failed to fetch billings ");
+  }
+  return response;
+};
