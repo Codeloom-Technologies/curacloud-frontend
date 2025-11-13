@@ -446,7 +446,7 @@ export default function PatientDirectory() {
               <Card>
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-success">
-                    {isStatsLoading && isStatsFetching ? (
+                    {isStatsLoading || isStatsFetching ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
                       statsData.activePatients || 0
@@ -460,7 +460,7 @@ export default function PatientDirectory() {
               <Card>
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-warning">
-                    {isStatsLoading && isStatsFetching ? (
+                    {isStatsLoading || isStatsFetching ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
                       statsData.pendingAppointments || 0
@@ -474,7 +474,7 @@ export default function PatientDirectory() {
               <Card>
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-primary">
-                    {isStatsLoading && isStatsFetching ? (
+                    {isStatsLoading || isStatsFetching ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
                       statsData.newPatientsThisMonth || 0
@@ -492,7 +492,7 @@ export default function PatientDirectory() {
               <CardHeader>
                 <CardTitle>
                   Patients (
-                  {isLoading && isFetching ? (
+                  {isLoading || isFetching ? (
                     <Skeleton className="h-8 w-16" />
                   ) : (
                     data["meta"].total || 0
