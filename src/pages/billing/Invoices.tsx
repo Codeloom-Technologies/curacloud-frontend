@@ -123,7 +123,7 @@ const Invoices = () => {
     const variants = {
       paid: { variant: "success" as const, label: "Paid" },
       pending: { variant: "secondary" as const, label: "Pending" },
-      unpaid: { variant: "secondary" as const, label: "Un Paid" },
+      unpaid: { variant: "secondary" as const, label: "Unpaid" },
       overdue: { variant: "destructive" as const, label: "Overdue" },
       draft: { variant: "outline" as const, label: "Draft" },
     };

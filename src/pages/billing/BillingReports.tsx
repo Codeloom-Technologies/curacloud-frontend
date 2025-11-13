@@ -36,6 +36,9 @@ import {
   RefreshCw,
   Building,
   Loader2,
+  TrendingDown,
+  TrendingDownIcon,
+  Backpack,
 } from "lucide-react";
 import {
   LineChart,
@@ -130,22 +133,69 @@ const BillingReports = () => {
       value:
         isLoadingInvoiceStats || isFetchingInvoiceStats
           ? "Loading..."
-          : `${formatNaira((invoiceStats?.unpaid || 0)?.toLocaleString())}`,
+          : `${formatNaira(
+              (invoiceStats?.unPaidTotal || 0)?.toLocaleString()
+            )}`,
       change: "-8.1%", // You might want to calculate this from previous month data
       icon: TrendingUp,
       description: "Unpaid invoices",
       trend: "down",
     },
     {
+      label: "Paid",
+      value:
+        isLoadingInvoiceStats || isFetchingInvoiceStats
+          ? "Loading..."
+          : `${(invoiceStats?.paid || 0)?.toLocaleString()}`,
+      change: "-8.1%", // You might want to calculate this from previous month data
+      icon: TrendingUp,
+      description: "paid invoices",
+      trend: "up",
+    },
+    {
+      label: "Unpaid",
+      value:
+        isLoadingInvoiceStats || isFetchingInvoiceStats
+          ? "Loading..."
+          : `${(invoiceStats?.unpaid || 0)?.toLocaleString()}`,
+      change: "-8.1%", // You might want to calculate this from previous month data
+      icon: TrendingDown,
+      description: "unpaid invoices",
+      trend: "down",
+    },
+    {
+      label: "Overdue",
+      value:
+        isLoadingInvoiceStats || isFetchingInvoiceStats
+          ? "Loading..."
+          : `${(invoiceStats?.overdue || 0)?.toLocaleString()}`,
+      change: "-8.1%", // You might want to calculate this from previous month data
+      icon: TrendingDownIcon,
+      description: "overdue invoices",
+      trend: "down",
+    },
+
+    {
       label: "Patients Billed",
       value:
         isLoadingInvoiceStats || isFetchingInvoiceStats
           ? "Loading..."
-          : `₦${(invoiceStats?.total || 0)?.toLocaleString()}`,
+          : `${(invoiceStats?.total || 0)?.toLocaleString()}`,
       change: "-8.1%", // You might want to calculate this from previous month data
       icon: Users,
       description: "This month",
       trend: "up",
+    },
+    {
+      label: "Refunded",
+      value:
+        isLoadingInvoiceStats || isFetchingInvoiceStats
+          ? "Loading..."
+          : `${formatNaira((invoiceStats?.refunded || 0)?.toLocaleString())}`,
+      change: "-8.1%", // You might want to calculate this from previous month data
+      icon: Backpack,
+      description: "This month",
+      trend: "down",
     },
     {
       label: "Avg Transaction",

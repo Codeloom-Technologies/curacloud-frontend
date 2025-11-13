@@ -85,7 +85,7 @@ const BillingOverview = () => {
       value:
         isLoadingInvoiceStats || isFetchingInvoiceStats
           ? "Loading..."
-          : `${formatNaira((invoiceStats?.unpaid || 0).toLocaleString())}`,
+          : `${formatNaira((invoiceStats?.unPaidTotal || 0).toLocaleString())}`,
       change: "-8.1%", // You might want to calculate this from previous month data
       icon: AlertTriangle,
       description: "Unpaid invoices",
@@ -96,7 +96,7 @@ const BillingOverview = () => {
       value:
         isLoadingInvoiceStats || isFetchingInvoiceStats
           ? "Loading..."
-          : `${formatNaira(invoiceStats?.paid || 0)}`,
+          : `${formatNaira(invoiceStats?.paidTotal || 0)}`,
       change: "+22%", // You might want to calculate this from previous month data
       icon: CreditCard,
       description: "Successful payments",
@@ -123,7 +123,7 @@ const BillingOverview = () => {
     const variants = {
       paid: { variant: "success" as const, icon: CheckCircle2, text: "Paid" },
       pending: { variant: "secondary" as const, icon: Clock, text: "Pending" },
-      unpaid: { variant: "secondary" as const, icon: Clock, text: "Un Paid" },
+      unpaid: { variant: "secondary" as const, icon: Clock, text: "Unpaid" },
       overdue: {
         variant: "destructive" as const,
         icon: AlertTriangle,
