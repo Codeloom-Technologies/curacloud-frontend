@@ -12,7 +12,7 @@ export const formatCurrency = (
 
 // Or for just Naira without the currency code
 export const formatNaira = (amount: number): string => {
-  return `₦${amount.toLocaleString("en-NG", {
+  return `₦${amount?.toLocaleString("en-NG", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })}`;

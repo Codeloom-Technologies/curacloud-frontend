@@ -114,8 +114,7 @@ export default function PharmacyInventory() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description:
-          error.response?.data?.message || "Failed to add medication",
+        description: error?.message || "Failed to add medication",
         variant: "destructive",
       });
     },
@@ -420,7 +419,7 @@ export default function PharmacyInventory() {
                     {isLoadingStats || isFetchingStats ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
-                      formatNaira(statsData?.totalValue)
+                      formatNaira(statsData?.totalValue || 0)
                     )}
                   </div>
                 </CardContent>
@@ -437,7 +436,7 @@ export default function PharmacyInventory() {
                     {isLoadingStats || isFetchingStats ? (
                       <Skeleton className="h-8 w-16" />
                     ) : (
-                      `${statsData.expiringCount} ` || 0
+                      `${statsData?.expiringCount || 0} `
                     )}
                   </div>
                 </CardContent>
@@ -513,7 +512,7 @@ export default function PharmacyInventory() {
                             <TableCell>
                               {new Date(
                                 item.expiry_date || item.expiryDate
-                              ).toLocaleDateString()}
+                              )?.toLocaleDateString()}
                             </TableCell>
                             <TableCell>
                               {item.storage_location || item.location}

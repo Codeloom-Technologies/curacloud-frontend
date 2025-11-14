@@ -39,7 +39,7 @@ const SubscriptionManagement = () => {
       id: "basic",
       name: "Basic",
       description: "Essential features for getting started",
-      price: "₦5,000",
+      price: "₦50,000",
       period: "month",
       popular: false,
       features: [
@@ -56,7 +56,7 @@ const SubscriptionManagement = () => {
       id: "recommended",
       name: "Recommended",
       description: "Perfect for growing practices",
-      price: "₦15,000",
+      price: "₦150,000",
       period: "month",
       popular: true,
       features: [
@@ -97,7 +97,7 @@ const SubscriptionManagement = () => {
     plan: "Recommended",
     status: "active",
     nextBilling: "2024-04-15",
-    price: "₦15,000",
+    price: "₦50,000",
     period: "monthly",
     featuresUsed: {
       patients: "45/200",

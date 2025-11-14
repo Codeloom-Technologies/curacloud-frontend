@@ -45,7 +45,6 @@ const InvoiceView = () => {
     enabled: !!invoiceId,
   });
 
-  console.log(invoice);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-NG", {
