@@ -40,6 +40,7 @@ import PrescriptionProcessing from "./pages/pharmacy/PrescriptionProcessing";
 import MedicationDispensing from "./pages/pharmacy/MedicationDispensing";
 import StockManagement from "./pages/pharmacy/StockManagement";
 import InvoiceView from "./pages/billing/invoiceView";
+import SubscriptionManagement from "./pages/billing/SubscriptionManagement";
 
 const queryClient = new QueryClient();
 
@@ -112,6 +113,11 @@ const App = () => (
           <Route
             path="/dashboard/billing/reports"
             element={<BillingReports />}
+          />
+
+          <Route
+            path="/dashboard/billing/subscription-management"
+            element={<SubscriptionManagement />}
           />
 
           <Route

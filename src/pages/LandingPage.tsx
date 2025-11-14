@@ -134,6 +134,7 @@ const pricingPlans = [
       "99.9% uptime SLA",
     ],
     popular: false,
+    icon: FileText,
   },
   {
     name: "Professional",

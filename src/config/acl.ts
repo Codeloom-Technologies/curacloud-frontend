@@ -33,7 +33,8 @@ export type Permission =
   | "staff.register"
   | "staff.records"
   | "reports"
-  | "settings";
+  | "settings"
+  | "billing.subscription";
 
 // ACL Configuration: Maps roles to their allowed permissions
 export const rolePermissions: Record<RoleSlug, Permission[]> = {
@@ -152,6 +153,7 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "billing.payments",
     "billing.reports",
     "reports",
+    "billing.subscription",
   ],
 
   // HR Manager - Staff and HR management

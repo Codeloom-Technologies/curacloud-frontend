@@ -160,6 +160,11 @@ const navigationItems = [
         href: "/dashboard/billing/reports",
         permission: "billing.reports" as Permission,
       },
+      {
+        title: "Subscription Management",
+        href: "/dashboard/billing/subscription-management",
+        permission: "billing.subscription" as Permission,
+      },
     ],
   },
   {
