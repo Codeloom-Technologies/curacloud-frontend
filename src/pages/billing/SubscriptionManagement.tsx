@@ -33,11 +33,22 @@ import { getActiveSubscriptionPlan, getSubscriptionPlans } from "@/services/subs
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { formatNaira } from "@/lib/formatters";
+import { useSubscription } from "@/hooks/use-subscription";
+import { useAuthStore } from "@/store/authStore";
 
 const SubscriptionManagement = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [autoRenew, setAutoRenew] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuthStore();
+
+  const { 
+    handleUpgrade, 
+    handleAutoRenew, 
+    handleCancel, 
+    isCreating, 
+    isUpdating, 
+    isCancelling 
+  } = useSubscription();
 
   const { 
     data: subscriptionPlans, 
@@ -48,8 +59,6 @@ const SubscriptionManagement = () => {
     queryFn: () => getSubscriptionPlans(),
   });
 
-  console.log(subscriptionPlans)
-
   const { 
     data: currentSubscription, 
     isLoading: isLoadingSubscription,
@@ -59,32 +68,6 @@ const SubscriptionManagement = () => {
     queryKey: ["active-subscription"],
     queryFn: () => getActiveSubscriptionPlan(),
   });
-
-  const handleUpgrade = (planId: string, planName: string) => {
-    toast({
-      title: "Upgrade Requested",
-      description: `Upgrading to ${planName} plan...`,
-      variant: "default",
-    });
-    // Handle upgrade logic
-  };
-
-  const handleCancel = () => {
-    toast({
-      title: "Subscription Cancelled",
-      description: "Your subscription will end at the current billing period.",
-      variant: "default",
-    });
-  };
-
-  const handleAutoRenew = (enabled: boolean) => {
-    setAutoRenew(enabled);
-    toast({
-      title: enabled ? "Auto-renew enabled" : "Auto-renew disabled",
-      description: `Auto-renew has been ${enabled ? "enabled" : "disabled"} for your subscription.`,
-      variant: "default",
-    });
-  };
 
   const getBillingPeriod = (subscription: any) => {
     if (!subscription?.currentPeriodStartsAt || !subscription?.currentPeriodEndsAt) 
@@ -99,6 +82,43 @@ const SubscriptionManagement = () => {
 
   const isCurrentPlan = (planId: string) => {
     return currentSubscription?.plan?.id === planId;
+  };
+
+  const onUpgrade = async (planId: string, planName: string, planPrice: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to upgrade your subscription.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await handleUpgrade(planId, parseFloat(planPrice));
+  };
+
+  const onAutoRenew = async (enabled: boolean) => {
+    if (!currentSubscription?.id) {
+      toast({
+        title: "No Active Subscription",
+        description: "You don't have an active subscription to manage.",
+        variant: "destructive",
+      });
+      return;
+    }
+    await handleAutoRenew(currentSubscription.id, enabled);
+  };
+
+  const onCancelSubscription = async () => {
+    if (!currentSubscription?.id) {
+      toast({
+        title: "No Active Subscription",
+        description: "You don't have an active subscription to cancel.",
+        variant: "destructive",
+      });
+      return;
+    }
+    await handleCancel(currentSubscription.id);
   };
 
   // Loading state
@@ -258,12 +278,12 @@ const SubscriptionManagement = () => {
                       </Label>
                       <div className="flex items-center gap-2">
                         <Switch
-                          checked={autoRenew}
-                          onCheckedChange={handleAutoRenew}
-                          disabled={currentSubscription.status !== 'active'}
+                          checked={currentSubscription.autoRenew || false}
+                          onCheckedChange={onAutoRenew}
+                          disabled={currentSubscription?.status !== 'active' || isUpdating}
                         />
                         <span className="text-sm">
-                          {autoRenew ? "Enabled" : "Disabled"}
+                          {isUpdating ? "Updating..." : (currentSubscription.autoRenew ? "Enabled" : "Disabled")}
                         </span>
                       </div>
                     </div>
@@ -273,16 +293,15 @@ const SubscriptionManagement = () => {
 
                   {/* Usage Stats */}
                   <div className="grid gap-6 md:grid-cols-2">
-                    
                     <div className="space-y-4">
                       <h4 className="font-semibold">Actions</h4>
                       <div className="flex gap-3 flex-wrap">
                         <Button 
                           variant="outline" 
-                          onClick={handleCancel}
-                          disabled={currentSubscription.status !== 'active'}
+                          onClick={onCancelSubscription}
+                          disabled={currentSubscription.status !== 'active' || isCancelling}
                         >
-                          Cancel Subscription
+                          {isCancelling ? "Cancelling..." : "Cancel Subscription"}
                         </Button>
                         <Button variant="outline">Update Payment Method</Button>
                         <Button variant="outline">View Invoices</Button>
@@ -339,7 +358,7 @@ const SubscriptionManagement = () => {
                       <CardContent className="space-y-4">
                         <ul className="space-y-3">
                           {plan.features && Array.isArray(plan.features) ? (
-                            plan.features.map((feature, index) => (
+                            plan.features.map((feature: string, index: number) => (
                               <li
                                 key={index}
                                 className="flex items-center gap-3 text-sm"
@@ -356,7 +375,7 @@ const SubscriptionManagement = () => {
                               >
                                 <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
                                 <span className="capitalize">
-                                 {key.replace(/_/g, ' ')}: {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}
+                                  {key.replace(/_/g, ' ')}: {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}
                                 </span>
                               </li>
                             ))
@@ -372,11 +391,13 @@ const SubscriptionManagement = () => {
                             isPopular ? "bg-primary hover:bg-primary/90" : ""
                           }`}
                           variant={isCurrent ? "outline" : isPopular ? "default" : "outline"}
-                          disabled={isCurrent}
-                          onClick={() => handleUpgrade(plan.id, plan.name)}
+                          disabled={isCurrent || isCreating}
+                          onClick={() => onUpgrade(plan.id, plan.name, plan.price)}
                         >
                           {isCurrent ? (
                             "Current Plan"
+                          ) : isCreating ? (
+                            "Processing..."
                           ) : (
                             <>
                               {currentSubscription ? "Upgrade Plan" : "Start Free Trial"}
@@ -390,8 +411,7 @@ const SubscriptionManagement = () => {
                 })}
               </div>
 
-       
-            </div>
+               </div>
 
             {/* Billing History */}
             <Card className="animate-fade-in">
