@@ -59,6 +59,9 @@ const SubscriptionManagement = () => {
     queryFn: () => getSubscriptionPlans(),
   });
 
+
+  console.log(subscriptionPlans)
+
   const { 
     data: currentSubscription, 
     isLoading: isLoadingSubscription,
@@ -317,7 +320,7 @@ const SubscriptionManagement = () => {
               <div className="grid md:grid-cols-3 gap-8">
                 {subscriptionPlans?.map((plan) => {
                   const isCurrent = isCurrentPlan(plan.id);
-                  const isPopular = plan.name?.toLowerCase().includes('standard') || plan.name?.toLowerCase().includes('recommended');
+                  const isPopular = plan.name?.includes('Pro');
                   
                   return (
                     <Card
@@ -327,8 +330,7 @@ const SubscriptionManagement = () => {
                       } ${isCurrent ? "border-primary bg-primary/5" : ""}`}
                     >
                       {isPopular && (
-                        <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground">
-                          <Star className="h-3 w-3 mr-1 fill-current" />
+                        <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-primary text-primary-foreground">
                           Most Popular
                         </Badge>
                       )}
@@ -344,14 +346,14 @@ const SubscriptionManagement = () => {
                         </CardTitle>
                         <div className="mb-2">
                           <span className="text-4xl font-bold">
-                            {formatNaira(plan.price)}
-                          </span>
+                            {plan?.name ==='Hobby' ? formatNaira(plan.price) : plan.name==='Pro' ?  formatNaira(plan.price) : 'Custom'}
+                          </span> 
                           <span className="text-muted-foreground">
-                            /month
+                            {plan?.name ==='Hobby' ?  '/month ' : plan.name==='Pro' ? ' /month' : ''}
                           </span>
                         </div>
                         <CardDescription>
-                          Perfect for {plan.name?.toLowerCase().includes('basic') ? 'small clinics' : plan.name?.toLowerCase().includes('standard') ? 'growing practices' : 'large healthcare facilities'}
+                          Perfect for {plan.name?.toLowerCase().includes('Hobby') ? plan.name?.description : plan.name?.toLowerCase().includes('Pro') ? plan.name?.description : 'large healthcare facilities'}
                         </CardDescription>
                       </CardHeader>
 
