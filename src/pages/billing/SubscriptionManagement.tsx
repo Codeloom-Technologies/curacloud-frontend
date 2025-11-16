@@ -18,15 +18,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Check,
   Crown,
-  Star,
-  Shield,
-  Heart,
   FileText,
   CreditCard,
   Calendar,
   ArrowRight,
   RefreshCw,
   AlertCircle,
+  Wallet,
+  Mail,
+  X,
+  Loader2,
+  Eye,
+  EyeOff,
+  AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getActiveSubscriptionPlan, getSubscriptionPlans } from "@/services/subscription";
@@ -36,8 +41,44 @@ import { formatNaira } from "@/lib/formatters";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useAuthStore } from "@/store/authStore";
 
+type PaymentMethod = 'card' | 'wallet';
+
+type PlanSelection = {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  features: string[];
+} | null;
+
+// Mock wallet service - replace with your actual API calls
+const walletService = {
+  getBalance: async (): Promise<number> => {
+    // Simulate API call
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(15000), 1000); // 15,000 Naira balance
+    });
+  },
+  
+  getTransactionHistory: async () => {
+    return new Promise((resolve) => {
+      setTimeout(() => resolve([
+        { id: 1, amount: 5000, type: 'credit', description: 'Wallet Top-up', date: new Date('2024-01-15') },
+        { id: 2, amount: -3000, type: 'debit', description: 'Subscription Payment', date: new Date('2024-01-10') },
+        { id: 3, amount: 10000, type: 'credit', description: 'Wallet Top-up', date: new Date('2024-01-05') },
+      ]), 1000);
+    });
+  }
+};
+
 const SubscriptionManagement = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showWalletDetails, setShowWalletDetails] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('card');
+  const [selectedPlan, setSelectedPlan] = useState<PlanSelection>(null);
+  const [showBalance, setShowBalance] = useState(false);
+
   const { toast } = useToast();
   const { user } = useAuthStore();
 
@@ -59,9 +100,6 @@ const SubscriptionManagement = () => {
     queryFn: () => getSubscriptionPlans(),
   });
 
-
-  console.log(subscriptionPlans)
-
   const { 
     data: currentSubscription, 
     isLoading: isLoadingSubscription,
@@ -70,6 +108,18 @@ const SubscriptionManagement = () => {
   } = useQuery({
     queryKey: ["active-subscription"],
     queryFn: () => getActiveSubscriptionPlan(),
+  });
+
+  // Wallet balance query with real-time updates
+  const { 
+    data: walletBalance = 0, 
+    isLoading: isLoadingWallet,
+    error: walletError,
+    refetch: refetchWallet 
+  } = useQuery({
+    queryKey: ["wallet-balance"],
+    queryFn: () => walletService.getBalance(),
+    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
   });
 
   const getBillingPeriod = (subscription: any) => {
@@ -87,17 +137,129 @@ const SubscriptionManagement = () => {
     return currentSubscription?.plan?.id === planId;
   };
 
-  const onUpgrade = async (planId: string, planName: string, planPrice: string) => {
-    if (!user) {
+  const handleContactSupport = () => {
+       toast({
+        title: "Soon",
+        description: "Coming soon",
+        variant: "default",
+      });
+  };
+
+  const handlePlanSelection = (plan: any) => {
+    if (plan.name === 'Enterprise') {
+      handleContactSupport();
+      return;
+    }
+
+    // Convert features to array if it's an object
+    const features = Array.isArray(plan.features) 
+      ? plan.features 
+      : typeof plan.features === 'object' 
+        ? Object.entries(plan.features).map(([key, value]) => 
+            `${key.replace(/_/g, ' ')}: ${typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}`
+          )
+        : [];
+
+    setSelectedPlan({
+      id: plan.id,
+      name: plan.name,
+      price: plan.price,
+      description: plan.description || `Perfect for ${plan.name?.toLowerCase()} healthcare facilities`,
+      features: features.slice(0, 6) // Show first 6 features
+    });
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentConfirmation = async () => {
+    if (!selectedPlan || !user) {
       toast({
-        title: "Authentication Required",
-        description: "Please log in to upgrade your subscription.",
+        title: "Error",
+        description: "Please select a plan and ensure you're logged in.",
         variant: "destructive",
       });
       return;
     }
 
-    await handleUpgrade(planId, parseFloat(planPrice));
+    // Enhanced balance validation
+    if (selectedPaymentMethod === 'wallet') {
+      if (walletBalance < selectedPlan.price) {
+        const shortage = selectedPlan.price - walletBalance;
+        toast({
+          title: "Insufficient Wallet Balance",
+          description: (
+            <div className="space-y-1">
+              <p>Your wallet balance is insufficient for this transaction.</p>
+              <p className="font-semibold">
+                Needed: {formatNaira(selectedPlan.price)} | Available: {formatNaira(walletBalance)}
+              </p>
+              <p>Shortage: {formatNaira(shortage)}</p>
+            </div>
+          ),
+          variant: "destructive",
+          action: (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                // Redirect to wallet top-up page
+                toast({
+                  title: "Redirecting to Wallet",
+                  description: "Taking you to add funds to your wallet...",
+                });
+              }}
+            >
+              Add Funds
+            </Button>
+          ),
+        });
+        return;
+      }
+
+      // Confirm wallet deduction
+      const confirmWalletPayment = window.confirm(
+        `Confirm wallet payment of ${formatNaira(selectedPlan.price)} for ${selectedPlan.name} plan?\n\n` +
+        `Balance before: ${formatNaira(walletBalance)}\n` +
+        `Balance after: ${formatNaira(walletBalance - selectedPlan.price)}`
+      );
+
+      if (!confirmWalletPayment) {
+        return;
+      }
+    }
+
+    try {
+      await handleUpgrade(selectedPlan.id, selectedPlan.price, selectedPaymentMethod);
+      
+      // Refresh wallet balance after successful payment
+      if (selectedPaymentMethod === 'wallet') {
+        await refetchWallet();
+      }
+      
+      toast({
+        title: "Payment Successful!",
+        description: `You have successfully subscribed to the ${selectedPlan.name} plan.`,
+        variant: "default",
+      });
+      
+      setShowPaymentModal(false);
+      setSelectedPlan(null);
+    } catch (error: any) {
+      toast({
+        title: "Payment Failed",
+        description: error.message || "There was an error processing your payment. Please try again.",
+        variant: "destructive",
+        action: (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => refetchWallet()}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry
+          </Button>
+        ),
+      });
+    }
   };
 
   const onAutoRenew = async (enabled: boolean) => {
@@ -123,6 +285,303 @@ const SubscriptionManagement = () => {
     }
     await handleCancel(currentSubscription.id);
   };
+
+  // Payment Method Modal
+  const PaymentModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-background rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto animate-in fade-in-90 zoom-in-90">
+        <div className="flex items-center justify-between p-6 border-b">
+          <h3 className="text-lg font-semibold">Complete Your Subscription</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setShowPaymentModal(false);
+              setSelectedPlan(null);
+            }}
+            disabled={isCreating}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Plan Summary */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Crown className="h-5 w-5 text-purple-500" />
+                {selectedPlan?.name} Plan
+              </CardTitle>
+              <CardDescription>{selectedPlan?.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-2xl font-bold">{formatNaira(selectedPlan?.price || 0)}</span>
+                <Badge variant="secondary">per month</Badge>
+              </div>
+              
+              {/* Plan Features Preview */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Includes:</Label>
+                <ul className="space-y-1">
+                  {selectedPlan?.features.slice(0, 3).map((feature, index) => (
+                    <li key={index} className="flex items-center gap-2 text-sm">
+                      <Check className="h-3 w-3 text-green-500 flex-shrink-0" />
+                      <span className="truncate">{feature}</span>
+                    </li>
+                  ))}
+                  {selectedPlan && selectedPlan.features.length > 3 && (
+                    <li className="text-xs text-muted-foreground pl-5">
+                      +{selectedPlan.features.length - 3} more features
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Payment Method Selection */}
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">Select Payment Method</Label>
+            
+            {/* Card Option */}
+            <div
+              className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                selectedPaymentMethod === 'card' 
+                  ? 'border-primary bg-primary/5' 
+                  : 'border-border hover:border-primary/50'
+              }`}
+              onClick={() => setSelectedPaymentMethod('card')}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-full ${
+                    selectedPaymentMethod === 'card' ? 'bg-primary/10' : 'bg-muted'
+                  }`}>
+                    <CreditCard className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <Label className="text-base font-semibold cursor-pointer">
+                      Credit/Debit Card
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Pay securely with your card
+                    </p>
+                  </div>
+                </div>
+                {selectedPaymentMethod === 'card' && (
+                  <CheckCircle2 className="h-5 w-5 text-primary" />
+                )}
+              </div>
+            </div>
+
+            {/* Wallet Option */}
+            <div
+              className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                selectedPaymentMethod === 'wallet' 
+                  ? 'border-primary bg-primary/5' 
+                  : 'border-border hover:border-primary/50'
+              }`}
+              onClick={() => setSelectedPaymentMethod('wallet')}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-full ${
+                    selectedPaymentMethod === 'wallet' ? 'bg-primary/10' : 'bg-muted'
+                  }`}>
+                    <Wallet className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-base font-semibold cursor-pointer">
+                        Wallet Balance
+                      </Label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowBalance(!showBalance);
+                        }}
+                      >
+                        {showBalance ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                      </Button>
+                    </div>
+                    
+                    {isLoadingWallet ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        <p className="text-sm text-muted-foreground">Loading balance...</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          {showBalance ? formatNaira(walletBalance) : '••••••'}
+                        </p>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowWalletDetails(true);
+                          }}
+                        >
+                          View wallet details
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {selectedPaymentMethod === 'wallet' && (
+                  <CheckCircle2 className="h-5 w-5 text-primary" />
+                )}
+              </div>
+
+              {/* Wallet balance validation */}
+              {selectedPaymentMethod === 'wallet' && selectedPlan && (
+                <div className={`mt-3 p-3 rounded-md border ${
+                  walletBalance >= selectedPlan.price
+                    ? 'bg-green-50 border-green-200'
+                    : 'bg-destructive/10 border-destructive/20'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    {walletBalance >= selectedPlan.price ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4 text-destructive" />
+                    )}
+                    <span className={`text-sm font-medium ${
+                      walletBalance >= selectedPlan.price ? 'text-green-700' : 'text-destructive'
+                    }`}>
+                      {walletBalance >= selectedPlan.price 
+                        ? 'Sufficient balance available'
+                        : 'Insufficient balance'
+                      }
+                    </span>
+                  </div>
+                  
+                  {walletBalance < selectedPlan.price && (
+                    <div className="mt-2 space-y-1 text-xs text-destructive">
+                      <p>Required: {formatNaira(selectedPlan.price)}</p>
+                      <p>Shortage: {formatNaira(selectedPlan.price - walletBalance)}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Payment Summary */}
+          {selectedPlan && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Plan</span>
+                    <span className="text-sm font-medium">{selectedPlan.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Amount</span>
+                    <span className="text-sm font-medium">{formatNaira(selectedPlan.price)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Payment Method</span>
+                    <span className="text-sm font-medium capitalize">{selectedPaymentMethod}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between">
+                    <span className="font-semibold">Total</span>
+                    <span className="font-bold text-lg">{formatNaira(selectedPlan.price)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => {
+                setShowPaymentModal(false);
+                setSelectedPlan(null);
+              }}
+              disabled={isCreating}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={handlePaymentConfirmation}
+              disabled={
+                isCreating || 
+                (selectedPaymentMethod === 'wallet' && 
+                 (isLoadingWallet || walletBalance < (selectedPlan?.price || 0)))
+              }
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Processing...
+                </>
+              ) : (
+                `Pay ${formatNaira(selectedPlan?.price || 0)}`
+              )}
+            </Button>
+          </div>
+
+          {/* Security Notice */}
+          <div className="text-center">
+            <p className="text-xs text-muted-foreground">
+              🔒 Your payment is secure and encrypted
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Wallet Details Modal
+  const WalletDetailsModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-background rounded-lg max-w-md w-full max-h-[80vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b">
+          <h3 className="text-lg font-semibold">Wallet Details</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowWalletDetails(false)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        <div className="p-6 space-y-6">
+          {/* Current Balance */}
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground mb-2">Current Balance</p>
+            <p className="text-3xl font-bold">{formatNaira(walletBalance)}</p>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 gap-3">
+            <Button variant="outline" size="sm">
+              <Wallet className="h-4 w-4 mr-2" />
+              Add Funds
+            </Button>
+            <Button variant="outline" size="sm">
+              <FileText className="h-4 w-4 mr-2" />
+              History
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   // Loading state
   if (isLoadingPlans || isLoadingSubscription) {
@@ -206,11 +665,19 @@ const SubscriptionManagement = () => {
 
         <main className="flex-1 overflow-y-auto p-6 bg-muted/30">
           <div className="max-w-7xl mx-auto space-y-16">
-            {/* Header */}
+            {/* Header with Wallet Balance */}
             <div className="text-center animate-fade-in">
-              <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
-                Flexible Pricing
-              </Badge>
+              <div className="flex justify-center gap-4 mb-4">
+                <Badge className="bg-primary/10 text-primary border-primary/20">
+                  Flexible Pricing
+                </Badge>
+                {!isLoadingWallet && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Wallet className="h-3 w-3" />
+                    Wallet: {formatNaira(walletBalance)}
+                  </Badge>
+                )}
+              </div>
               <h1 className="text-3xl md:text-4xl font-bold mb-4">
                 Choose Your Plan
               </h1>
@@ -321,6 +788,7 @@ const SubscriptionManagement = () => {
                 {subscriptionPlans?.map((plan) => {
                   const isCurrent = isCurrentPlan(plan.id);
                   const isPopular = plan.name?.includes('Pro');
+                  const isEnterprise = plan.name === 'Enterprise';
                   
                   return (
                     <Card
@@ -335,6 +803,12 @@ const SubscriptionManagement = () => {
                         </Badge>
                       )}
 
+                      {isEnterprise && (
+                        <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white">
+                          Enterprise
+                        </Badge>
+                      )}
+
                       <CardHeader className="pb-4">
                         <CardTitle className="text-2xl flex items-center justify-between">
                           {plan.name}
@@ -346,14 +820,17 @@ const SubscriptionManagement = () => {
                         </CardTitle>
                         <div className="mb-2">
                           <span className="text-4xl font-bold">
-                            {plan?.name ==='Hobby' ? formatNaira(plan.price) : plan.name==='Pro' ?  formatNaira(plan.price) : 'Custom'}
+                            {isEnterprise ? 'Custom' : formatNaira(plan.price)}
                           </span> 
                           <span className="text-muted-foreground">
-                            {plan?.name ==='Hobby' ?  '/month ' : plan.name==='Pro' ? ' /month' : ''}
+                            {isEnterprise ? '' : '/month'}
                           </span>
                         </div>
                         <CardDescription>
-                          Perfect for {plan.name?.toLowerCase().includes('Hobby') ? plan.name?.description : plan.name?.toLowerCase().includes('Pro') ? plan.name?.description : 'large healthcare facilities'}
+                          {isEnterprise 
+                            ? 'For large healthcare facilities with custom needs'
+                            : `Perfect for ${plan.name?.toLowerCase()} healthcare facilities`
+                          }
                         </CardDescription>
                       </CardHeader>
 
@@ -391,18 +868,23 @@ const SubscriptionManagement = () => {
                         <Button
                           className={`w-full ${
                             isPopular ? "bg-primary hover:bg-primary/90" : ""
-                          }`}
-                          variant={isCurrent ? "outline" : isPopular ? "default" : "outline"}
+                          } ${isEnterprise ? "bg-purple-600 hover:bg-purple-700" : ""}`}
+                          variant={isCurrent ? "outline" : isPopular || isEnterprise ? "default" : "outline"}
                           disabled={isCurrent || isCreating}
-                          onClick={() => onUpgrade(plan.id, plan.name, plan.price)}
+                          onClick={() => handlePlanSelection(plan)}
                         >
                           {isCurrent ? (
                             "Current Plan"
                           ) : isCreating ? (
                             "Processing..."
+                          ) : isEnterprise ? (
+                            <>
+                              Contact Sales
+                              <Mail className="ml-2 h-4 w-4" />
+                            </>
                           ) : (
                             <>
-                              {currentSubscription ? "Upgrade Plan" : "Start Free Trial"}
+                              {currentSubscription ? "Upgrade Plan" : "Start Free Trial"} 
                               <ArrowRight className="ml-2 h-4 w-4" />
                             </>
                           )}
@@ -412,8 +894,7 @@ const SubscriptionManagement = () => {
                   );
                 })}
               </div>
-
-               </div>
+            </div>
 
             {/* Billing History */}
             <Card className="animate-fade-in">
@@ -438,6 +919,12 @@ const SubscriptionManagement = () => {
           </div>
         </main>
       </div>
+
+      {/* Payment Modal */}
+      {showPaymentModal && <PaymentModal />}
+
+      {/* Wallet Details Modal */}
+      {showWalletDetails && <WalletDetailsModal />}
 
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (

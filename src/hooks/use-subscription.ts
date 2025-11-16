@@ -53,7 +53,7 @@ export const useSubscription = () => {
     },
   });
 
-  const handleUpgrade = async (planId: string, planPrice: number) => {
+  const handleUpgrade = async (planId: string, planPrice: number, paymentMethod:string) => {
     if (!user) {
       toast({
         title: "Authentication Required",
