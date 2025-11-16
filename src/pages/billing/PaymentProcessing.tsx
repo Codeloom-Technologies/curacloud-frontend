@@ -32,6 +32,7 @@ import { Badge } from "@/components/ui/badge";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { markInvoiceAsPaid, fetchAllBillings } from "@/services/billing";
 import { useToast } from "@/hooks/use-toast";
+import { formatNaira } from "@/lib/formatters";
 
 const PaymentProcessing = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -141,10 +142,6 @@ const PaymentProcessing = () => {
     const config =
       variants[status as keyof typeof variants] || variants.pending;
     return <Badge variant={config.variant}>{config.label}</Badge>;
-  };
-
-  const formatCurrency = (amount: number) => {
-    return `₦${amount?.toLocaleString() || "0"}`;
   };
 
   const handleInvoiceSelect = (invoiceId: string) => {
@@ -301,15 +298,7 @@ const PaymentProcessing = () => {
                     ? "border-primary ring-2 ring-primary/20"
                     : "hover:border-primary/50"
                 }`}
-                onClick={() => {
-                  toast({
-                    title: "Card Payment Unavailable",
-                    description: "Insurance are currently disabled",
-                    variant: "destructive",
-                  });
-                }}
-
-                // onClick={() => setSelectedPaymentMethod("insurance")}
+                onClick={() => setSelectedPaymentMethod("insurance")}
               >
                 <CardHeader className="text-center p-4">
                   <div
@@ -393,7 +382,7 @@ const PaymentProcessing = () => {
                               <div className="flex items-center justify-between w-full">
                                 <span>{selectedInvoiceData.invoiceId}</span>
                                 <span className="text-sm text-muted-foreground">
-                                  {formatCurrency(selectedInvoiceData.amount)}
+                                  {formatNaira(selectedInvoiceData.amount)}
                                 </span>
                               </div>
                             ) : null}
@@ -440,7 +429,7 @@ const PaymentProcessing = () => {
                                     {invoice.invoiceId}
                                   </span>
                                   <span className="text-sm font-semibold">
-                                    {formatCurrency(invoice.amount)}
+                                    {formatNaira(invoice.amount)}
                                   </span>
                                 </div>
                                 <div className="flex justify-between items-center">

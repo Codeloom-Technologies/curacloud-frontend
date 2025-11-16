@@ -14,124 +14,639 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Check,
   Crown,
-  Star,
-  Zap,
-  Shield,
-  Users,
   FileText,
   CreditCard,
   Calendar,
   ArrowRight,
+  RefreshCw,
+  AlertCircle,
+  Wallet,
+  Mail,
+  X,
+  Loader2,
+  Eye,
+  EyeOff,
+  AlertTriangle,
+  CheckCircle2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getActiveSubscriptionPlan, getSubscriptionPlans } from "@/services/subscription";
+import { useQuery } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { formatNaira } from "@/lib/formatters";
+import { useSubscription } from "@/hooks/use-subscription";
+import { useAuthStore } from "@/store/authStore";
+
+type PaymentMethod = 'card' | 'wallet';
+
+type PlanSelection = {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  features: string[];
+} | null;
+
+// Mock wallet service - replace with your actual API calls
+const walletService = {
+  getBalance: async (): Promise<number> => {
+    // Simulate API call
+    return new Promise((resolve) => {
+      setTimeout(() => resolve(15000), 1000); // 15,000 Naira balance
+    });
+  },
+  
+  getTransactionHistory: async () => {
+    return new Promise((resolve) => {
+      setTimeout(() => resolve([
+        { id: 1, amount: 5000, type: 'credit', description: 'Wallet Top-up', date: new Date('2024-01-15') },
+        { id: 2, amount: -3000, type: 'debit', description: 'Subscription Payment', date: new Date('2024-01-10') },
+        { id: 3, amount: 10000, type: 'credit', description: 'Wallet Top-up', date: new Date('2024-01-05') },
+      ]), 1000);
+    });
+  }
+};
 
 const SubscriptionManagement = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [currentPlan, setCurrentPlan] = useState("recommended");
-  const [autoRenew, setAutoRenew] = useState(true);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showWalletDetails, setShowWalletDetails] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('card');
+  const [selectedPlan, setSelectedPlan] = useState<PlanSelection>(null);
+  const [showBalance, setShowBalance] = useState(false);
+
   const { toast } = useToast();
+  const { user } = useAuthStore();
 
-  const subscriptionPlans = [
-    {
-      id: "basic",
-      name: "Basic",
-      description: "Essential features for getting started",
-      price: "₦5,000",
-      period: "month",
-      popular: false,
-      features: [
-        "Up to 50 patients",
-        "Basic analytics",
-        "Email support",
-        "5GB storage",
-        "Standard security",
-      ],
-      icon: FileText,
-      color: "bg-blue-500",
-    },
-    {
-      id: "recommended",
-      name: "Recommended",
-      description: "Perfect for growing practices",
-      price: "₦15,000",
-      period: "month",
-      popular: true,
-      features: [
-        "Up to 200 patients",
-        "Advanced analytics",
-        "Priority support",
-        "50GB storage",
-        "Enhanced security",
-        "Billing automation",
-        "Multi-user access",
-      ],
-      icon: Crown,
-      color: "bg-purple-500",
-    },
-    {
-      id: "custom",
-      name: "Custom",
-      description: "Tailored for large organizations",
-      price: "Custom",
-      period: "quote",
-      popular: false,
-      features: [
-        "Unlimited patients",
-        "Custom analytics",
-        "24/7 dedicated support",
-        "Unlimited storage",
-        "Enterprise security",
-        "Custom integrations",
-        "API access",
-        "White-label options",
-      ],
-      icon: Zap,
-      color: "bg-orange-500",
-    },
-  ];
+  const { 
+    handleUpgrade, 
+    handleAutoRenew, 
+    handleCancel, 
+    isCreating, 
+    isUpdating, 
+    isCancelling 
+  } = useSubscription();
 
-  const currentSubscription = {
-    plan: "Recommended",
-    status: "active",
-    nextBilling: "2024-04-15",
-    price: "₦15,000",
-    period: "monthly",
-    featuresUsed: {
-      patients: "45/200",
-      storage: "12.5/50 GB",
-    },
+  const { 
+    data: subscriptionPlans, 
+    isLoading: isLoadingPlans,
+    error: plansError 
+  } = useQuery({
+    queryKey: ["subscription-plans"],
+    queryFn: () => getSubscriptionPlans(),
+  });
+
+  const { 
+    data: currentSubscription, 
+    isLoading: isLoadingSubscription,
+    error: subscriptionError,
+    refetch: refetchSubscription 
+  } = useQuery({
+    queryKey: ["active-subscription"],
+    queryFn: () => getActiveSubscriptionPlan(),
+  });
+
+  // Wallet balance query with real-time updates
+  const { 
+    data: walletBalance = 0, 
+    isLoading: isLoadingWallet,
+    error: walletError,
+    refetch: refetchWallet 
+  } = useQuery({
+    queryKey: ["wallet-balance"],
+    queryFn: () => walletService.getBalance(),
+    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
+  });
+
+  const getBillingPeriod = (subscription: any) => {
+    if (!subscription?.currentPeriodStartsAt || !subscription?.currentPeriodEndsAt) 
+      return "monthly";
+    
+    const start = new Date(subscription.currentPeriodStartsAt);
+    const end = new Date(subscription.currentPeriodEndsAt);
+    const diffMonths = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+    
+    return diffMonths >= 12 ? "yearly" : diffMonths >= 6 ? "half-yearly" : diffMonths >= 3 ? "quarterly" : "monthly";
   };
 
-  const handleUpgrade = (planId: string) => {
-    toast({
-      title: "Upgrade Requested",
-      description: `Upgrading to ${planId} plan...`,
-      variant: "success",
+  const isCurrentPlan = (planId: string) => {
+    return currentSubscription?.plan?.id === planId;
+  };
+
+  const handleContactSupport = () => {
+       toast({
+        title: "Soon",
+        description: "Coming soon",
+        variant: "default",
+      });
+  };
+
+  const handlePlanSelection = (plan: any) => {
+    if (plan.name === 'Enterprise') {
+      handleContactSupport();
+      return;
+    }
+
+    // Convert features to array if it's an object
+    const features = Array.isArray(plan.features) 
+      ? plan.features 
+      : typeof plan.features === 'object' 
+        ? Object.entries(plan.features).map(([key, value]) => 
+            `${key.replace(/_/g, ' ')}: ${typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}`
+          )
+        : [];
+
+    setSelectedPlan({
+      id: plan.id,
+      name: plan.name,
+      price: plan.price,
+      description: plan.description || `Perfect for ${plan.name?.toLowerCase()} healthcare facilities`,
+      features: features.slice(0, 6) // Show first 6 features
     });
-    // Handle upgrade logic
+    setShowPaymentModal(true);
   };
 
-  const handleCancel = () => {
-    toast({
-      title: "Subscription Cancelled",
-      description: "Your subscription will end at the current billing period.",
-      variant: "success",
-    });
+  const handlePaymentConfirmation = async () => {
+    if (!selectedPlan || !user) {
+      toast({
+        title: "Error",
+        description: "Please select a plan and ensure you're logged in.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Enhanced balance validation
+    if (selectedPaymentMethod === 'wallet') {
+      if (walletBalance < selectedPlan.price) {
+        const shortage = selectedPlan.price - walletBalance;
+        toast({
+          title: "Insufficient Wallet Balance",
+          description: (
+            <div className="space-y-1">
+              <p>Your wallet balance is insufficient for this transaction.</p>
+              <p className="font-semibold">
+                Needed: {formatNaira(selectedPlan.price)} | Available: {formatNaira(walletBalance)}
+              </p>
+              <p>Shortage: {formatNaira(shortage)}</p>
+            </div>
+          ),
+          variant: "destructive",
+          action: (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => {
+                // Redirect to wallet top-up page
+                toast({
+                  title: "Redirecting to Wallet",
+                  description: "Taking you to add funds to your wallet...",
+                });
+              }}
+            >
+              Add Funds
+            </Button>
+          ),
+        });
+        return;
+      }
+
+      // Confirm wallet deduction
+      const confirmWalletPayment = window.confirm(
+        `Confirm wallet payment of ${formatNaira(selectedPlan.price)} for ${selectedPlan.name} plan?\n\n` +
+        `Balance before: ${formatNaira(walletBalance)}\n` +
+        `Balance after: ${formatNaira(walletBalance - selectedPlan.price)}`
+      );
+
+      if (!confirmWalletPayment) {
+        return;
+      }
+    }
+
+    try {
+      await handleUpgrade(selectedPlan.id, selectedPlan.price, selectedPaymentMethod);
+      
+      // Refresh wallet balance after successful payment
+      if (selectedPaymentMethod === 'wallet') {
+        await refetchWallet();
+      }
+      
+      toast({
+        title: "Payment Successful!",
+        description: `You have successfully subscribed to the ${selectedPlan.name} plan.`,
+        variant: "default",
+      });
+      
+      setShowPaymentModal(false);
+      setSelectedPlan(null);
+    } catch (error: any) {
+      toast({
+        title: "Payment Failed",
+        description: error.message || "There was an error processing your payment. Please try again.",
+        variant: "destructive",
+        action: (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => refetchWallet()}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry
+          </Button>
+        ),
+      });
+    }
   };
 
-  const handleAutoRenew = (enabled: boolean) => {
-    setAutoRenew(enabled);
-    toast({
-      title: enabled ? "Auto-renew enabled" : "Auto-renew disabled",
-      description: `Auto-renew has been ${
-        enabled ? "enabled" : "disabled"
-      } for your subscription.`,
-      variant: "success",
-    });
+  const onAutoRenew = async (enabled: boolean) => {
+    if (!currentSubscription?.id) {
+      toast({
+        title: "No Active Subscription",
+        description: "You don't have an active subscription to manage.",
+        variant: "destructive",
+      });
+      return;
+    }
+    await handleAutoRenew(currentSubscription.id, enabled);
   };
+
+  const onCancelSubscription = async () => {
+    if (!currentSubscription?.id) {
+      toast({
+        title: "No Active Subscription",
+        description: "You don't have an active subscription to cancel.",
+        variant: "destructive",
+      });
+      return;
+    }
+    await handleCancel(currentSubscription.id);
+  };
+
+  // Payment Method Modal
+  const PaymentModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-background rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto animate-in fade-in-90 zoom-in-90">
+        <div className="flex items-center justify-between p-6 border-b">
+          <h3 className="text-lg font-semibold">Complete Your Subscription</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setShowPaymentModal(false);
+              setSelectedPlan(null);
+            }}
+            disabled={isCreating}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        <div className="p-6 space-y-6">
+          {/* Plan Summary */}
+          <Card>
+            <CardHeader className="pb-4">
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Crown className="h-5 w-5 text-purple-500" />
+                {selectedPlan?.name} Plan
+              </CardTitle>
+              <CardDescription>{selectedPlan?.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-2xl font-bold">{formatNaira(selectedPlan?.price || 0)}</span>
+                <Badge variant="secondary">per month</Badge>
+              </div>
+              
+              {/* Plan Features Preview */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Includes:</Label>
+                <ul className="space-y-1">
+                  {selectedPlan?.features.slice(0, 3).map((feature, index) => (
+                    <li key={index} className="flex items-center gap-2 text-sm">
+                      <Check className="h-3 w-3 text-green-500 flex-shrink-0" />
+                      <span className="truncate">{feature}</span>
+                    </li>
+                  ))}
+                  {selectedPlan && selectedPlan.features.length > 3 && (
+                    <li className="text-xs text-muted-foreground pl-5">
+                      +{selectedPlan.features.length - 3} more features
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Payment Method Selection */}
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">Select Payment Method</Label>
+            
+            {/* Card Option */}
+            <div
+              className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                selectedPaymentMethod === 'card' 
+                  ? 'border-primary bg-primary/5' 
+                  : 'border-border hover:border-primary/50'
+              }`}
+              onClick={() => setSelectedPaymentMethod('card')}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-full ${
+                    selectedPaymentMethod === 'card' ? 'bg-primary/10' : 'bg-muted'
+                  }`}>
+                    <CreditCard className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <Label className="text-base font-semibold cursor-pointer">
+                      Credit/Debit Card
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Pay securely with your card
+                    </p>
+                  </div>
+                </div>
+                {selectedPaymentMethod === 'card' && (
+                  <CheckCircle2 className="h-5 w-5 text-primary" />
+                )}
+              </div>
+            </div>
+
+            {/* Wallet Option */}
+            <div
+              className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
+                selectedPaymentMethod === 'wallet' 
+                  ? 'border-primary bg-primary/5' 
+                  : 'border-border hover:border-primary/50'
+              }`}
+              onClick={() => setSelectedPaymentMethod('wallet')}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`p-2 rounded-full ${
+                    selectedPaymentMethod === 'wallet' ? 'bg-primary/10' : 'bg-muted'
+                  }`}>
+                    <Wallet className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-base font-semibold cursor-pointer">
+                        Wallet Balance
+                      </Label>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowBalance(!showBalance);
+                        }}
+                      >
+                        {showBalance ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                      </Button>
+                    </div>
+                    
+                    {isLoadingWallet ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        <p className="text-sm text-muted-foreground">Loading balance...</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          {showBalance ? formatNaira(walletBalance) : '••••••'}
+                        </p>
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="h-auto p-0 text-xs"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowWalletDetails(true);
+                          }}
+                        >
+                          View wallet details
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                {selectedPaymentMethod === 'wallet' && (
+                  <CheckCircle2 className="h-5 w-5 text-primary" />
+                )}
+              </div>
+
+              {/* Wallet balance validation */}
+              {selectedPaymentMethod === 'wallet' && selectedPlan && (
+                <div className={`mt-3 p-3 rounded-md border ${
+                  walletBalance >= selectedPlan.price
+                    ? 'bg-green-50 border-green-200'
+                    : 'bg-destructive/10 border-destructive/20'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    {walletBalance >= selectedPlan.price ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4 text-destructive" />
+                    )}
+                    <span className={`text-sm font-medium ${
+                      walletBalance >= selectedPlan.price ? 'text-green-700' : 'text-destructive'
+                    }`}>
+                      {walletBalance >= selectedPlan.price 
+                        ? 'Sufficient balance available'
+                        : 'Insufficient balance'
+                      }
+                    </span>
+                  </div>
+                  
+                  {walletBalance < selectedPlan.price && (
+                    <div className="mt-2 space-y-1 text-xs text-destructive">
+                      <p>Required: {formatNaira(selectedPlan.price)}</p>
+                      <p>Shortage: {formatNaira(selectedPlan.price - walletBalance)}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Payment Summary */}
+          {selectedPlan && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Plan</span>
+                    <span className="text-sm font-medium">{selectedPlan.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Amount</span>
+                    <span className="text-sm font-medium">{formatNaira(selectedPlan.price)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Payment Method</span>
+                    <span className="text-sm font-medium capitalize">{selectedPaymentMethod}</span>
+                  </div>
+                  <Separator />
+                  <div className="flex justify-between">
+                    <span className="font-semibold">Total</span>
+                    <span className="font-bold text-lg">{formatNaira(selectedPlan.price)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 pt-4">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => {
+                setShowPaymentModal(false);
+                setSelectedPlan(null);
+              }}
+              disabled={isCreating}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="flex-1"
+              onClick={handlePaymentConfirmation}
+              disabled={
+                isCreating || 
+                (selectedPaymentMethod === 'wallet' && 
+                 (isLoadingWallet || walletBalance < (selectedPlan?.price || 0)))
+              }
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  Processing...
+                </>
+              ) : (
+                `Pay ${formatNaira(selectedPlan?.price || 0)}`
+              )}
+            </Button>
+          </div>
+
+          {/* Security Notice */}
+          <div className="text-center">
+            <p className="text-xs text-muted-foreground">
+              🔒 Your payment is secure and encrypted
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Wallet Details Modal
+  const WalletDetailsModal = () => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-background rounded-lg max-w-md w-full max-h-[80vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b">
+          <h3 className="text-lg font-semibold">Wallet Details</h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowWalletDetails(false)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        
+        <div className="p-6 space-y-6">
+          {/* Current Balance */}
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground mb-2">Current Balance</p>
+            <p className="text-3xl font-bold">{formatNaira(walletBalance)}</p>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 gap-3">
+            <Button variant="outline" size="sm">
+              <Wallet className="h-4 w-4 mr-2" />
+              Add Funds
+            </Button>
+            <Button variant="outline" size="sm">
+              <FileText className="h-4 w-4 mr-2" />
+              History
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Loading state
+  if (isLoadingPlans || isLoadingSubscription) {
+    return (
+      <div className="flex h-screen bg-background">
+        <Sidebar />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+          <main className="flex-1 overflow-y-auto p-6">
+            <div className="max-w-7xl mx-auto space-y-8">
+              <Skeleton className="h-12 w-64" />
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3].map(i => (
+                  <Card key={i}>
+                    <CardHeader>
+                      <Skeleton className="h-6 w-32" />
+                      <Skeleton className="h-4 w-48" />
+                    </CardHeader>
+                    <CardContent>
+                      <Skeleton className="h-8 w-24 mx-auto mb-4" />
+                      <div className="space-y-2">
+                        {[1, 2, 3, 4, 5].map(j => (
+                          <Skeleton key={j} className="h-4 w-full" />
+                        ))}
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Skeleton className="h-10 w-full" />
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (plansError || subscriptionError) {
+    return (
+      <div className="flex h-screen bg-background">
+        <Sidebar />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+          <main className="flex-1 overflow-y-auto p-6">
+            <div className="max-w-7xl mx-auto text-center py-16">
+              <AlertCircle className="h-16 w-16 text-destructive mx-auto mb-4" />
+              <h1 className="text-2xl font-bold text-destructive mb-2">
+                Failed to Load Subscription Data
+              </h1>
+              <p className="text-muted-foreground mb-6">
+                There was an error loading your subscription information.
+              </p>
+              <Button onClick={() => { refetchSubscription(); }}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Try Again
+              </Button>
+            </div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-background">
@@ -148,210 +663,241 @@ const SubscriptionManagement = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-7xl mx-auto space-y-8">
-            {/* Header */}
-            <div className="text-center md:text-left">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
-                Subscription Management
+        <main className="flex-1 overflow-y-auto p-6 bg-muted/30">
+          <div className="max-w-7xl mx-auto space-y-16">
+            {/* Header with Wallet Balance */}
+            <div className="text-center animate-fade-in">
+              <div className="flex justify-center gap-4 mb-4">
+                <Badge className="bg-primary/10 text-primary border-primary/20">
+                  Flexible Pricing
+                </Badge>
+                {!isLoadingWallet && (
+                  <Badge variant="secondary" className="flex items-center gap-1">
+                    <Wallet className="h-3 w-3" />
+                    Wallet: {formatNaira(walletBalance)}
+                  </Badge>
+                )}
+              </div>
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">
+                Choose Your Plan
               </h1>
-              <p className="text-muted-foreground mt-2">
-                Manage your practice's subscription plan and billing
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+                Scalable pricing options designed to grow with your healthcare facility.
               </p>
             </div>
 
             {/* Current Subscription */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Current Subscription</CardTitle>
-                <CardDescription>
-                  Overview of your current plan and usage
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">
-                      Current Plan
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <Crown className="h-5 w-5 text-purple-500" />
-                      <span className="text-lg font-semibold">
-                        {currentSubscription.plan}
-                      </span>
-                      <Badge variant="default">Active</Badge>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">
-                      Next Billing
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-muted-foreground" />
-                      <span className="text-lg font-semibold">
-                        {new Date(
-                          currentSubscription.nextBilling
-                        ).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">
-                      Price
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="h-5 w-5 text-muted-foreground" />
-                      <span className="text-lg font-semibold">
-                        {currentSubscription.price}/{currentSubscription.period}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm text-muted-foreground">
-                      Auto-renew
-                    </Label>
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={autoRenew}
-                        onCheckedChange={handleAutoRenew}
-                      />
-                      <span className="text-sm">
-                        {autoRenew ? "Enabled" : "Disabled"}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <Separator className="my-6" />
-
-                {/* Usage Stats */}
-                <div className="grid gap-6 md:grid-cols-2">
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">Usage Statistics</h4>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Patients</span>
-                        <span className="font-medium">
-                          {currentSubscription.featuresUsed.patients}
+            {currentSubscription && (
+              <Card className="animate-fade-in">
+                <CardHeader>
+                  <CardTitle>Current Subscription</CardTitle>
+                  <CardDescription>
+                    Overview of your current plan and usage
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">
+                        Current Plan
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Crown className="h-5 w-5 text-purple-500" />
+                        <span className="text-lg font-semibold">
+                          {currentSubscription.plan?.name || "No active plan"}
                         </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm">Storage</span>
-                        <span className="font-medium">
-                          {currentSubscription.featuresUsed.storage}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h4 className="font-semibold">Actions</h4>
-                    <div className="flex gap-3">
-                      <Button variant="outline" onClick={handleCancel}>
-                        Cancel Subscription
-                      </Button>
-                      <Button variant="outline">Update Payment Method</Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Available Plans */}
-            <div className="space-y-6">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold">Available Plans</h2>
-                <p className="text-muted-foreground mt-2">
-                  Choose the perfect plan for your practice
-                </p>
-              </div>
-
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {subscriptionPlans.map((plan) => (
-                  <Card
-                    key={plan.id}
-                    className={`relative transition-all duration-300 hover:shadow-lg ${
-                      plan.popular
-                        ? "ring-2 border-primary shadow-lg scale-105"
-                        : ""
-                    } ${currentPlan === plan.id ? "border-primary" : ""}`}
-                  >
-                    {plan.popular && (
-                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                        <Badge className="bg-gradient-primary text-primary-foreground text-white px-3 py-1">
-                          {/* <Star className="h-3 w-3 mr-1 fill-current" /> */}
-                          Most Popular
+                        <Badge variant={currentSubscription.status === 'active' ? "default" : "secondary"}>
+                          {currentSubscription.status?.charAt(0).toUpperCase() + currentSubscription.status?.slice(1)}
                         </Badge>
                       </div>
-                    )}
+                    </div>
 
-                    <CardHeader className="text-center pb-4">
-                      {/* <div
-                        className={`inline-flex p-3 rounded-full ${plan.color} text-white mb-4`}
-                      >
-                        <plan.icon className="h-6 w-6" />
-                      </div> */}
-                      <CardTitle className="flex items-center justify-center gap-2">
-                        {plan.name}
-                        {currentPlan === plan.id && (
-                          <Badge variant="default">Current</Badge>
-                        )}
-                      </CardTitle>
-                      <CardDescription>{plan.description}</CardDescription>
-                    </CardHeader>
-
-                    <CardContent className="space-y-4">
-                      <div className="text-center">
-                        <span className="text-3xl font-bold">{plan.price}</span>
-                        {plan.period !== "quote" && (
-                          <span className="text-muted-foreground">
-                            /{plan.period}
-                          </span>
-                        )}
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">
+                        Next Billing
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-muted-foreground" />
+                        <span className="text-lg font-semibold">
+                          {currentSubscription.currentPeriodEndsAt 
+                            ? format(new Date(currentSubscription.currentPeriodEndsAt), "MMM d, yyyy")
+                            : "No date set"
+                          }
+                        </span>
                       </div>
+                    </div>
 
-                      <ul className="space-y-3">
-                        {plan.features.map((feature, index) => (
-                          <li
-                            key={index}
-                            className="flex items-center gap-3 text-sm"
-                          >
-                            <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">
+                        Price
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="h-5 w-5 text-muted-foreground" />
+                        <span className="text-lg font-semibold">
+                          {formatNaira(currentSubscription.plan?.price?.toLocaleString())}
+                          <span className="text-sm text-muted-foreground ml-1">
+                            /{getBillingPeriod(currentSubscription)}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
 
-                    <CardFooter>
-                      <Button
-                        className="w-full"
-                        variant={
-                          currentPlan === plan.id ? "outline" : "default"
-                        }
-                        disabled={currentPlan === plan.id}
-                        onClick={() => handleUpgrade(plan.id)}
-                      >
-                        {currentPlan === plan.id ? (
-                          "Current Plan"
-                        ) : (
-                          <>
-                            Upgrade Plan
-                            <ArrowRight className="ml-2 h-4 w-4" />
-                          </>
-                        )}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
+                    <div className="space-y-2">
+                      <Label className="text-sm text-muted-foreground">
+                        Auto-renew
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={currentSubscription.autoRenew || false}
+                          onCheckedChange={onAutoRenew}
+                          disabled={currentSubscription?.status !== 'active' || isUpdating}
+                        />
+                        <span className="text-sm">
+                          {isUpdating ? "Updating..." : (currentSubscription.autoRenew ? "Enabled" : "Disabled")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator className="my-6" />
+
+                  {/* Usage Stats */}
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="space-y-4">
+                      <h4 className="font-semibold">Actions</h4>
+                      <div className="flex gap-3 flex-wrap">
+                        <Button 
+                          variant="outline" 
+                          onClick={onCancelSubscription}
+                          disabled={currentSubscription.status !== 'active' || isCancelling}
+                        >
+                          {isCancelling ? "Cancelling..." : "Cancel Subscription"}
+                        </Button>
+                        <Button variant="outline">Update Payment Method</Button>
+                        <Button variant="outline">View Invoices</Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Available Plans */}
+            <div className="space-y-8 animate-fade-in">
+              <div className="grid md:grid-cols-3 gap-8">
+                {subscriptionPlans?.map((plan) => {
+                  const isCurrent = isCurrentPlan(plan.id);
+                  const isPopular = plan.name?.includes('Pro');
+                  const isEnterprise = plan.name === 'Enterprise';
+                  
+                  return (
+                    <Card
+                      key={plan.id}
+                      className={`relative hover:shadow-lg transition-all duration-300 hover:scale-105 ${
+                        isPopular ? "border-primary shadow-lg" : ""
+                      } ${isCurrent ? "border-primary bg-primary/5" : ""}`}
+                    >
+                      {isPopular && (
+                        <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-primary text-primary-foreground">
+                          Most Popular
+                        </Badge>
+                      )}
+
+                      {isEnterprise && (
+                        <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white">
+                          Enterprise
+                        </Badge>
+                      )}
+
+                      <CardHeader className="pb-4">
+                        <CardTitle className="text-2xl flex items-center justify-between">
+                          {plan.name}
+                          {isCurrent && (
+                            <Badge variant="secondary" className="ml-2">
+                              Current
+                            </Badge>
+                          )}
+                        </CardTitle>
+                        <div className="mb-2">
+                          <span className="text-4xl font-bold">
+                            {isEnterprise ? 'Custom' : formatNaira(plan.price)}
+                          </span> 
+                          <span className="text-muted-foreground">
+                            {isEnterprise ? '' : '/month'}
+                          </span>
+                        </div>
+                        <CardDescription>
+                          {isEnterprise 
+                            ? 'For large healthcare facilities with custom needs'
+                            : `Perfect for ${plan.name?.toLowerCase()} healthcare facilities`
+                          }
+                        </CardDescription>
+                      </CardHeader>
+
+                      <CardContent className="space-y-4">
+                        <ul className="space-y-3">
+                          {plan.features && Array.isArray(plan.features) ? (
+                            plan.features.map((feature: string, index: number) => (
+                              <li
+                                key={index}
+                                className="flex items-center gap-3 text-sm"
+                              >
+                                <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                                <span>{feature}</span>
+                              </li>
+                            ))
+                          ) : plan.features && typeof plan.features === 'object' ? (
+                            Object.entries(plan.features).slice(0, 6).map(([key, value], index) => (
+                              <li
+                                key={index}
+                                className="flex items-center gap-3 text-sm"
+                              >
+                                <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                                <span className="capitalize">
+                                  {key.replace(/_/g, ' ')}: {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}
+                                </span>
+                              </li>
+                            ))
+                          ) : (
+                            <li className="text-sm text-muted-foreground text-center">
+                              No features listed
+                            </li>
+                          )}
+                        </ul>
+
+                        <Button
+                          className={`w-full ${
+                            isPopular ? "bg-primary hover:bg-primary/90" : ""
+                          } ${isEnterprise ? "bg-purple-600 hover:bg-purple-700" : ""}`}
+                          variant={isCurrent ? "outline" : isPopular || isEnterprise ? "default" : "outline"}
+                          disabled={isCurrent || isCreating}
+                          onClick={() => handlePlanSelection(plan)}
+                        >
+                          {isCurrent ? (
+                            "Current Plan"
+                          ) : isCreating ? (
+                            "Processing..."
+                          ) : isEnterprise ? (
+                            <>
+                              Contact Sales
+                              <Mail className="ml-2 h-4 w-4" />
+                            </>
+                          ) : (
+                            <>
+                              {currentSubscription ? "Upgrade Plan" : "Start Free Trial"} 
+                              <ArrowRight className="ml-2 h-4 w-4" />
+                            </>
+                          )}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
 
             {/* Billing History */}
-            <Card>
+            <Card className="animate-fade-in">
               <CardHeader>
                 <CardTitle>Billing History</CardTitle>
                 <CardDescription>
@@ -373,6 +919,12 @@ const SubscriptionManagement = () => {
           </div>
         </main>
       </div>
+
+      {/* Payment Modal */}
+      {showPaymentModal && <PaymentModal />}
+
+      {/* Wallet Details Modal */}
+      {showWalletDetails && <WalletDetailsModal />}
 
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (

@@ -41,6 +41,7 @@ import MedicationDispensing from "./pages/pharmacy/MedicationDispensing";
 import StockManagement from "./pages/pharmacy/StockManagement";
 import InvoiceView from "./pages/billing/invoiceView";
 import SubscriptionManagement from "./pages/billing/SubscriptionManagement";
+import ActivitiesPage from "./pages/activities/ActivitiesPage";
 
 const queryClient = new QueryClient();
 
@@ -152,6 +153,8 @@ const App = () => (
             path="/dashboard/pharmacy/stock"
             element={<StockManagement />}
           />
+
+          <Route path="/dashboard/activities" element={<ActivitiesPage />} />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

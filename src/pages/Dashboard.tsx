@@ -212,36 +212,19 @@ export default function Dashboard() {
             {/* Quick Actions */}
             <QuickActions />
 
-            {/* Department Occupancy */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Bed className="h-5 w-5" />
-                  Department Occupancy
-                </CardTitle>
-              </CardHeader>
-              {/* <CardContent className="space-y-4">
-                {departmentMetrics.map((dept) => (
-                  <div key={dept.name} className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span>{dept.name}</span>
-                      <span className="font-medium">{dept.occupancy}%</span>
-                    </div>
-                    <Progress value={dept.occupancy} className="h-2" />
-                  </div>
-                ))}
-              </CardContent> */}
-            </Card>
+            <div>
+              <RecentActivity />
+            </div>
 
             {/* Alerts & Notifications */}
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <AlertTriangle className="h-5 w-5" />
                   System Alerts
                 </CardTitle>
               </CardHeader>
-              {/* <CardContent className="space-y-3">
+              <CardContent className="space-y-3">
                 <div className="flex items-start gap-3 p-3 rounded-lg bg-red-50 border border-red-200">
                   <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
                   <div>
@@ -277,12 +260,8 @@ export default function Dashboard() {
                     </p>
                   </div>
                 </div>
-              </CardContent> */}
-            </Card>
-            {/* Recent Activity */}
-            <div>
-              <RecentActivity />
-            </div>
+              </CardContent>
+            </Card> */}
           </div>
         </main>
       </div>
