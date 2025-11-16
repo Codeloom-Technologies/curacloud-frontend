@@ -678,8 +678,8 @@ const SubscriptionManagement = () => {
                   </Badge>
                 )}
               </div>
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                Choose Your Plan
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+               Choose Your Plan
               </h1>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                 Scalable pricing options designed to grow with your healthcare facility.

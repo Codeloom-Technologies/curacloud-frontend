@@ -40,8 +40,9 @@ import PrescriptionProcessing from "./pages/pharmacy/PrescriptionProcessing";
 import MedicationDispensing from "./pages/pharmacy/MedicationDispensing";
 import StockManagement from "./pages/pharmacy/StockManagement";
 import InvoiceView from "./pages/billing/invoiceView";
-import SubscriptionManagement from "./pages/billing/SubscriptionManagement";
+import SubscriptionManagement from "./pages/Subscription/SubscriptionManagement";
 import ActivitiesPage from "./pages/activities/ActivitiesPage";
+import  WalletManagement from "./pages/Wallet/WalletManagement";
 
 const queryClient = new QueryClient();
 
@@ -117,11 +118,6 @@ const App = () => (
           />
 
           <Route
-            path="/dashboard/billing/subscription-management"
-            element={<SubscriptionManagement />}
-          />
-
-          <Route
             path="/dashboard/billing/invoices/:invoiceId"
             element={<InvoiceView />}
           />
@@ -155,6 +151,20 @@ const App = () => (
           />
 
           <Route path="/dashboard/activities" element={<ActivitiesPage />} />
+
+          {/* subscription routes */}
+          <Route
+            path="/dashboard/subscription"
+            element={<SubscriptionManagement />}
+          />
+
+          {/* Wallet */}
+               {/* subscription toutes */}
+          <Route
+            path="/dashboard/wallet"
+            element={<WalletManagement />}
+          />
+
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

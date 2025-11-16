@@ -3,17 +3,16 @@ import {
   Users,
   Calendar,
   FileText,
-  TestTube,
-  Scan,
   Pill,
-  Package,
   CreditCard,
   UserCheck,
-  BarChart3,
   Settings,
   ChevronDown,
   Heart,
-  BookText,
+  BookText, Receipt,
+  DollarSign,
+  PiggyBank,
+  Wallet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -136,7 +135,7 @@ const navigationItems = [
   },
   {
     title: "Billing",
-    icon: CreditCard,
+    icon: Receipt,
     href: "/dashboard/billing",
     permission: "billing" as Permission,
     children: [
@@ -164,6 +163,32 @@ const navigationItems = [
         title: "Subscription Management",
         href: "/dashboard/billing/subscription-management",
         permission: "billing.subscription" as Permission,
+      },
+    ],
+  },
+  {
+    title: "Subscription",
+    icon: CreditCard,
+    href: "/dashboard/Subscription",
+    permission: "subscription" as Permission,
+    children: [
+      {
+        title: "Overview",
+        href: "/dashboard/subscription",
+        permission: "subscription" as Permission,
+      },
+    ],
+  },
+  {
+    title: "Wallet",
+    icon: Wallet,
+    href: "/dashboard/wallet",
+    permission: "wallet" as Permission,
+    children: [
+      {
+        title: "Overview",
+        href: "/dashboard/wallet",
+        permission: "wallet" as Permission,
       },
     ],
   },
