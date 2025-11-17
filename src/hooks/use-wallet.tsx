@@ -14,10 +14,10 @@ export const useWallet = () => {
         throw new Error('Please log in to top up your wallet');
       }
 
-          const paymentData:any = {
+        const paymentData:any = {
         email: user.email,
         amount,
-        reference: `wallet_topup_${Date.now()}`,
+        reference: PaymentService.generateReference('top_up'),
         metadata: { description }
       };
 

@@ -16,7 +16,7 @@ export const useSubscription = () => {
       toast({
         title: "Subscription Created",
         description: "Your subscription has been activated successfully.",
-        variant: "default",
+        variant: "success",
       });
     },
     onError: (error: any) => {
@@ -36,7 +36,7 @@ export const useSubscription = () => {
       toast({
         title: "Subscription Updated",
         description: "Your subscription has been updated successfully.",
-        variant: "default",
+        variant: "success",
       });
     },
   });
@@ -48,18 +48,22 @@ export const useSubscription = () => {
       toast({
         title: "Subscription Cancelled",
         description: "Your subscription has been cancelled.",
-        variant: "default",
+        variant: "success",
       });
     },
   });
 
-  const handleUpgrade = async (planId: string, planPrice: number, paymentMethod:string) => {
+  const handleUpgrade = async (planId: string, planPrice: number, planName:string, paymentMethod:string) => {
     if (!user) {
       toast({
         title: "Authentication Required",
         description: "Please log in to upgrade your subscription.",
         variant: "destructive",
       });
+      return;
+    }
+
+    if (paymentMethod === 'wallet') {
       return;
     }
 
@@ -76,25 +80,8 @@ export const useSubscription = () => {
     try {
       await PaymentService.initializePayment(
         paymentData,
-        // async (response: any) => {
-        //   // Payment successful
-        //   await createSubscriptionMutation.mutateAsync({
-        //     planId,
-        //     paymentReference: response.reference,
-        //     autoRenew: true,
-        //   });
-        // },
-        // () => {
-        //   // Payment closed
-        //   toast({
-        //     title: "Payment Cancelled",
-        //     description: "Payment was cancelled by user.",
-        //     variant: "default",
-        //   });
-        // }
       );
     } catch (error) {
-        console.log({error})
       toast({
         title: "Payment Error",
         description: "Failed to initialize payment. Please try again.",

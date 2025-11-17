@@ -40,6 +40,8 @@ import { format } from "date-fns";
 import { formatNaira } from "@/lib/formatters";
 import { useSubscription } from "@/hooks/use-subscription";
 import { useAuthStore } from "@/store/authStore";
+import { getBalance } from "@/services/wallet";
+import { useNavigate } from "react-router-dom";
 
 type PaymentMethod = 'card' | 'wallet';
 
@@ -81,6 +83,7 @@ const SubscriptionManagement = () => {
 
   const { toast } = useToast();
   const { user } = useAuthStore();
+  const navigate = useNavigate();
 
   const { 
     handleUpgrade, 
@@ -108,19 +111,26 @@ const SubscriptionManagement = () => {
   } = useQuery({
     queryKey: ["active-subscription"],
     queryFn: () => getActiveSubscriptionPlan(),
+     refetchInterval: 30000,
+      refetchOnWindowFocus: true,
+      staleTime: 60000, // Consider data fresh for 1 minute
   });
 
-  // Wallet balance query with real-time updates
-  const { 
-    data: walletBalance = 0, 
-    isLoading: isLoadingWallet,
-    error: walletError,
-    refetch: refetchWallet 
-  } = useQuery({
-    queryKey: ["wallet-balance"],
-    queryFn: () => walletService.getBalance(),
-    refetchInterval: 30000, // Refetch every 30 seconds for real-time updates
-  });
+    // Wallet balance query
+    const { 
+      data: wallet, 
+      isLoading: isLoadingWallet,
+      refetch: refetchWallet,
+      isRefetching
+    } = useQuery({
+      queryKey: ["wallet-balance"],
+      queryFn: () => getBalance(),
+      refetchInterval: 30000,
+      refetchOnWindowFocus: true,
+      staleTime: 60000, // Consider data fresh for 1 minute
+    });
+
+  const walletBalance = wallet?.balance
 
   const getBillingPeriod = (subscription: any) => {
     if (!subscription?.currentPeriodStartsAt || !subscription?.currentPeriodEndsAt) 
@@ -171,96 +181,102 @@ const SubscriptionManagement = () => {
   };
 
   const handlePaymentConfirmation = async () => {
-    if (!selectedPlan || !user) {
-      toast({
-        title: "Error",
-        description: "Please select a plan and ensure you're logged in.",
-        variant: "destructive",
-      });
-      return;
+  if (!selectedPlan || !user) {
+    toast({
+      title: "Error",
+      description: "Please select a plan and ensure you're logged in.",
+      variant: "destructive",
+    });
+    return;
+  }
+    
+    const handleTopUp = () => {
+   return  navigate("/dashboard/wallet")
     }
 
-    // Enhanced balance validation
-    if (selectedPaymentMethod === 'wallet') {
-      if (walletBalance < selectedPlan.price) {
-        const shortage = selectedPlan.price - walletBalance;
-        toast({
-          title: "Insufficient Wallet Balance",
-          description: (
-            <div className="space-y-1">
-              <p>Your wallet balance is insufficient for this transaction.</p>
-              <p className="font-semibold">
-                Needed: {formatNaira(selectedPlan.price)} | Available: {formatNaira(walletBalance)}
-              </p>
-              <p>Shortage: {formatNaira(shortage)}</p>
-            </div>
-          ),
-          variant: "destructive",
-          action: (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => {
-                // Redirect to wallet top-up page
-                toast({
-                  title: "Redirecting to Wallet",
-                  description: "Taking you to add funds to your wallet...",
-                });
-              }}
-            >
-              Add Funds
-            </Button>
-          ),
-        });
-        return;
-      }
-
-      // Confirm wallet deduction
-      const confirmWalletPayment = window.confirm(
-        `Confirm wallet payment of ${formatNaira(selectedPlan.price)} for ${selectedPlan.name} plan?\n\n` +
-        `Balance before: ${formatNaira(walletBalance)}\n` +
-        `Balance after: ${formatNaira(walletBalance - selectedPlan.price)}`
-      );
-
-      if (!confirmWalletPayment) {
-        return;
-      }
-    }
-
-    try {
-      await handleUpgrade(selectedPlan.id, selectedPlan.price, selectedPaymentMethod);
-      
-      // Refresh wallet balance after successful payment
-      if (selectedPaymentMethod === 'wallet') {
-        await refetchWallet();
-      }
-      
+  // Enhanced balance validation for wallet payments
+  if (selectedPaymentMethod === 'wallet') {
+    if (walletBalance < selectedPlan.price) {
+      const shortage = selectedPlan.price - walletBalance;
       toast({
-        title: "Payment Successful!",
-        description: `You have successfully subscribed to the ${selectedPlan.name} plan.`,
-        variant: "default",
-      });
-      
-      setShowPaymentModal(false);
-      setSelectedPlan(null);
-    } catch (error: any) {
-      toast({
-        title: "Payment Failed",
-        description: error.message || "There was an error processing your payment. Please try again.",
+        title: "Insufficient Wallet Balance",
+        description: (
+          <div className="space-y-1">
+            <p>Your wallet balance is insufficient for this transaction.</p>
+            <p className="font-semibold">
+              Needed: {formatNaira(selectedPlan.price)} | Available: {formatNaira(walletBalance)}
+            </p>
+            <p>Shortage: {formatNaira(shortage)}</p>
+          </div>
+        ),
         variant: "destructive",
         action: (
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={() => refetchWallet()}
+            onClick={handleTopUp}
           >
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Retry
+            Add Funds
           </Button>
         ),
       });
+      return;
     }
-  };
+    // Don't return here - continue with wallet payment
+  }
+
+  try {
+    // Show processing toast
+    toast({
+      title: "Processing Payment",
+      description: "Please wait while we process your payment...",
+      variant: "default",
+    });
+
+    // Process the payment
+    await handleUpgrade(
+      selectedPlan.id, 
+      selectedPlan.price, 
+      selectedPlan?.name, 
+      selectedPaymentMethod
+    );
+
+    // Refresh wallet balance after successful payment if wallet was used
+    if (selectedPaymentMethod === 'wallet') {
+      await refetchWallet();
+    }
+
+    // Show success message
+    toast({
+      title: "Payment Successful!",
+      description: `You have successfully subscribed to the ${selectedPlan.name} plan.`,
+      variant: "success",
+    });
+
+    // Reset state
+    setShowPaymentModal(false);
+    setSelectedPlan(null);
+    
+  } catch (error: any) {
+    console.error('Payment error:', error);
+    
+    toast({
+      title: "Payment Failed",
+      description: error.message || "There was an error processing your payment. Please try again.",
+      variant: "destructive",
+      action: (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => refetchWallet()}
+        >
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Retry
+        </Button>
+      ),
+    });
+  }
+};
 
   const onAutoRenew = async (enabled: boolean) => {
     if (!currentSubscription?.id) {

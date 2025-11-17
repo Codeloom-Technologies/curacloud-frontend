@@ -12,6 +12,7 @@ export interface PaymentData {
   reference: string;
   planId: string;
   metadata?: any;
+  planName?:string
 }
 
 export class PaymentService {
@@ -27,7 +28,6 @@ export class PaymentService {
       await this.loadPaystack();
       
     const paystackKey = import.meta.env.VITE_PAYSTACK_PUBLIC_KEY;
-      console.log({ data })
       
     const handler = window.PaystackPop.setup({
       key: paystackKey,
@@ -35,24 +35,27 @@ export class PaymentService {
       amount: data.amount * 100, // Convert to kobo
       currency: 'NGN',
       ref: data.reference,
-      metadata: {
-        custom_fields: [
-          {
-            display_name: "Plan ID",
-            variable_name: "plan_id",
-            value: data.planId
-          },
-          ...(data.metadata?.custom_fields || [])
-        ]
+       metadata: {
+    custom_fields: [
+      {
+        display_name: "Plan Name",
+        variable_name: "plan_name",
+        value: data.planName
       },
-    //   callback: onSuccess,
-    //   onClose: onClose,
+      {
+        display_name: "Plan ID", 
+        variable_name: "plan_id",
+        value: data.planId
+      },
+      ...(data.metadata?.custom_fields || [])
+    ]
+  },
     });
 
     handler.openIframe();
   }
 
-  static generateReference(): string {
-    return `PSK_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  static generateReference(prefix?:string): string {
+    return `${prefix ? prefix : 'PSK'}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 }

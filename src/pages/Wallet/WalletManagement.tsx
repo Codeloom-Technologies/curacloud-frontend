@@ -126,10 +126,8 @@ try {
     }
 
     await handleTopUp(amount, `Wallet top-up of ${formatNaira(amount)}`);
-        
-        setSelectedAmount(0);
-      setCustomAmount('');
-
+      //   setSelectedAmount(0);
+      // setCustomAmount('');
 } catch (error) {
    toast({
         title: "Top-up Failed",
