@@ -31,86 +31,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { formatNaira } from "@/lib/formatters";
-import { useAuthStore } from "@/store/authStore";
+import { getBalance, getStats, getTransactionHistory } from "@/services/wallet";
+import { useWallet } from "@/hooks/use-wallet";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import React from "react";
 
-// Mock wallet service - replace with your actual API calls
-const walletService = {
-  getBalance: async (): Promise<number> => {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(15000), 1000);
-    });
-  },
-  
-  getTransactionHistory: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve([
-        { 
-          id: 1, 
-          amount: 5000, 
-          type: 'credit', 
-          description: 'Wallet Top-up', 
-          date: new Date('2024-01-15'),
-          status: 'completed',
-          reference: 'REF-001'
-        },
-        { 
-          id: 2, 
-          amount: -3000, 
-          type: 'debit', 
-          description: 'Subscription Payment - Pro Plan', 
-          date: new Date('2024-01-10'),
-          status: 'completed',
-          reference: 'REF-002'
-        },
-        { 
-          id: 3, 
-          amount: 10000, 
-          type: 'credit', 
-          description: 'Bank Transfer', 
-          date: new Date('2024-01-05'),
-          status: 'completed',
-          reference: 'REF-003'
-        },
-        { 
-          id: 4, 
-          amount: -1500, 
-          type: 'debit', 
-          description: 'Subscription Payment - Hobby Plan', 
-          date: new Date('2024-01-01'),
-          status: 'completed',
-          reference: 'REF-004'
-        },
-        { 
-          id: 5, 
-          amount: 20000, 
-          type: 'credit', 
-          description: 'Wallet Top-up', 
-          date: new Date('2023-12-28'),
-          status: 'completed',
-          reference: 'REF-005'
-        },
-      ]), 1000);
-    });
-  },
-
-  topUpWallet: async (amount: number, method: string): Promise<boolean> => {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(true), 2000);
-    });
-  }
-};
-
-type Transaction = {
-  id: number;
-  amount: number;
-  type: 'credit' | 'debit';
-  description: string;
-  date: Date;
-  status: string;
-  reference: string;
-};
-
-type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
 
  const WalletManagement = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -119,39 +44,66 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
   const [showTopUpModal, setShowTopUpModal] = useState(false);
   const [selectedAmount, setSelectedAmount] = useState<number>(0);
   const [customAmount, setCustomAmount] = useState<string>('');
-  const [selectedMethod, setSelectedMethod] = useState<TopUpMethod>('card');
-  const [isToppingUp, setIsToppingUp] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const perPage = 10;
 
   const { toast } = useToast();
-  const { user } = useAuthStore();
+  const { handleTopUp, isPending } = useWallet();
 
   // Wallet balance query
   const { 
-    data: walletBalance = 0, 
+    data: walletBalance, 
     isLoading: isLoadingBalance,
-    error: balanceError,
-    refetch: refetchBalance 
+    refetch: refetchBalance,
+    isRefetching
   } = useQuery({
     queryKey: ["wallet-balance"],
-    queryFn: () => walletService.getBalance(),
+    queryFn: () => getBalance(),
     refetchInterval: 30000,
+    refetchOnWindowFocus: true,
+      staleTime: 60000, // Consider data fresh for 1 minute
   });
-
-  // Transaction history query
+   
+   
   const { 
-    data: transactionsData = [],
-    isLoading: isLoadingTransactions,
-    error: transactionsError,
-    refetch: refetchTransactions 
+    data: walletStats, 
+    isLoading: isLoadingStats,
   } = useQuery({
-    queryKey: ["wallet-transactions"],
-    queryFn: () => walletService.getTransactionHistory(),
+    queryKey: ["wallet-stats"],
+    queryFn: () => getStats(),
+    refetchInterval: 30000,
+    refetchOnWindowFocus: true,
+    staleTime: 60000,
   });
+   
+     const {   data: transactionsData = [],
+    isLoading: isLoadingTransactions,
+     } = useQuery({
+       queryKey: ["wallet-transactions", currentPage],
+       queryFn: () =>
+         getTransactionHistory(currentPage, perPage,),
+        refetchInterval: 30000,
+    refetchOnWindowFocus: true,
+    staleTime: 60000,
+     });
 
-    let transactions: any = transactionsData
-    
-  const handleTopUp = async () => {
-    if (!selectedAmount && !customAmount) {
+   let transactions: any = transactionsData?.transactions
+   
+  const meta = transactionsData?.meta ?? {};
+  const totalPages = meta.lastPage ?? 1;
+
+   // Pagination handler
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+   const handlePayment = async () => {
+         
+try {
+      if (!selectedAmount && !customAmount) {
       toast({
         title: "Amount Required",
         description: "Please select or enter an amount to top up.",
@@ -159,10 +111,12 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
       });
       return;
     }
+     
 
-    const amount = customAmount ? parseFloat(customAmount) : selectedAmount;
-    
-    if (amount <= 0) {
+     
+     const amount = customAmount ? parseFloat(customAmount) : selectedAmount;
+     
+      if (amount <= 0) {
       toast({
         title: "Invalid Amount",
         description: "Please enter a valid amount greater than 0.",
@@ -171,35 +125,18 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
       return;
     }
 
-    setIsToppingUp(true);
-    
-    try {
-      const success = await walletService.topUpWallet(amount, selectedMethod);
-      
-      if (success) {
-        toast({
-          title: "Top-up Successful!",
-          description: `Your wallet has been credited with ${formatNaira(amount)}.`,
-          variant: "default",
-        });
+    await handleTopUp(amount, `Wallet top-up of ${formatNaira(amount)}`);
         
-        // Refresh data
-        await refetchBalance();
-        await refetchTransactions();
-        
-        setShowTopUpModal(false);
         setSelectedAmount(0);
-        setCustomAmount('');
-      }
-    } catch (error) {
-      toast({
+      setCustomAmount('');
+
+} catch (error) {
+   toast({
         title: "Top-up Failed",
         description: "There was an error processing your top-up. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsToppingUp(false);
-    }
+}
   };
 
   const quickAmounts = [1000, 5000, 10000, 20000];
@@ -213,7 +150,7 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
             variant="ghost"
             size="sm"
             onClick={() => setShowTopUpModal(false)}
-            disabled={isToppingUp}
+            disabled={isPending}
           >
             <span className="sr-only">Close</span>
             <span aria-hidden="true">×</span>
@@ -235,7 +172,7 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
                     setSelectedAmount(amount);
                     setCustomAmount('');
                   }}
-                  disabled={isToppingUp}
+                  disabled={isPending}
                 >
                   {formatNaira(amount)}
                 </Button>
@@ -259,36 +196,9 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
                     setSelectedAmount(0);
                   }}
                   className="w-full pl-8 pr-4 py-2 border border-input rounded-md bg-background"
-                  disabled={isToppingUp}
+                  disabled={isPending}
                 />
               </div>
-            </div>
-          </div>
-
-          {/* Payment Method */}
-          <div className="space-y-4">
-            <Label className="text-base font-semibold">Payment Method</Label>
-            <div className="grid gap-3">
-              {[
-                { id: 'card' as TopUpMethod, name: 'Credit/Debit Card', icon: CreditCard },
-                { id: 'bank_transfer' as TopUpMethod, name: 'Bank Transfer', icon: Upload },
-                { id: 'ussd' as TopUpMethod, name: 'USSD', icon: CreditCard },
-              ].map((method) => (
-                <div
-                  key={method.id}
-                  className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
-                    selectedMethod === method.id 
-                      ? 'border-primary bg-primary/5' 
-                      : 'border-border hover:border-primary/50'
-                  }`}
-                  onClick={() => setSelectedMethod(method.id)}
-                >
-                  <div className="flex items-center gap-3">
-                    <method.icon className="h-5 w-5" />
-                    <span className="font-medium">{method.name}</span>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
 
@@ -298,19 +208,20 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
               variant="outline"
               className="flex-1"
               onClick={() => setShowTopUpModal(false)}
-              disabled={isToppingUp}
+              disabled={isPending}
             >
               Cancel
             </Button>
             <Button
               className="flex-1"
-              onClick={handleTopUp}
-              disabled={isToppingUp || (!selectedAmount && !customAmount)}
+              onClick={handlePayment}
+                disabled={isPending || (!selectedAmount && !customAmount)}
+
             >
-              {isToppingUp ? (
+              {isPending ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin mr-2" />
-                  Processing...
+                  Initializing...
                 </>
               ) : (
                 `Top Up ${formatNaira(customAmount ? parseFloat(customAmount) : selectedAmount)}`
@@ -394,7 +305,7 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="text-4xl font-bold">
-                          {showBalance ? formatNaira(walletBalance) : '••••••'}
+                          {showBalance ? formatNaira(Math.abs(walletBalance?.balance)) : '••••••'}
                         </span>
                         <Button
                           variant="ghost"
@@ -405,7 +316,10 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
                         </Button>
                       </div>
                       <p className="text-sm text-muted-foreground">
-                        Last updated: {format(new Date(), "MMM d, yyyy 'at' h:mm a")}
+ Last updated: {format(
+    new Date(walletBalance?.updatedAt || Date.now()), 
+    "MMM d, yyyy 'at' h:mm a"
+  )}
                       </p>
                     </div>
                   </div>
@@ -417,7 +331,9 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
                     </Button>
                     <Button variant="outline" onClick={() => refetchBalance()}>
                       <RefreshCw className="h-4 w-4 mr-2" />
-                      Refresh
+                      {
+                        isRefetching ? 'Refreshing' :'Refresh'
+                      }
                     </Button>
                   </div>
                 </div>
@@ -429,7 +345,7 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
               <nav className="-mb-px flex space-x-8">
                 {[
                   { id: 'overview', name: 'Overview', count: null },
-                  { id: 'transactions', name: 'Transactions', count: transactions.length },
+                  { id: 'transactions', name: 'Transactions', count: transactions?.total },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -463,29 +379,32 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Total Credits</span>
                       <span className="font-semibold text-green-600">
-                        {formatNaira(transactions
-                          .filter(t => t.type === 'credit')
-                          .reduce((sum, t) => sum + t.amount, 0)
-                        )}
+                        {
+                          isLoadingStats ? <RefreshCw/> :
+                          formatNaira(walletStats.totalCredits)
+                        
+                        }
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Total Debits</span>
                       <span className="font-semibold text-destructive">
-                        {formatNaira(Math.abs(transactions
-                          .filter(t => t.type === 'debit')
-                          .reduce((sum, t) => sum + t.amount, 0)
-                        ))}
+                        {
+                          isLoadingStats ? <RefreshCw/> :
+                          formatNaira(walletStats.totalDebits)
+                        
+                        }
                       </span>
                     </div>
                     <Separator />
                     <div className="flex justify-between items-center">
                       <span className="text-muted-foreground">Transactions This Month</span>
                       <span className="font-semibold">
-                        {transactions.filter(t => 
-                          t.date.getMonth() === new Date().getMonth() &&
-                          t.date.getFullYear() === new Date().getFullYear()
-                        ).length}
+                        {
+                          isLoadingStats ? <RefreshCw/> :
+                          (walletStats.transactionsThisMonth)
+                        
+                        }
                       </span>
                     </div>
                   </CardContent>
@@ -501,7 +420,7 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {transactions.slice(0, 3).map((transaction) => (
+                      {transactions?.slice(0, 3).map((transaction) => (
                         <div key={transaction.id} className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className={`p-2 rounded-full ${
@@ -517,7 +436,7 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
                             <div>
                               <p className="font-medium text-sm">{transaction.description}</p>
                               <p className="text-xs text-muted-foreground">
-                                {format(transaction.date, "MMM d, yyyy")}
+                                {format(transaction.createdAt, "MMM d, yyyy")}
                               </p>
                             </div>
                           </div>
@@ -529,7 +448,7 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
                         </div>
                       ))}
                       
-                      {transactions.length === 0 && (
+                      {transactions?.length === 0 && (
                         <div className="text-center py-8">
                           <Wallet className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
                           <p className="text-muted-foreground">No transactions yet</p>
@@ -577,40 +496,40 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
                           <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
                           <p>Loading transactions...</p>
                         </div>
-                      ) : transactions.length > 0 ? (
+                      ) : transactions?.length > 0 ? (
                         <div className="divide-y">
-                          {transactions.map((transaction) => (
-                            <div key={transaction.id} className="p-4 hover:bg-muted/50 transition-colors">
+                          {transactions?.map((transaction) => (
+                            <div key={transaction?.id} className="p-4 hover:bg-muted/50 transition-colors">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4 flex-1">
                                   <div className={`p-2 rounded-full ${
-                                    transaction.type === 'credit' 
+                                    transaction?.type === 'credit' 
                                       ? 'bg-green-100 text-green-600' 
                                       : 'bg-red-100 text-red-600'
                                   }`}>
-                                    {transaction.type === 'credit' ? 
+                                    {transaction?.type === 'credit' ? 
                                       <ArrowDownLeft className="h-4 w-4" /> : 
                                       <ArrowUpRight className="h-4 w-4" />
                                     }
                                   </div>
                                   
                                   <div className="flex-1">
-                                    <p className="font-medium">{transaction.description}</p>
+                                    <p className="font-medium">{transaction?.description}</p>
                                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                      <span>{format(transaction.date, "MMM d, yyyy 'at' h:mm a")}</span>
-                                      <span>Ref: {transaction.reference}</span>
+                                      <span>{format(transaction?.createdAt, "MMM d, yyyy 'at' h:mm a")}</span>
+                                      <span>Ref: {transaction?.reference}</span>
                                     </div>
                                   </div>
                                 </div>
                                 
                                 <div className="text-right">
                                   <p className={`font-semibold ${
-                                    transaction.type === 'credit' ? 'text-green-600' : 'text-destructive'
+                                    transaction?.type === 'credit' ? 'text-green-600' : 'text-destructive'
                                   }`}>
-                                    {transaction.type === 'credit' ? '+' : '-'}{formatNaira(Math.abs(transaction.amount))}
+                                    {transaction?.type === 'credit' ? '+' : '-'}{formatNaira(Math.abs(transaction?.amount))}
                                   </p>
                                   <Badge variant="secondary" className="mt-1">
-                                    {transaction.status}
+                                    {transaction?.status}
                                   </Badge>
                                 </div>
                               </div>
@@ -631,10 +550,53 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
                         </div>
                       )}
                     </div>
-                  </div>
+                  </div>                                  
                 </CardContent>
               </Card>
+              
             )}
+                {/* Pagination */}
+                                  {!isLoadingTransactions && (
+                                    <div className="mt-4">
+                                      <Pagination>
+                                        <PaginationContent>
+                                          <PaginationItem>
+                                            <PaginationPrevious
+                                              onClick={() => handlePageChange(currentPage - 1)}
+                                              className={
+                                                currentPage === 1
+                                                  ? "pointer-events-none opacity-50"
+                                                  : "cursor-pointer"
+                                              }
+                                            />
+                                          </PaginationItem>
+                  
+                                          {Array.from({ length: totalPages }).map((_, i) => (
+                                            <PaginationItem key={i}>
+                                              <PaginationLink
+                                                onClick={() => handlePageChange(i + 1)}
+                                                isActive={currentPage === i + 1}
+                                                className="cursor-pointer"
+                                              >
+                                                {i + 1}
+                                              </PaginationLink>
+                                            </PaginationItem>
+                                          ))}
+                  
+                                          <PaginationItem>
+                                            <PaginationNext
+                                              onClick={() => handlePageChange(currentPage + 1)}
+                                              className={
+                                                currentPage === totalPages
+                                                  ? "pointer-events-none opacity-50"
+                                                  : "cursor-pointer"
+                                              }
+                                            />
+                                          </PaginationItem>
+                                        </PaginationContent>
+                                      </Pagination>
+                                    </div>
+                                  )}
           </div>
         </main>
       </div>
@@ -653,4 +615,4 @@ type TopUpMethod = 'card' | 'bank_transfer' | 'ussd';
   );
 };
 
-export default WalletManagement;
+export default React.memo(WalletManagement);
