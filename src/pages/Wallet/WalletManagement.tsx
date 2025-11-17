@@ -381,7 +381,7 @@ try {
                       <span className="font-semibold text-green-600">
                         {
                           isLoadingStats ? <RefreshCw/> :
-                          formatNaira(walletStats.totalCredits)
+                          formatNaira(walletStats?.totalCredits)
                         
                         }
                       </span>
@@ -391,7 +391,7 @@ try {
                       <span className="font-semibold text-destructive">
                         {
                           isLoadingStats ? <RefreshCw/> :
-                          formatNaira(walletStats.totalDebits)
+                          formatNaira(walletStats?.totalDebits)
                         
                         }
                       </span>
@@ -402,7 +402,7 @@ try {
                       <span className="font-semibold">
                         {
                           isLoadingStats ? <RefreshCw/> :
-                          (walletStats.transactionsThisMonth)
+                          (walletStats?.transactionsThisMonth)
                         
                         }
                       </span>
