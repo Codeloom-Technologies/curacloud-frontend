@@ -47,7 +47,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { createConsultation, getConsultations } from "@/services/consultation";
-import { fetchPatientByMRN, fetchPatients } from "@/services/patient";
+import {  fetchPatients } from "@/services/patient";
 import { getAllDoctors } from "@/services/staff";
 import {
   Pagination,
@@ -260,6 +260,7 @@ export default function Consultations() {
     queryFn: () => getConsultations(currentPage, perPage, debouncedSearch),
   });
   const consultations = consultationsData?.consultations ?? [];
+  console.log(consultations)
   const meta = consultationsData?.meta ?? {};
   const total = meta.total ?? 0;
   const perPage = meta.perPage ?? 10; // default to 10
