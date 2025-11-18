@@ -24,19 +24,27 @@ export const createConsultation = async (payload: {
 };
 
 export const getConsultations = async (
-  page: number = 1,
+page: number = 1,
   perPage: number = 5,
-  search: string = ""
+  search: string = "",
+  filters: Record<string, any> = {}
 ) => {
-  const queryParams = new URLSearchParams({
+ const queryParams = new URLSearchParams({
     page: page.toString(),
     perPage: perPage.toString(),
   });
 
+  // Add search only if it's not empty
   if (search && search.trim() !== "") {
     queryParams.append("search", search.trim());
   }
 
+  // Add filters dynamically (only non-empty values)
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== "" && value !== false) {
+      queryParams.append(key, String(value));
+    }
+  });
   const response = await apiClient(`/consultations?${queryParams}`, {
     method: "GET",
   });
@@ -47,3 +55,11 @@ export const getConsultations = async (
   const { data, meta } = response;
   return { consultations: data, meta };
 };
+
+
+export const getConsultationStats = async () => {
+  const response = await apiClient('/consultations/stats')
+  return response
+}
+
+

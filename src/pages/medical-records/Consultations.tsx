@@ -46,7 +46,7 @@ import { CONSULTATION_TYPES } from "@/constants/medical/consultation-types";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { createConsultation, getConsultations } from "@/services/consultation";
+import { createConsultation, getConsultations, getConsultationStats } from "@/services/consultation";
 import {  fetchPatients } from "@/services/patient";
 import { getAllDoctors } from "@/services/staff";
 import {
@@ -57,12 +57,13 @@ import {
   PaginationPrevious,
   PaginationNext,
 } from "@/components/ui/pagination";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Consultations() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<any>("all");
   const [typeFilter, setTypeFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -256,15 +257,25 @@ export default function Consultations() {
     isFetching: isFetchingConsultation,
     refetch,
   } = useQuery({
-    queryKey: ["consultations", currentPage, debouncedSearch],
-    queryFn: () => getConsultations(currentPage, perPage, debouncedSearch),
+    queryKey: ["consultations", currentPage, debouncedSearch,statusFilter],
+    queryFn: () => getConsultations(currentPage, perPage, debouncedSearch,statusFilter),
   });
   const consultations = consultationsData?.consultations ?? [];
-  console.log(consultations)
   const meta = consultationsData?.meta ?? {};
   const total = meta.total ?? 0;
   const perPage = meta.perPage ?? 10; // default to 10
   const totalPages = Math.ceil(total / perPage);
+
+
+  const { 
+  data: statsData, 
+  isLoading: isLoadingStats,
+  isFetching: isFetchingStats 
+} = useQuery({
+  queryKey: ["consultation-stats"],
+  queryFn: () => getConsultationStats(),
+});
+  console.log(statsData)
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -322,56 +333,85 @@ export default function Consultations() {
             </div>
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Today's Consultations
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">12</div>
-                  <p className="text-xs text-muted-foreground">
-                    +2 from yesterday
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    In Progress
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">3</div>
-                  <p className="text-xs text-muted-foreground">
-                    Currently active
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Completed Today
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">9</div>
-                  <p className="text-xs text-muted-foreground">
-                    Average 45 min
-                  </p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Emergency Cases
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">2</div>
-                  <p className="text-xs text-muted-foreground">This week</p>
-                </CardContent>
-              </Card>
+          <Card>
+  <CardHeader className="pb-2">
+    <CardTitle className="text-sm font-medium">
+      Today's Consultations
+    </CardTitle>
+  </CardHeader>
+  <CardContent>
+    <div className="text-2xl font-bold">
+      {isLoadingStats || isFetchingStats ? (
+        <Skeleton className="h-8 w-16" />
+      ) : (
+        statsData?.data?.todaysConsultations || 0
+      )}
+    </div>
+    <p className="text-xs text-muted-foreground">
+      {statsData?.data?.percentageChange >= 0 ? '+' : ''}{statsData?.data?.percentageChange || 0}% from yesterday
+    </p>
+  </CardContent>
+</Card>
+
+<Card>
+  <CardHeader className="pb-2">
+    <CardTitle className="text-sm font-medium">
+      In Progress
+    </CardTitle>
+  </CardHeader>
+  <CardContent>
+    <div className="text-2xl font-bold">
+      {isLoadingStats || isFetchingStats ? (
+        <Skeleton className="h-8 w-16" />
+      ) : (
+        statsData?.data?.inProgress || 0
+      )}
+    </div>
+    <p className="text-xs text-muted-foreground">
+      Currently active
+    </p>
+  </CardContent>
+</Card>
+
+<Card>
+  <CardHeader className="pb-2">
+    <CardTitle className="text-sm font-medium">
+      Completed Today
+    </CardTitle>
+  </CardHeader>
+  <CardContent>
+    <div className="text-2xl font-bold">
+      {isLoadingStats || isFetchingStats ? (
+        <Skeleton className="h-8 w-16" />
+      ) : (
+        statsData?.data?.completedToday || 0
+      )}
+    </div>
+    <p className="text-xs text-muted-foreground">
+      Average {statsData?.data?.averageDuration || 45} min
+    </p>
+  </CardContent>
+</Card>
+
+<Card>
+  <CardHeader className="pb-2">
+    <CardTitle className="text-sm font-medium">
+      Emergency Cases
+    </CardTitle>
+  </CardHeader>
+  <CardContent>
+    <div className="text-2xl font-bold">
+      {isLoadingStats || isFetchingStats ? (
+        <Skeleton className="h-8 w-16" />
+      ) : (
+        statsData?.data?.emergencyCases || 0
+      )}
+    </div>
+    <p className="text-xs text-muted-foreground">
+      This week
+    </p>
+  </CardContent>
+</Card>
             </div>
 
             {/* Filters and Actions */}
