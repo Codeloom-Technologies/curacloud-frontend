@@ -103,8 +103,28 @@ export const updateStaff = async (
   return response;
 };
 
-export const getAllDoctors = async () => {
-  const response = await apiClient("/staffs/doctors");
+export const getAllDoctors = async ( page: number = 1,
+  perPage: number=15,
+  search: string = "",
+  filters: Record<string, any> = {}) => {
+  const queryParams = new URLSearchParams({
+    page: page.toString(),
+    perPage: perPage.toString(),
+  });
+
+  // Add search only if it's not empty
+  if (search && search.trim() !== "") {
+    queryParams.append("search", search.trim());
+  }
+
+  // Add filters dynamically (only non-empty values)
+  Object.entries(filters).forEach(([key, value]) => {
+    if (value !== undefined && value !== "" && value !== false) {
+      queryParams.append(key, String(value));
+    }
+  });
+
+  const response = await apiClient(`/staffs/doctors?${queryParams}`);
 
   if (!response) {
     const error = await response;

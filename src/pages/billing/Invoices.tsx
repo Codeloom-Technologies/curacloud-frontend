@@ -43,7 +43,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { fetchPatientByMRN } from "@/services/patient";
+import { fetchPatientByMRN, fetchPatients } from "@/services/patient";
 import {
   createInvoice,
   fetchAllBillings,
@@ -64,9 +64,13 @@ const Invoices = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [debouncedId, setDebouncedId] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [debouncedSearch, setDebouncedSearch] = useState(searchQuery);
+
+  // Patient search states
+  const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  const [patientSearchQuery, setPatientSearchQuery] = useState("");
+  const [debouncedPatientSearch, setDebouncedPatientSearch] = useState("");
 
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -83,23 +87,50 @@ const Invoices = () => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
+  // Debounce patient search
   useEffect(() => {
     const handler = setTimeout(() => {
-      if (formData.patientId) setDebouncedId(formData.patientId.trim());
-    }, 500);
+      setDebouncedPatientSearch(patientSearchQuery.trim());
+    }, 400);
     return () => clearTimeout(handler);
-  }, [formData.patientId]);
+  }, [patientSearchQuery]);
 
-  const {
-    data: patient,
-    isFetching,
-    isError,
-    isSuccess,
+  // Fetch patients for search
+  const { 
+    data: patientData, 
+    isLoading: isLoadingPatient, 
+    isFetching: isFetchingPatient 
   } = useQuery({
-    queryKey: ["fetchPatientByMRN", debouncedId],
-    queryFn: () => fetchPatientByMRN(debouncedId),
-    enabled: !!debouncedId,
+    queryKey: ["patients-search", debouncedPatientSearch],
+    queryFn: () => fetchPatients(1, 50, debouncedPatientSearch),
+    enabled: dialogOpen,
   });
+
+  const handlePatientSelect = (patientId: string) => {
+    const patient = patientData?.patients?.find(
+      (p: any) => p.id === patientId
+    );
+    
+    if (patient) {
+      setSelectedPatient(patient);
+      setFormData(prev => ({
+        ...prev,
+        patientId: patient.id,
+      }));
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      patientId: "",
+      amount: "",
+      notes: "",
+      service: "",
+      dueDate: "",
+    });
+    setSelectedPatient(null);
+    setPatientSearchQuery("");
+  };
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -115,7 +146,7 @@ const Invoices = () => {
     isFetching: isFetchingInvoiceStats,
     isLoading: isLoadingInvoiceStats,
   } = useQuery({
-    queryKey: ["invoice-stats", debouncedId],
+    queryKey: ["invoice-stats"],
     queryFn: () => getInvoiceStats(),
   });
 
@@ -154,13 +185,8 @@ const Invoices = () => {
         variant: "success",
       });
       setDialogOpen(false);
-      setFormData({
-        patientId: "",
-        amount: "",
-        notes: "",
-        service: "",
-        dueDate: "",
-      });
+      resetForm();
+      refetch();
     },
     onError: (error: any) => {
       toast({
@@ -173,8 +199,17 @@ const Invoices = () => {
 
   const handleCreateInvoice = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate({ ...formData, patientId: patient?.id } as any);
-    refetch();
+
+    if (!selectedPatient) {
+      toast({
+        title: "Patient Required",
+        description: "Please select a patient",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    mutation.mutate({ ...formData, patientId: selectedPatient.id } as any);
   };
 
   const handleDownloadInvoice = (invoiceId: string) => {
@@ -257,35 +292,94 @@ const Invoices = () => {
                   </DialogHeader>
                   <form onSubmit={handleCreateInvoice}>
                     <div className="grid gap-4 py-4">
+                      {/* Patient Selection */}
                       <div className="space-y-2">
-                        <div>
-                          <Label htmlFor="patientId">Patient ID *</Label>
-                          <Input
-                            id="patientId"
-                            placeholder="P001"
-                            required
-                            value={formData.patientId}
-                            onChange={(e) =>
-                              handleInputChange("patientId", e.target.value)
-                            }
-                          />
-                          {isFetching && (
-                            <p className="text-xs text-blue-500 mt-1 animate-pulse">
-                              Fetching patient info...
-                            </p>
-                          )}
-                          {isError && (
-                            <p className="text-xs text-red-500 mt-1">
-                              Unable to fetch patient info
-                            </p>
-                          )}
-                          {isSuccess && (
-                            <p className="text-xs text-green-500 mt-1">
-                              Patient found {patient?.user?.fullName}
-                            </p>
-                          )}
-                        </div>
+                        <Label htmlFor="patient">Patient *</Label>
+                        
+                        {/* Selected Patient Display */}
+                        {selectedPatient && (
+                          <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="font-medium text-green-800">
+                                  {selectedPatient.user?.fullName || selectedPatient.fullName || selectedPatient.name || "No name"}
+                                </p>
+                                <p className="text-sm text-green-600">
+                                  MRN: {selectedPatient.medicalRecordNumber || "N/A"}
+                                </p>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedPatient(null);
+                                  setFormData(prev => ({ 
+                                    ...prev, 
+                                    patientId: "", 
+                                  }));
+                                }}
+                              >
+                                Change
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Patient Search and Select */}
+                        {!selectedPatient && (
+                          <>
+                            <div className="relative">
+                              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                placeholder="Search patients by name or MRN..."
+                                className="pl-10"
+                                value={patientSearchQuery}
+                                onChange={(e) => setPatientSearchQuery(e.target.value)}
+                              />
+                            </div>
+
+                            {/* Patient List */}
+                            <div className="max-h-48 overflow-y-auto border rounded-md">
+                              {(isLoadingPatient || isFetchingPatient) && (
+                                <div className="p-4 text-center text-sm text-muted-foreground">
+                                  Loading patients...
+                                </div>
+                              )}
+
+                              {!isLoadingPatient && 
+                               !isFetchingPatient && 
+                               patientData?.patients?.length === 0 && (
+                                <div className="p-4 text-center text-sm text-muted-foreground">
+                                  No patients found
+                                </div>
+                              )}
+
+                              {patientData?.patients?.map((patient: any) => (
+                                <div
+                                  key={patient.id}
+                                  className="p-3 border-b last:border-b-0 hover:bg-muted cursor-pointer"
+                                  onClick={() => handlePatientSelect(patient.id)}
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <span className="font-medium">
+                                      {patient.user?.fullName || patient.fullName || patient.name || "Unnamed Patient"}
+                                    </span>
+                                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                      {patient.medicalRecordNumber || "No MRN"}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center text-sm text-muted-foreground mt-1">
+                                    <span>ID: {patient.id}</span>
+                                    <span>Click to select</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
                       </div>
+
                       <div className="space-y-2">
                         <Label htmlFor="amount">Amount (₦) *</Label>
                         <Input
@@ -355,11 +449,19 @@ const Invoices = () => {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => setDialogOpen(false)}
+                        onClick={() => {
+                          setDialogOpen(false);
+                          resetForm();
+                        }}
                       >
                         Cancel
                       </Button>
-                      <Button type="submit">Create Invoice</Button>
+                      <Button 
+                        type="submit"
+                        disabled={mutation.isPending || !selectedPatient}
+                      >
+                        {mutation.isPending ? "Creating..." : "Create Invoice"}
+                      </Button>
                     </DialogFooter>
                   </form>
                 </DialogContent>

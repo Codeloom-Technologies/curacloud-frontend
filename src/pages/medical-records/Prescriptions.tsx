@@ -59,7 +59,7 @@ import {
   getPrescriptionStats,
 } from "@/services/prescription";
 import { getAllDoctors } from "@/services/staff";
-import { fetchPatientByMRN } from "@/services/patient";
+import { fetchPatientByMRN, fetchPatients } from "@/services/patient";
 import { FREQUENCY_OPTIONS } from "@/constants/medical/prescription";
 import {
   Pagination,
@@ -84,11 +84,18 @@ export default function Prescriptions() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedPrescription, setSelectedPrescription] = useState<any>(null);
-  const [doctors, setDoctors] = useState<any>([]);
   const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
-  // const [typeFilter, setTypeFilter] = useState("");
-  const [debouncedId, setDebouncedId] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  
+  // Patient search states
+  const [selectedPatient, setSelectedPatient] = useState<any>(null);
+  const [patientSearchQuery, setPatientSearchQuery] = useState("");
+  const [debouncedPatientSearch, setDebouncedPatientSearch] = useState("");
+  
+  // Doctor search states
+  const [doctorSearchQuery, setDoctorSearchQuery] = useState("");
+  const [debouncedDoctorSearch, setDebouncedDoctorSearch] = useState("");
+
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showNewPrescriptionForm, setShowNewPrescriptionForm] = useState(false);
@@ -166,6 +173,9 @@ export default function Prescriptions() {
         instructions: "",
       },
     ]);
+    setSelectedPatient(null);
+    setPatientSearchQuery("");
+    setDoctorSearchQuery("");
   };
 
   const mutation = useMutation({
@@ -178,7 +188,7 @@ export default function Prescriptions() {
       });
       resetForm();
       setShowNewPrescriptionForm(false);
-      navigate("/dashboard/prescriptions");
+      refetch();
     },
     onError: (error: any) => {
       toast({
@@ -189,14 +199,60 @@ export default function Prescriptions() {
     },
   });
 
+  // Debounce patient search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedPatientSearch(patientSearchQuery.trim());
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [patientSearchQuery]);
+
+  // Debounce doctor search
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedDoctorSearch(doctorSearchQuery.trim());
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [doctorSearchQuery]);
+
+  // Fetch patients for search
+  const { 
+    data: patientData, 
+    isLoading: isLoadingPatient, 
+    isFetching: isFetchingPatient 
+  } = useQuery({
+    queryKey: ["patients-search", debouncedPatientSearch],
+    queryFn: () => fetchPatients(1, 50, debouncedPatientSearch),
+    enabled: showNewPrescriptionForm,
+  });
+
+  // Fetch doctors with search
   const {
     data: doctorsData,
     isFetching: isFetchingDoctor,
     isLoading: isLoadingDoctor,
   } = useQuery({
-    queryKey: ["getAllDoctors"],
-    queryFn: () => getAllDoctors(),
+    queryKey: ["getAllDoctors", debouncedDoctorSearch],
+    queryFn: () => getAllDoctors(1, 50, debouncedDoctorSearch),
+    enabled: showNewPrescriptionForm,
   });
+
+  const doctors = doctorsData?.doctors || [];
+
+  const handlePatientSelect = (patientId: string) => {
+    const patient = patientData?.patients?.find(
+      (p: any) => p.id === patientId
+    );
+    
+    if (patient) {
+      setSelectedPatient(patient);
+      setFormData(prev => ({
+        ...prev,
+        patientId: patient.id,
+        name: patient.user?.fullName || patient.fullName || patient.name || ""
+      }));
+    }
+  };
 
   const {
     data: prescriptionsData,
@@ -212,47 +268,6 @@ export default function Prescriptions() {
 
   const meta = prescriptionsData?.meta ?? {};
   const totalPages = meta?.lastPage ?? 1;
-
-  useEffect(() => {
-    if (doctorsData) {
-      setDoctors(doctorsData.doctors);
-    }
-  }, [doctorsData]);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      if (formData.patientId) setDebouncedId(formData.patientId.trim());
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [formData.patientId]);
-
-  // fetch patient details
-  const {
-    data: patient,
-    isFetching,
-    isError,
-    isSuccess,
-  } = useQuery({
-    queryKey: ["fetchPatientByMRN", debouncedId],
-    queryFn: () => fetchPatientByMRN(debouncedId),
-    enabled: !!debouncedId,
-  });
-
-  // auto-fill the name once data is fetched
-  useEffect(() => {
-    if (patient?.user?.fullName && !isFetching) {
-      handleInputChange("name", patient.user.fullName);
-    }
-  }, [patient, isFetching]);
-
-  // Reset or fill name when data/error changes
-  useEffect(() => {
-    if (isError || !patient) {
-      handleInputChange("name", ""); // clear name
-    } else if (patient?.user?.fullName) {
-      handleInputChange("name", patient.user.fullName); // prefill name
-    }
-  }, [isError, patient]);
 
   // 🕒 Debounce logic: wait 500ms after typing stops
   useEffect(() => {
@@ -277,7 +292,6 @@ export default function Prescriptions() {
   const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
-      // No need to call refetch() here if you're using react-query with proper query keys
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
@@ -289,6 +303,24 @@ export default function Prescriptions() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!selectedPatient) {
+      toast({
+        title: "Patient Required",
+        description: "Please select a patient",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!formData.prescripBy) {
+      toast({
+        title: "Doctor Required",
+        description: "Please select a doctor",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Validate medications
     const hasEmptyMedications = medications.some(
@@ -306,7 +338,7 @@ export default function Prescriptions() {
     }
 
     const payload: any = {
-      patientId: patient?.id,
+      patientId: selectedPatient.id,
       prescribedBy: formData.prescripBy,
       prescriptions: medications,
       notes: formData.notes,
@@ -802,77 +834,177 @@ export default function Prescriptions() {
                   </CardHeader>
                   <CardContent>
                     <form className="space-y-6" onSubmit={handleSubmit}>
-                      {/* Patient Information */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="prescriptionPatientId">
-                            Patient ID *
-                          </Label>
-                          <Input
-                            id="prescriptionPatientId"
-                            placeholder="P001"
-                            required
-                            value={formData.patientId}
-                            onChange={(e) =>
-                              handleInputChange("patientId", e.target.value)
-                            }
-                          />
-                          {isFetching && (
-                            <p className="text-xs text-blue-500 mt-1 animate-pulse">
-                              Fetching patient info...
-                            </p>
-                          )}
-                          {isError && (
-                            <p className="text-xs text-red-500 mt-1">
-                              Unable to fetch patient info
-                            </p>
-                          )}
-                          {isSuccess && (
-                            <p className="text-xs text-green-500 mt-1">
-                              Patient found
-                            </p>
-                          )}
-                        </div>
-                        <div>
-                          <Label htmlFor="prescriptionPatientName">
-                            Patient Name *
-                          </Label>
-                          <Input
-                            id="prescriptionPatientName"
-                            placeholder="John Smith"
-                            required
-                            readOnly
-                            value={formData.name}
-                          />
-                        </div>
+                      {/* Patient Selection */}
+                      <div className="space-y-2">
+                        <Label htmlFor="patient">Patient *</Label>
+                        
+                        {/* Selected Patient Display */}
+                        {selectedPatient && (
+                          <div className="p-3 bg-green-50 border border-green-200 rounded-md">
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <p className="font-medium text-green-800">
+                                  {selectedPatient.user?.fullName || selectedPatient.fullName || selectedPatient.name || "No name"}
+                                </p>
+                                <p className="text-sm text-green-600">
+                                  MRN: {selectedPatient.medicalRecordNumber || "N/A"}
+                                </p>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedPatient(null);
+                                  setFormData(prev => ({ 
+                                    ...prev, 
+                                    patientId: "", 
+                                    name: "" 
+                                  }));
+                                }}
+                              >
+                                Change
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Patient Search and Select */}
+                        {!selectedPatient && (
+                          <>
+                            <div className="relative">
+                              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                placeholder="Search patients by name or MRN..."
+                                className="pl-10"
+                                value={patientSearchQuery}
+                                onChange={(e) => setPatientSearchQuery(e.target.value)}
+                              />
+                            </div>
+
+                            {/* Patient List */}
+                            <div className="max-h-48 overflow-y-auto border rounded-md">
+                              {(isLoadingPatient || isFetchingPatient) && (
+                                <div className="p-4 text-center text-sm text-muted-foreground">
+                                  Loading patients...
+                                </div>
+                              )}
+
+                              {!isLoadingPatient && 
+                               !isFetchingPatient && 
+                               patientData?.patients?.length === 0 && (
+                                <div className="p-4 text-center text-sm text-muted-foreground">
+                                  No patients found
+                                </div>
+                              )}
+
+                              {patientData?.patients?.map((patient: any) => (
+                                <div
+                                  key={patient.id}
+                                  className="p-3 border-b last:border-b-0 hover:bg-muted cursor-pointer"
+                                  onClick={() => handlePatientSelect(patient.id)}
+                                >
+                                  <div className="flex justify-between items-start">
+                                    <span className="font-medium">
+                                      {patient.user?.fullName || patient.fullName || patient.name || "Unnamed Patient"}
+                                    </span>
+                                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                      {patient.medicalRecordNumber || "No MRN"}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-center text-sm text-muted-foreground mt-1">
+                                    <span>ID: {patient.id}</span>
+                                    <span>Click to select</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </>
+                        )}
                       </div>
 
+                      {/* Patient Name Field - Auto-populated */}
                       <div>
-                        <Label htmlFor="prescriptionDoctor">
-                          Prescribing Doctor *
-                        </Label>
+                        <Label htmlFor="prescriptionPatientName">Patient Name *</Label>
+                        <Input
+                          id="prescriptionPatientName"
+                          placeholder="John Smith"
+                          required
+                          value={formData.name}
+                          onChange={(e) => handleInputChange("name", e.target.value)}
+                          readOnly={!!selectedPatient}
+                          className={selectedPatient ? "bg-muted" : ""}
+                        />
+                        {selectedPatient && (
+                          <p className="text-xs text-green-600 mt-1">
+                            ✓ Name auto-filled from selected patient
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Doctor Selection */}
+                      <div>
+                        <Label htmlFor="prescriptionDoctor">Prescribing Doctor *</Label>
                         <Select
                           value={formData.prescripBy}
-                          onValueChange={(value) =>
-                            setFormData({ ...formData, prescripBy: value })
-                          }
+                          onValueChange={(value) => handleInputChange("prescripBy", value)}
                         >
                           <SelectTrigger>
                             <SelectValue
                               placeholder={
                                 isFetchingDoctor || isLoadingDoctor
-                                  ? "Loading..."
+                                  ? "Loading doctors..."
                                   : "Select Doctor"
                               }
                             />
                           </SelectTrigger>
                           <SelectContent>
-                            {doctors?.map((doctor) => (
+                            {/* Search Input */}
+                            <div className="p-2 border-b">
+                              <div className="relative">
+                                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                  placeholder="Search doctors by name, email, or phone..."
+                                  className="pl-8"
+                                  value={doctorSearchQuery}
+                                  onChange={(e) => setDoctorSearchQuery(e.target.value)}
+                                  onClick={(e) => e.stopPropagation()}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Loading State */}
+                            {(isFetchingDoctor || isLoadingDoctor) && (
+                              <div className="p-4 text-center text-sm text-muted-foreground">
+                                Loading doctors...
+                              </div>
+                            )}
+
+                            {/* No Results */}
+                            {!isFetchingDoctor && 
+                             !isLoadingDoctor && 
+                             doctors.length === 0 && (
+                              <div className="p-4 text-center text-sm text-muted-foreground">
+                                No doctors found
+                              </div>
+                            )}
+
+                            {/* Doctors List */}
+                            {doctors.map((doctor: any) => (
                               <SelectItem
-                                key={doctor.id}
-                                value={doctor.id.toString()}
+                                key={doctor.user?.id || doctor.id}
+                                value={doctor.user?.id?.toString() || doctor.id.toString()}
                               >
-                                {doctor?.user?.fullName}
+                                <div className="flex flex-col">
+                                  <span className="font-medium">
+                                    {doctor.user?.fullName || doctor.fullName || doctor.name}
+                                  </span>
+                                  {doctor.user?.email && (
+                                    <span className="text-xs text-muted-foreground">
+                                      {doctor.user.email}
+                                    </span>
+                                  )}
+                                </div>
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1053,7 +1185,7 @@ export default function Prescriptions() {
                         <Button
                           type="submit"
                           className="bg-gradient-primary"
-                          disabled={mutation.isPending}
+                          disabled={mutation.isPending || !selectedPatient || !formData.prescripBy}
                         >
                           {mutation.isPending
                             ? "Creating..."
