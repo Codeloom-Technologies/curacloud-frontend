@@ -80,11 +80,11 @@ const navigationItems = [
         href: "/dashboard/appointment-check-ins",
         permission: "patient-vitals.appointments" as Permission,
       },
-      {
-        title: "Vitals Entries",
-        href: "/dashboard/patient-vitals",
-        permission: "patient-vitals" as Permission,
-      },
+      // {
+      //   title: "Vitals Entries",
+      //   href: "/dashboard/patient-vitals",
+      //   permission: "patient-vitals" as Permission,
+      // },
     ],
   },
   {

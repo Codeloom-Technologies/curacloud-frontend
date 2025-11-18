@@ -36,7 +36,7 @@ export interface PaginatedPatientsResponse {
 
 export const fetchPatients = async (
   page: number = 1,
-  perPage: number = 5,
+  perPage: number=15,
   search: string = "",
   filters: Record<string, any> = {}
 ): Promise<PaginatedPatientsResponse | any> => {

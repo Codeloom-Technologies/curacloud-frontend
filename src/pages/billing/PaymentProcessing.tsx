@@ -151,6 +151,7 @@ const PaymentProcessing = () => {
     );
     setSelectedInvoiceData(invoice || null);
   };
+  
   const handleClearAll = () => {
     setSelectedPaymentMethod("cash");
     setSelectedInvoiceId("");
