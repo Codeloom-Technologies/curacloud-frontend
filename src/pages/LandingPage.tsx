@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -46,8 +46,10 @@ import {
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import dashboardPreview from "@/assets/hms-dashboard-preview.jpg";
-import doctorTestimonial from "@/assets/doctor-testimonial-1.jpg";
-import nurseTestimonial from "@/assets/nurse-testimonial-1.jpg";
+import { getSubscriptionPlans } from "@/services/subscription";
+import { useQuery } from "@tanstack/react-query";
+import { formatNaira } from "@/lib/formatters";
+import { GradientLoader, LoadingSpinner, MinimalLoader } from "@/components/ui/Preloader";
 
 const features = [
   {
@@ -118,59 +120,7 @@ const testimonials = [
   },
 ];
 
-const pricingPlans = [
-  {
-    name: "Starter",
-    price: "₦50,000",
-    period: "per month",
-    description: "Perfect for small clinics and practices",
-    features: [
-      "Up to 100 patients",
-      "Basic appointment scheduling",
-      "Digital medical records",
-      "Email support",
-      "Mobile app access",
-      "24/7 phone support",
-      "99.9% uptime SLA",
-    ],
-    popular: false,
-    icon: FileText,
-  },
-  {
-    name: "Professional",
-    price: "₦100,000",
-    period: "per month",
-    description: "Ideal for medium-sized hospitals",
-    features: [
-      "Up to 5,000 patients",
-      "Advanced scheduling & queuing",
-      "Complete EMR/EHR suite",
-      "Billing & insurance integration",
-      "Pharmacy management",
-      "Staff management",
-      // "Inventory management",
-      "24/7 phone support",
-      "99.9% uptime SLA",
-    ],
-    popular: true,
-  },
-  {
-    name: "Enterprise",
-    price: "Custom",
-    period: "contact us",
-    description: "For large hospital networks",
-    features: [
-      "Unlimited patients",
-      "Multi-location support",
-      "Advanced analytics & AI",
-      "Custom integrations",
-      "Dedicated account manager",
-      "On-site training",
-      "99.9% uptime SLA",
-    ],
-    popular: false,
-  },
-];
+
 
 export default function LandingPage() {
   const [activeRole, setActiveRole] = useState("doctors");
@@ -210,6 +160,21 @@ export default function LandingPage() {
     });
   };
 
+    const { 
+    data: subscriptionPlans, 
+      isLoading,
+    isFetching
+  } = useQuery({
+    queryKey: ["subscription-plans"],
+    queryFn: () => getSubscriptionPlans(),
+  });
+
+
+  // Show preloader while plans are loading or during initial app load
+  if (isLoading || isFetching) {
+    return <LoadingSpinner />; 
+  }
+  
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -881,63 +846,95 @@ export default function LandingPage() {
               facility.
             </p>
           </div>
+<div className="grid md:grid-cols-3 gap-8">
+  {subscriptionPlans?.map((plan, index) => {
+    const isPopular = plan.name === 'Pro';
+    const isEnterprise = plan.name === 'Enterprise';
+    
+    return (
+      <Card
+        key={plan.id || index}
+        className={`relative hover:shadow-lg transition-all duration-300 hover:scale-105 ${
+          isPopular ? "border-primary shadow-lg" : ""
+        }`}
+      >
+        {isPopular && (
+          <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-primary text-primary-foreground">
+            Most Popular
+          </Badge>
+        )}
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {pricingPlans.map((plan, index) => (
-              <Card
-                key={index}
-                className={`relative hover:shadow-lg transition-all duration-300 hover-scale ${
-                  plan.popular ? "border-primary shadow-lg" : ""
-                }`}
-              >
-                {plan.popular && (
-                  <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-primary text-primary-foreground">
-                    Most Popular
-                  </Badge>
-                )}
+        {isEnterprise && (
+          <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-500 text-white">
+            Enterprise
+          </Badge>
+        )}
 
-                <CardHeader className="pb-4">
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                  <div className="mb-2">
-                    <span className="text-4xl font-bold">{plan.price}</span>
-                    <span className="text-muted-foreground">
-                      /{plan.period}
-                    </span>
-                  </div>
-                  <p className="text-muted-foreground">{plan.description}</p>
-                </CardHeader>
-
-                <CardContent>
-                  <ul className="space-y-3 mb-6">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li
-                        key={featureIndex}
-                        className="flex items-center gap-2"
-                      >
-                        <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-                        <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  <Button
-                    className={`w-full ${
-                      plan.popular
-                        ? "bg-gradient-primary hover:shadow-glow"
-                        : ""
-                    }`}
-                    variant={plan.popular ? "default" : "outline"}
-                    onClick={handleGetStarted}
-                  >
-                    {plan.price === "Custom"
-                      ? "Contact Sales"
-                      : "Start Free Trial"}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+        <CardHeader className="pb-4">
+          <CardTitle className="text-2xl">
+            {plan.name}
+          </CardTitle>
+          <div className="mb-2">
+            <span className="text-4xl font-bold">
+              {isEnterprise ? 'Custom' : formatNaira(Math.abs(plan.price))}
+            </span> 
+            <span className="text-muted-foreground">
+              {isEnterprise ? '' : '/month'}
+            </span>
           </div>
+          <CardDescription>
+            {isEnterprise 
+              ? 'For large healthcare facilities with custom needs'
+              : plan.description || `Perfect for ${plan.name?.toLowerCase()} healthcare facilities`
+            }
+          </CardDescription>
+        </CardHeader>
 
+        <CardContent className="space-y-4">
+          <ul className="space-y-3">
+            {plan.features && Array.isArray(plan.features) ? (
+              plan.features.map((feature, featureIndex) => (
+                <li
+                  key={featureIndex}
+                  className="flex items-center gap-3 text-sm"
+                >
+                  <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                  <span>{feature}</span>
+                </li>
+              ))
+            ) : (
+              <li className="text-sm text-muted-foreground text-center">
+                No features listed
+              </li>
+            )}
+          </ul>
+
+          <Button
+            className={`w-full ${
+              isPopular ? "bg-primary hover:bg-primary/90" : ""
+            } ${isEnterprise ? "bg-purple-600 hover:bg-purple-700" : ""}`}
+            variant={isPopular || isEnterprise ? "default" : "outline"}
+            onClick={() => isEnterprise ? () => {
+             } : handleGetStarted()}
+
+          >
+            {isEnterprise ? (
+              <>
+                Contact Sales
+                <Mail className="ml-2 h-4 w-4" />
+              </>
+            ) : (
+              <>
+                Start Free Trial
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  })}
+</div>
           <div className="text-center mt-12 animate-fade-in">
             <p className="text-muted-foreground mb-4">
               All plans include 14-day free trial • No setup fees • Cancel

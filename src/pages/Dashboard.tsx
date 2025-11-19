@@ -20,6 +20,7 @@ import {
 import heroImage from "@/assets/hms-hero.jpg";
 import { useQuery } from "@tanstack/react-query";
 import { patientStatsTotalPerProvider } from "@/services/patient";
+import { LoadingSpinner } from "@/components/ui/Preloader";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -33,7 +34,6 @@ export default function Dashboard() {
     queryFn: () => patientStatsTotalPerProvider(),
   });
 
-  console.log(statsData);
 
   const stats = [
     {
@@ -130,6 +130,11 @@ export default function Dashboard() {
     { name: "Pediatrics", occupancy: 0, color: "bg-green-500" },
     { name: "Maternity", occupancy: 0, color: "bg-purple-500" },
   ];
+
+
+    if (isStatsLoading || isStatsFetching) {
+      return <LoadingSpinner />; 
+    }
 
   return (
     <div className="flex h-screen bg-background">
