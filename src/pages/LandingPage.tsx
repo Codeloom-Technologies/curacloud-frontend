@@ -162,16 +162,18 @@ export default function LandingPage() {
 
     const { 
     data: subscriptionPlans, 
-      isLoading,
-    isFetching
+     isLoading,
+      isFetching,
+      isError
   } = useQuery({
     queryKey: ["subscription-plans"],
     queryFn: () => getSubscriptionPlans(),
+
   });
 
 
   // Show preloader while plans are loading or during initial app load
-  if (isLoading || isFetching) {
+  if (isLoading || isFetching || isError) {
     return <LoadingSpinner />; 
   }
   

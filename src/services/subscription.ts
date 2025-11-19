@@ -14,7 +14,6 @@ export interface UpdateSubscriptionData {
 
 export const getSubscriptionPlans = async (): Promise< any> => {
   try {
-      // await new Promise((r) => setTimeout(r, 12000)); // ⏳ simulate  delay in s
 
     const response = await apiClient("/subscriptions/plans");
 
