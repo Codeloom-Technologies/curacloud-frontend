@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import LandingPage from "./pages/LandingPage";
@@ -169,11 +170,19 @@ const App = () => (
           {/* Super Admin Routes */}
           <Route
             path="/super-admin"
-            element={<SuperAdminDashboard />}
+            element={
+              <ProtectedRoute permission="super_admin.dashboard">
+                <SuperAdminDashboard />
+              </ProtectedRoute>
+            }
           />
           <Route
             path="/super-admin/healthcare-providers"
-            element={<HealthcareProviders />}
+            element={
+              <ProtectedRoute permission="super_admin.healthcare_providers">
+                <HealthcareProviders />
+              </ProtectedRoute>
+            }
           />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

@@ -1,6 +1,11 @@
 import { RoleSlug } from "@/types/auth";
 
 export type Permission =
+  | "super_admin.dashboard"
+  | "super_admin.healthcare_providers"
+  | "super_admin.users"
+  | "super_admin.analytics"
+  | "super_admin.settings"
   | "dashboard"
   | "patients"
   | "patients.register"
@@ -38,41 +43,13 @@ export type Permission =
 
 // ACL Configuration: Maps roles to their allowed permissions
 export const rolePermissions: Record<RoleSlug, Permission[]> = {
-  // Super Admin - Full access
+  // Super Admin - Only super admin specific access
   super_admin: [
-    "dashboard",
-    "patients",
-    "patients.register",
-    "patients.records",
-    "appointments",
-    "appointments.calendar",
-    "appointments.checkin",
-    "patient-vitals",
-    "patient-vitals.appointments",
-    "medical-records",
-    "consultations",
-    "prescriptions",
-    "medical-history",
-    "laboratory",
-    "laboratory.orders",
-    "laboratory.results",
-    "laboratory.reports",
-    "radiology",
-    "pharmacy",
-    "pharmacy.inventory",
-    "pharmacy.prescriptions",
-    "pharmacy.dispensing",
-    "pharmacy.stock",
-    "inventory",
-    "billing",
-    "billing.invoices",
-    "billing.payments",
-    "billing.reports",
-    "staff",
-    "staff.register",
-    "staff.records",
-    "reports",
-    "settings",
+    "super_admin.dashboard",
+    "super_admin.healthcare_providers",
+    "super_admin.users",
+    "super_admin.analytics",
+    "super_admin.settings",
   ],
 
   // Admin - Most access except some sensitive features
@@ -319,6 +296,11 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
 
 // Navigation items mapped to permissions
 export const navigationPermissions: Record<string, Permission> = {
+  "/super-admin": "super_admin.dashboard",
+  "/super-admin/healthcare-providers": "super_admin.healthcare_providers",
+  "/super-admin/users": "super_admin.users",
+  "/super-admin/analytics": "super_admin.analytics",
+  "/super-admin/system-settings": "super_admin.settings",
   "/dashboard": "dashboard",
   "/dashboard/patients": "patients",
   "/dashboard/patients/register": "patients.register",
