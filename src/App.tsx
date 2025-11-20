@@ -43,6 +43,8 @@ import InvoiceView from "./pages/billing/invoiceView";
 import SubscriptionManagement from "./pages/Subscription/SubscriptionManagement";
 import ActivitiesPage from "./pages/activities/ActivitiesPage";
 import  WalletManagement from "./pages/Wallet/WalletManagement";
+import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
+import HealthcareProviders from "./pages/super-admin/HealthcareProviders";
 
 const queryClient = new QueryClient();
 
@@ -159,12 +161,20 @@ const App = () => (
           />
 
           {/* Wallet */}
-               {/* subscription toutes */}
           <Route
             path="/dashboard/wallet"
             element={<WalletManagement />}
           />
 
+          {/* Super Admin Routes */}
+          <Route
+            path="/super-admin"
+            element={<SuperAdminDashboard />}
+          />
+          <Route
+            path="/super-admin/healthcare-providers"
+            element={<HealthcareProviders />}
+          />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

@@ -51,7 +51,16 @@ export default function Login() {
         description: `Welcome back, ${data.user.roles[0]?.name || "User"}`,
       });
 
-      navigate("/dashboard");
+      // Check if user is super admin and redirect accordingly
+      const isSuperAdmin = data.user.roles.some(
+        (role) => role.slug === "super_admin"
+      );
+
+      if (isSuperAdmin) {
+        navigate("/super-admin");
+      } else {
+        navigate("/dashboard");
+      }
     },
     onError: (error: Error) => {
       toast({
