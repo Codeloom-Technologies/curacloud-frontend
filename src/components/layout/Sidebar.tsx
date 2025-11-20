@@ -9,10 +9,14 @@ import {
   Settings,
   ChevronDown,
   Heart,
-  BookText, Receipt,
+  BookText, 
+  Receipt,
   DollarSign,
   PiggyBank,
-  Wallet
+  Wallet,
+  Shield,
+  Building2,
+  TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -20,8 +24,57 @@ import { useState, useMemo, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { usePermissions } from "@/hooks/usePermissions";
 import { Permission } from "@/config/acl";
+import { useAuthStore } from "@/store/authStore";
+import type { LucideIcon } from "lucide-react";
 
-const navigationItems = [
+interface NavigationChild {
+  title: string;
+  href: string;
+  permission: Permission;
+}
+
+interface NavigationItem {
+  title: string;
+  icon: LucideIcon;
+  href: string;
+  permission: Permission;
+  children?: NavigationChild[];
+}
+
+const superAdminNavigationItems: NavigationItem[] = [
+  {
+    title: "Dashboard",
+    icon: Shield,
+    href: "/super-admin",
+    permission: "super_admin.dashboard" as Permission,
+  },
+  {
+    title: "Healthcare Providers",
+    icon: Building2,
+    href: "/super-admin/healthcare-providers",
+    permission: "super_admin.healthcare_providers" as Permission,
+  },
+  {
+    title: "User Management",
+    icon: Users,
+    href: "/super-admin/users",
+    permission: "super_admin.users" as Permission,
+  },
+  {
+    title: "Analytics & Reports",
+    icon: TrendingUp,
+    href: "/super-admin/analytics",
+    permission: "super_admin.analytics" as Permission,
+  },
+  {
+    title: "System Settings",
+    icon: Settings,
+    href: "/super-admin/system-settings",
+    permission: "super_admin.settings" as Permission,
+  },
+];
+
+const navigationItems: NavigationItem[] = [
   {
     title: "Dashboard",
     icon: LayoutDashboard,
@@ -250,24 +303,35 @@ export function Sidebar({ className }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { hasPermission } = usePermissions();
+  const { user } = useAuthStore();
+
+  // Check if user is super admin
+  const isSuperAdmin = user?.roles?.some(role => role.slug === 'super_admin');
 
   // Filter navigation items based on user permissions
   const filteredNavigationItems = useMemo(() => {
-    return navigationItems
+    const items = isSuperAdmin ? superAdminNavigationItems : navigationItems;
+    
+    return items
       .filter((item) => hasPermission(item.permission))
-      .map((item) => ({
-        ...item,
-        children: item.children?.filter((child) =>
-          hasPermission(child.permission)
-        ),
-      }))
+      .map((item) => {
+        if (item.children) {
+          return {
+            ...item,
+            children: item.children.filter((child) =>
+              hasPermission(child.permission)
+            ),
+          };
+        }
+        return item;
+      })
       .filter((item) => !item.children || item.children.length > 0);
-  }, [hasPermission]);
+  }, [hasPermission, isSuperAdmin]);
 
   // Auto-expand groups that contain the active route
   useEffect(() => {
     filteredNavigationItems.forEach((item) => {
-      if (item.children) {
+      if (item.children && item.children.length > 0) {
         const hasActiveChild = item.children.some(
           (child) => location.pathname === child.href
         );
