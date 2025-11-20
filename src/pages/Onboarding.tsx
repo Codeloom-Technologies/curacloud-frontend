@@ -29,6 +29,13 @@ import {
   Loader2,
   EyeOff,
   Eye,
+  Star,
+  Heart,
+  Stethoscope,
+  Mail,
+  Phone,
+  User,
+  Shield,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -51,19 +58,14 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
-  const [_, setPhoneCode] = useState("+--");
+  const [phoneCode, setPhoneCode] = useState("+--");
   const { toast } = useToast();
 
   const [formData, setFormData] = useState<OnboardingFormData>({
-    // Step 1: Role
     role: "",
-
-    // Step 2: Facility Info
     facilityName: "",
     facilityType: "",
     facilitySize: "",
-
-    // Step 3: Location
     address: "",
     city: "",
     state: "",
@@ -72,8 +74,6 @@ export default function Onboarding() {
     countryId: "",
     stateId: "",
     cityId: "",
-
-    // Step 4: Contact
     fullName: "",
     email: "",
     phone: "",
@@ -118,13 +118,11 @@ export default function Onboarding() {
     }
   }, [formData.stateId]);
 
-  // Automatically update phone code when country changes
   useEffect(() => {
     if (formData.countryId && countries.length > 0) {
       const selectedCountry = countries.find(
         (c) => c.id === Number(formData.countryId)
       );
-
       const code = selectedCountry?.phoneCode || "+--";
       setPhoneCode(code);
       setFormData((prev) => ({ ...prev, phoneCode: code }));
@@ -137,7 +135,6 @@ export default function Onboarding() {
   const mutation = useMutation({
     mutationFn: submitOnboarding,
     onSuccess: (_) => {
-      // toast.success("Onboarding complete! Welcome to Curacloud!");
       toast({
         title: "Healthcare Onboarded",
         description: "Onboarding complete! Please check your mailbox!",
@@ -162,11 +159,10 @@ export default function Onboarding() {
   };
 
   const handleNext = () => {
-    // Validate current step
     if (step === 1 && !formData.role) {
       toast({
-        title: "Onboarding Failed",
-        description: "Please select your role",
+        title: "Please select your role",
+        description: "This helps us customize your experience",
         variant: "destructive",
       });
       return;
@@ -178,8 +174,8 @@ export default function Onboarding() {
         !formData.facilitySize)
     ) {
       toast({
-        title: "Onboarding Failed",
-        description: "Please fill in all facility information",
+        title: "Incomplete facility information",
+        description: "Please fill in all facility details",
         variant: "destructive",
       });
       return;
@@ -192,8 +188,8 @@ export default function Onboarding() {
         !formData.cityId)
     ) {
       toast({
-        title: "Onboarding Failed",
-        description: "Please fill in location details",
+        title: "Location details required",
+        description: "Please complete your location information",
         variant: "destructive",
       });
       return;
@@ -208,8 +204,8 @@ export default function Onboarding() {
         !formData.gender)
     ) {
       toast({
-        title: "Onboarding Failed",
-        description: "Please fill in all contact information",
+        title: "Contact information incomplete",
+        description: "Please fill in all required fields",
         variant: "destructive",
       });
       return;
@@ -233,65 +229,133 @@ export default function Onboarding() {
     mutation.mutate(payload);
   };
 
+  const getStepIcon = (stepNumber: number) => {
+    const icons = [Stethoscope, Building2, MapPin, User];
+    const Icon = icons[stepNumber - 1];
+    return <Icon className="h-5 w-5" />;
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] -z-10" />
+      <div className="absolute top-0 left-0 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob" />
+      <div className="absolute top-0 right-0 w-72 h-72 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000" />
+      <div className="absolute bottom-0 left-1/2 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000" />
+      
       <div className="w-full max-w-2xl">
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex justify-between mb-2">
-            <span className="text-sm font-medium">
-              Step {step} of {totalSteps}
-            </span>
-            <span className="text-sm text-muted-foreground">
-              {Math.round(progress)}% Complete
-            </span>
+        {/* Header with branding */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+              <Heart className="h-6 w-6 text-white" />
+            </div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Curacloud
+            </h1>
           </div>
-          <Progress value={progress} className="h-2" />
+          <p className="text-muted-foreground text-lg">
+            Join thousands of healthcare providers transforming patient care
+          </p>
         </div>
 
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl">
-              {step === 1 && "Welcome to Curacloud!"}
-              {step === 2 && "Tell us about your facility"}
-              {step === 3 && "Where are you located?"}
-              {step === 4 && "Your contact information"}
+        {/* Progress Bar with steps */}
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-6">
+            {[1, 2, 3, 4].map((stepNumber) => (
+              <div key={stepNumber} className="flex flex-col items-center flex-1">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
+                  step >= stepNumber
+                    ? "bg-blue-600 border-blue-600 text-white shadow-lg scale-110"
+                    : "border-muted-foreground/30 text-muted-foreground"
+                }`}>
+                  {step > stepNumber ? (
+                    <Check className="h-5 w-5" />
+                  ) : (
+                    getStepIcon(stepNumber)
+                  )}
+                </div>
+                <span className={`text-xs mt-2 font-medium ${
+                  step >= stepNumber ? "text-blue-600" : "text-muted-foreground"
+                }`}>
+                  Step {stepNumber}
+                </span>
+              </div>
+            ))}
+          </div>
+          <Progress value={progress} className="h-2 bg-muted" />
+          <div className="flex justify-between mt-2">
+            <span className="text-sm font-medium text-blue-600">
+              {Math.round(progress)}% Complete
+            </span>
+            <span className="text-sm text-muted-foreground">
+              Step {step} of {totalSteps}
+            </span>
+          </div>
+        </div>
+
+        <Card className="shadow-2xl border-0 bg-white/80 backdrop-blur-sm">
+          <CardHeader className="text-center pb-6">
+            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              {step === 1 && <Stethoscope className="h-8 w-8 text-white" />}
+              {step === 2 && <Building2 className="h-8 w-8 text-white" />}
+              {step === 3 && <MapPin className="h-8 w-8 text-white" />}
+              {step === 4 && <User className="h-8 w-8 text-white" />}
+            </div>
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+              {step === 1 && "Welcome to Curacloud! 👋"}
+              {step === 2 && "Facility Information 🏥"}
+              {step === 3 && "Location Details 📍"}
+              {step === 4 && "Personal Information 👤"}
             </CardTitle>
-            <CardDescription>
-              {step === 1 &&
-                "Let's get you set up with the right healthcare management tools"}
-              {step === 2 && "This helps us customize your experience"}
-              {step === 3 && "We'll use this for compliance and support"}
-              {step === 4 && "Almost done! Just a few more details"}
+            <CardDescription className="text-lg text-muted-foreground">
+              {step === 1 && "Let's personalize your healthcare management experience"}
+              {step === 2 && "Tell us about your healthcare facility"}
+              {step === 3 && "Where do you provide care?"}
+              {step === 4 && "Final step to complete your profile"}
             </CardDescription>
           </CardHeader>
 
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-8 px-8 pb-8">
             {/* Step 1: Role Selection */}
             {step === 1 && (
-              <div className="space-y-4">
-                <Label className="text-base">What's your role?</Label>
+              <div className="space-y-6">
+                <div className="text-center">
+                  <Label className="text-lg font-semibold text-gray-900">
+                    What's your primary role in healthcare?
+                  </Label>
+                  <p className="text-muted-foreground mt-1">
+                    Choose the role that best describes your work
+                  </p>
+                </div>
                 <RadioGroup
                   value={formData.role}
                   onValueChange={(value) => updateFormData("role", value)}
+                  className="space-y-4"
                 >
                   {HEALTHCARE_PROVIDER_ROLES.map((role, index) => {
-                    const id = role.title.toLowerCase().replace(/\s+/g, "-"); // generate a unique id
+                    const id = role.title.toLowerCase().replace(/\s+/g, "-");
                     return (
                       <div
                         key={id}
-                        className="flex items-center space-x-3 border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                        className="flex items-center space-x-4 border-2 rounded-xl p-4 hover:border-blue-300 hover:bg-blue-50/50 transition-all duration-200 cursor-pointer group"
                       >
                         <RadioGroupItem
                           value={role.title.toLowerCase()}
                           id={id}
+                          className="h-5 w-5 text-blue-600"
                         />
                         <Label htmlFor={id} className="flex-1 cursor-pointer">
-                          <div className="font-medium">{role.title}</div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">
+                            {role.title}
+                          </div>
+                          <div className="text-sm text-muted-foreground mt-1">
                             {role.description}
                           </div>
                         </Label>
+                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <ArrowRight className="h-4 w-4 text-blue-600" />
+                        </div>
                       </div>
                     );
                   })}
@@ -301,82 +365,95 @@ export default function Onboarding() {
 
             {/* Step 2: Facility Information */}
             {step === 2 && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="facilityName"
-                    className="flex items-center gap-2"
-                  >
-                    <Building2 className="h-4 w-4" />
-                    Facility Name *
-                  </Label>
-                  <Input
-                    id="facilityName"
-                    type="text"
-                    placeholder="e.g., General Hospital Lagos"
-                    value={formData.facilityName}
-                    onChange={(e) =>
-                      updateFormData("facilityName", e.target.value)
-                    }
-                  />
-                </div>
+              <div className="space-y-6">
+                <div className="grid gap-6">
+                  <div className="space-y-3">
+                    <Label
+                      htmlFor="facilityName"
+                      className="flex items-center gap-2 text-base font-semibold"
+                    >
+                      <Building2 className="h-5 w-5 text-blue-600" />
+                      Facility Name *
+                    </Label>
+                    <Input
+                      id="facilityName"
+                      type="text"
+                      placeholder="e.g., General Hospital Lagos"
+                      value={formData.facilityName}
+                      onChange={(e) =>
+                        updateFormData("facilityName", e.target.value)
+                      }
+                      className="h-12 text-lg border-2 focus:border-blue-300 transition-colors"
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="facilityType">Type of Facility *</Label>
-                  <Select
-                    value={formData.facilityType}
-                    onValueChange={(value) =>
-                      updateFormData("facilityType", value)
-                    }
-                  >
-                    <SelectTrigger id="facilityType">
-                      <SelectValue placeholder="Select facility type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {HEALTHCARE_PROVIDER_TYPES.map((provider) => (
-                        <SelectItem key={provider} value={provider}>
-                          {provider}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <Label htmlFor="facilityType" className="text-base font-semibold">
+                        Type of Facility *
+                      </Label>
+                      <Select
+                        value={formData.facilityType}
+                        onValueChange={(value) =>
+                          updateFormData("facilityType", value)
+                        }
+                      >
+                        <SelectTrigger 
+                          id="facilityType"
+                          className="h-12 border-2 focus:border-blue-300"
+                        >
+                          <SelectValue placeholder="Select facility type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {HEALTHCARE_PROVIDER_TYPES.map((provider) => (
+                            <SelectItem key={provider} value={provider}>
+                              {provider}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="facilitySize"
-                    className="flex items-center gap-2"
-                  >
-                    <Users className="h-4 w-4" />
-                    Facility Size *
-                  </Label>
-                  <Select
-                    value={formData.facilitySize}
-                    onValueChange={(value) =>
-                      updateFormData("facilitySize", value)
-                    }
-                  >
-                    <SelectTrigger id="facilitySize">
-                      <SelectValue placeholder="Select facility size" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {HEALTHCARE_PROVIDER_FACILITY_SIZE.map((size) => (
-                        <SelectItem key={size} value={size}>
-                          {size}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <div className="space-y-3">
+                      <Label
+                        htmlFor="facilitySize"
+                        className="flex items-center gap-2 text-base font-semibold"
+                      >
+                        <Users className="h-5 w-5 text-blue-600" />
+                        Facility Size *
+                      </Label>
+                      <Select
+                        value={formData.facilitySize}
+                        onValueChange={(value) =>
+                          updateFormData("facilitySize", value)
+                        }
+                      >
+                        <SelectTrigger 
+                          id="facilitySize"
+                          className="h-12 border-2 focus:border-blue-300"
+                        >
+                          <SelectValue placeholder="Select size" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {HEALTHCARE_PROVIDER_FACILITY_SIZE.map((size) => (
+                            <SelectItem key={size} value={size}>
+                              {size}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
 
             {/* Step 3: Location */}
             {step === 3 && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="address" className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4" />
+              <div className="space-y-6">
+                <div className="space-y-3">
+                  <Label htmlFor="address" className="flex items-center gap-2 text-base font-semibold">
+                    <MapPin className="h-5 w-5 text-blue-600" />
                     Street Address *
                   </Label>
                   <Input
@@ -385,11 +462,12 @@ export default function Onboarding() {
                     placeholder="e.g., 123 Healthcare Avenue"
                     value={formData.address}
                     onChange={(e) => updateFormData("address", e.target.value)}
+                    className="h-12 text-lg border-2 focus:border-blue-300 transition-colors"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="country">Country *</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="country" className="text-base font-semibold">Country *</Label>
                   <Select
                     value={formData.countryId}
                     onValueChange={(value) => {
@@ -403,23 +481,26 @@ export default function Onboarding() {
                       }));
                     }}
                   >
-                    <SelectTrigger id="country">
+                    <SelectTrigger 
+                      id="country"
+                      className="h-12 border-2 focus:border-blue-300"
+                    >
                       <SelectValue
                         placeholder={
-                          loadingCountries ? "Loading..." : "Select country"
+                          loadingCountries ? "Loading countries..." : "Select country"
                         }
                       />
                     </SelectTrigger>
                     <SelectContent>
                       {countries.map((country) => (
                         <SelectItem key={country.id} value={String(country.id)}>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
                             <img
                               src={country.flag.png}
                               alt={country.name}
-                              className="w-5 h-4 object-cover rounded"
+                              className="w-6 h-4 object-cover rounded"
                             />
-                            <span>{country.name}</span>
+                            <span className="font-medium">{country.name}</span>
                           </div>
                         </SelectItem>
                       ))}
@@ -427,9 +508,9 @@ export default function Onboarding() {
                   </Select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="state">State *</Label>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="state" className="text-base font-semibold">State *</Label>
                     <Select
                       value={formData.stateId}
                       onValueChange={(value) => {
@@ -444,10 +525,13 @@ export default function Onboarding() {
                       }}
                       disabled={!formData.countryId}
                     >
-                      <SelectTrigger id="state">
+                      <SelectTrigger 
+                        id="state"
+                        className="h-12 border-2 focus:border-blue-300"
+                      >
                         <SelectValue
                           placeholder={
-                            loadingStates ? "Loading..." : "Select state"
+                            loadingStates ? "Loading states..." : "Select state"
                           }
                         />
                       </SelectTrigger>
@@ -461,8 +545,8 @@ export default function Onboarding() {
                     </Select>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="city">City *</Label>
+                  <div className="space-y-3">
+                    <Label htmlFor="city" className="text-base font-semibold">City *</Label>
                     <Select
                       value={formData.cityId}
                       onValueChange={(value) => {
@@ -475,10 +559,13 @@ export default function Onboarding() {
                       }}
                       disabled={!formData.stateId}
                     >
-                      <SelectTrigger id="city">
+                      <SelectTrigger 
+                        id="city"
+                        className="h-12 border-2 focus:border-blue-300"
+                      >
                         <SelectValue
                           placeholder={
-                            loadingCities ? "Loading..." : "Select city"
+                            loadingCities ? "Loading cities..." : "Select city"
                           }
                         />
                       </SelectTrigger>
@@ -493,8 +580,8 @@ export default function Onboarding() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="postalCode">Postal Code</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="postalCode" className="text-base font-semibold">Postal Code</Label>
                   <Input
                     id="postalCode"
                     type="text"
@@ -503,6 +590,7 @@ export default function Onboarding() {
                     onChange={(e) =>
                       updateFormData("postalCode", e.target.value)
                     }
+                    className="h-12 text-lg border-2 focus:border-blue-300 transition-colors"
                   />
                 </div>
               </div>
@@ -510,12 +598,10 @@ export default function Onboarding() {
 
             {/* Step 4: Contact Information */}
             {step === 4 && (
-              //
-
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="fullName">Full Name *</Label>
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <Label htmlFor="fullName" className="text-base font-semibold">Full Name *</Label>
                     <Input
                       id="fullName"
                       placeholder="Your full name"
@@ -524,55 +610,57 @@ export default function Onboarding() {
                       onChange={(e) =>
                         updateFormData("fullName", e.target.value)
                       }
+                      className="h-12 text-lg border-2 focus:border-blue-300 transition-colors"
                     />
                   </div>
 
-                  <div>
-                    <div className="space-y-2">
-                      <Label htmlFor="gender">Gender *</Label>
-                      <Select
-                        required={true}
-                        value={formData.gender}
-                        onValueChange={(value) =>
-                          updateFormData("gender", value)
-                        }
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select gender" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {GENDERS.map((gender) => (
-                            <SelectItem key={gender} value={gender}>
-                              {gender}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="space-y-3">
+                    <Label htmlFor="gender" className="text-base font-semibold">Gender *</Label>
+                    <Select
+                      required={true}
+                      value={formData.gender}
+                      onValueChange={(value) =>
+                        updateFormData("gender", value)
+                      }
+                    >
+                      <SelectTrigger className="h-12 border-2 focus:border-blue-300">
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {GENDERS.map((gender) => (
+                          <SelectItem key={gender} value={gender}>
+                            {gender}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address *</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="email" className="flex items-center gap-2 text-base font-semibold">
+                    <Mail className="h-5 w-5 text-blue-600" />
+                    Email Address *
+                  </Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="your.email@hospital.com"
                     value={formData.email}
                     onChange={(e) => updateFormData("email", e.target.value)}
+                    className="h-12 text-lg border-2 focus:border-blue-300 transition-colors"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number *</Label>
-                  <div className="flex gap-2">
-                    <div className="flex items-center px-3 border rounded-md bg-muted min-w-[80px] justify-center">
-                      <span className="text-sm font-medium">
-                        {formData.countryId
-                          ? countries.find(
-                              (c) => c.id === Number(formData.countryId)
-                            )?.phoneCode || "+--"
-                          : "+--"}
+                <div className="space-y-3">
+                  <Label htmlFor="phone" className="flex items-center gap-2 text-base font-semibold">
+                    <Phone className="h-5 w-5 text-blue-600" />
+                    Phone Number *
+                  </Label>
+                  <div className="flex gap-3">
+                    <div className="flex items-center px-4 border-2 rounded-xl bg-blue-50 min-w-[100px] justify-center border-blue-200">
+                      <span className="text-sm font-semibold text-blue-700">
+                        {phoneCode}
                       </span>
                     </div>
                     <Input
@@ -581,101 +669,123 @@ export default function Onboarding() {
                       placeholder="xxx xxx xxxx"
                       value={formData.phone}
                       onChange={(e) => updateFormData("phone", e.target.value)}
-                      className="flex-1"
-                    />
-
-                    <Input
-                      id="postalCode"
-                      type="hidden"
-                      hidden={true}
-                      placeholder="Phone Code"
-                      value={formData.phoneCode}
-                      onChange={(e) =>
-                        updateFormData("phoneCode", e.target.value)
-                      }
-                      className="flex-1 border rounded-lg px-2 py-1"
+                      className="h-12 text-lg border-2 focus:border-blue-300 transition-colors flex-1"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password *</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="password" className="flex items-center gap-2 text-base font-semibold">
+                    <Shield className="h-5 w-5 text-blue-600" />
+                    Password *
+                  </Label>
                   <div className="relative">
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
-                      autoComplete="false"
+                      autoComplete="new-password"
                       placeholder="Create a secure password"
                       value={formData.password}
                       onChange={(e) =>
                         updateFormData("password", e.target.value)
                       }
+                      className="h-12 text-lg border-2 focus:border-blue-300 transition-colors pr-12"
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="absolute right-2 top-2 h-7 w-7 p-0"
+                      className="absolute right-3 top-3 h-6 w-6 p-0 hover:bg-transparent"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? (
-                        <Eye className="h-4 w-4" />
+                        <Eye className="h-4 w-4 text-gray-500" />
                       ) : (
-                        <EyeOff className="h-4 w-4" />
+                        <EyeOff className="h-4 w-4 text-gray-500" />
                       )}
                     </Button>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="position">Position/Title</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="position" className="text-base font-semibold">Position/Title</Label>
                   <Input
                     id="position"
                     type="text"
                     placeholder="e.g., Chief Medical Officer"
                     value={formData.position}
                     onChange={(e) => updateFormData("position", e.target.value)}
+                    className="h-12 text-lg border-2 focus:border-blue-300 transition-colors"
                   />
                 </div>
               </div>
             )}
 
             {/* Navigation Buttons */}
-            <div className="flex justify-between pt-6">
+            <div className="flex justify-between pt-8 border-t border-gray-200">
               <Button
                 variant="outline"
                 onClick={handleBack}
                 disabled={step === 1}
+                className="h-12 px-6 border-2 text-base font-semibold rounded-xl transition-all hover:scale-105"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeft className="h-5 w-5 mr-2" />
                 Back
               </Button>
 
               <Button
                 onClick={handleNext}
-                className="bg-gradient-primary"
                 disabled={mutation.isPending}
+                className="h-12 px-8 text-base font-semibold rounded-xl bg-gradient-to-r from-blue-600 to-blue-600 hover:from-blue-700 hover:to-indigo-700 transition-all hover:scale-105 shadow-lg"
               >
                 {mutation.isPending ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Submitting...
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    Creating Account...
                   </>
                 ) : step === totalSteps ? (
                   <>
-                    <Check className="h-4 w-4 mr-2" />
-                    Complete
+                    <Check className="h-5 w-5 mr-2" />
+                    Complete Onboarding
                   </>
                 ) : (
                   <>
-                    Next
-                    <ArrowRight className="h-4 w-4 ml-2" />
+                    Continue
+                    <ArrowRight className="h-5 w-5 ml-2" />
                   </>
                 )}
               </Button>
             </div>
           </CardContent>
         </Card>
+
+        {/* Footer */}
+        <div className="text-center mt-8">
+<p className="text-sm text-muted-foreground">
+  Already have an account?{" "}
+  <Button
+      variant="link"
+    onClick={() => navigate('/auth/login')}
+    className="text-blue-600 hover:text-blue-700 font-semibold underline bg-transparent border-none cursor-pointer p-0 hover:underline-offset-2 transition-all"
+  >
+    Sign in here
+  </Button>
+</p>
+          <div className="flex items-center justify-center gap-6 mt-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <Shield className="h-3 w-3" />
+              Secure & Encrypted
+            </div>
+            <div className="flex items-center gap-1">
+              <Heart className="h-3 w-3" />
+              HIPAA Compliant
+            </div>
+            <div className="flex items-center gap-1">
+              <Star className="h-3 w-3" />
+              Trusted by 10,000+ Providers
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

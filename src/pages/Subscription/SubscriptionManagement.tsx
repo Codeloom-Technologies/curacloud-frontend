@@ -800,11 +800,11 @@ const SubscriptionManagement = () => {
 
             {/* Available Plans */}
             <div className="space-y-8 animate-fade-in">
-              <div className="grid md:grid-cols-3 gap-8">
+              <div className="grid md:grid-cols-4 gap-4">
                 {subscriptionPlans?.map((plan) => {
                   const isCurrent = isCurrentPlan(plan.id);
-                  const isPopular = plan.name?.includes('Pro');
-                  const isEnterprise = plan.name === 'Enterprise';
+                  const isPopular = plan.name?.includes('Growth Plan');
+                  const isEnterprise = plan.name === 'Enterprise Plan';
                   
                   return (
                     <Card
@@ -883,9 +883,9 @@ const SubscriptionManagement = () => {
 
                         <Button
                           className={`w-full ${
-                            isPopular ? "bg-primary hover:bg-primary/90" : ""
-                          } ${isEnterprise ? "bg-purple-600 hover:bg-purple-700" : ""}`}
-                          variant={isCurrent ? "outline" : isPopular || isEnterprise ? "default" : "outline"}
+                            isPopular ? "bg-primary hover:bg-primary/90" : "bg-primary hover:bg-primary/90"
+                          } ${isEnterprise ? "bg-primary hover:bg-primary/90" : "bg-primary hover:bg-primary/90"}`}
+                          variant={isCurrent ? "outline" : isPopular || isEnterprise ? "default" : "default"}
                           disabled={isCurrent || isCreating}
                           onClick={() => handlePlanSelection(plan)}
                         >

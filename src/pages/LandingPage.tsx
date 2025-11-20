@@ -848,10 +848,10 @@ export default function LandingPage() {
               facility.
             </p>
           </div>
-<div className="grid md:grid-cols-3 gap-8">
+<div className="grid md:grid-cols-4 gap-4">
   {subscriptionPlans?.map((plan, index) => {
-    const isPopular = plan.name === 'Pro';
-    const isEnterprise = plan.name === 'Enterprise';
+    const isPopular = plan.name === 'Growth Plan';
+    const isEnterprise = plan.name === 'Enterprise Plan';
     
     return (
       <Card
@@ -913,9 +913,9 @@ export default function LandingPage() {
 
           <Button
             className={`w-full ${
-              isPopular ? "bg-primary hover:bg-primary/90" : ""
-            } ${isEnterprise ? "bg-purple-600 hover:bg-purple-700" : ""}`}
-            variant={isPopular || isEnterprise ? "default" : "outline"}
+              isPopular ? "bg-primary hover:bg-primary/90" : "bg-primary hover:bg-primary/90"
+            } ${isEnterprise ? "bg-primary hover:bg-primary/90" : "bg-primary hover:bg-primary/90"}`}
+            variant={isPopular || isEnterprise ? "default" : "default"}
             onClick={() => isEnterprise ? () => {
              } : handleGetStarted()}
 

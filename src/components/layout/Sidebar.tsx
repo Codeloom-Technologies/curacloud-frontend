@@ -133,6 +133,29 @@ const navigationItems = [
       },
     ],
   },
+    {
+    title: "Laboratory",
+    icon: Pill,
+    href: "/dashboard/laboratory",
+    permission: "laboratory" as Permission,
+    children: [
+      {
+        title: "Orders",
+        href: "/dashboard/lab/orders",
+        permission: "laboratory.orders" as Permission,
+      },
+      {
+        title: "Results",
+        href: "/dashboard/lab/results",
+        permission: "laboratory.results" as Permission,
+      },
+      {
+        title: "Reports",
+        href: "/dashboard/lab/reports",
+        permission: "laboratory.reports" as Permission,
+      },
+    ],
+  },
   {
     title: "Billing",
     icon: Receipt,

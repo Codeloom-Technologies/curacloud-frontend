@@ -9,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Heart, Eye, EyeOff, Shield, Users, BarChart3 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { LoginApiPayload } from "@/types/auth";
@@ -211,34 +210,17 @@ export default function Login() {
                 </Button>
               </form>
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">
-                    Demo Accounts
-                  </span>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="p-2 rounded bg-muted text-center">
-                  <p className="font-medium">Doctor</p>
-                  <p className="text-muted-foreground">doctor@demo.com</p>
-                </div>
-                <div className="p-2 rounded bg-muted text-center">
-                  <p className="font-medium">Healthcare</p>
-                  <p className="text-muted-foreground">healthcare@demo.com</p>
-                </div>
-                <div className="p-2 rounded bg-muted text-center">
-                  <p className="font-medium">Nurse</p>
-                  <p className="text-muted-foreground">nurse@demo.com</p>
-                </div>
-                <div className="p-2 rounded bg-muted text-center">
-                  <p className="font-medium">Receptionist</p>
-                  <p className="text-muted-foreground">reception@demo.com</p>
-                </div>
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">
+                  Don't have an account?{" "}
+                  <Button
+                    variant="link"
+                    onClick={() => navigate("/auth/onboarding")}
+                    className="p-0 h-auto text-primary font-semibold"
+                  >
+                    Get started
+                  </Button>
+                </p>
               </div>
             </CardContent>
           </Card>
