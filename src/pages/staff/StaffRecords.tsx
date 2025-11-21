@@ -42,7 +42,6 @@ const StaffRecords = () => {
 
   const staffData = data || {};
 
-  console.log({ staffData });
   useEffect(() => {}, [staffId, data]);
 
   if (isLoading || isFetching) return <PatientDetailsSkeleton />;

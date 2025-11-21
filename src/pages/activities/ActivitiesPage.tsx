@@ -146,7 +146,6 @@ export default function ActivitiesPage() {
     queryFn: () => getActivityStats(),
   });
 
-  console.log({ statsData });
 
   const handleExport = () => {
     // Implement export functionality

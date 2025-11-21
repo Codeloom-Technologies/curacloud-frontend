@@ -57,7 +57,6 @@ export const fetchCities = async (stateId: number): Promise<City[]> => {
 };
 
 export const submitOnboarding = async (payload: OnboardingApiPayload) => {
-  console.log(payload);
   const response = await apiClient("/healthcares", {
     method: "POST",
     body: JSON.stringify(payload),

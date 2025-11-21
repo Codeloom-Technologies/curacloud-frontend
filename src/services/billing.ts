@@ -118,7 +118,6 @@ export const getPaymentMethodData = async (): Promise<any[]> => {
   const response = await apiClient("/invoices/billing/payment-methods");
   if (!response) {
     const error = await response;
-    console.log({ error });
     throw new Error(error.message || "Failed to fetch billings ");
   }
   return response;

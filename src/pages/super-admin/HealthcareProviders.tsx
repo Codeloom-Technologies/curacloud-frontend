@@ -87,7 +87,6 @@ export default function HealthcareProviders() {
   const providers = providersData?.providers || [];
   const pagination = providersData?.meta;
 
-  console.log(providers)
   const handleAddProvider = () => {
     toast({
       title: "Provider Added",
