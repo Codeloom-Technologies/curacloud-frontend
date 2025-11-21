@@ -55,12 +55,18 @@ export default function Login() {
       const isSuperAdmin = data.user.roles.some(
         (role) => role.slug === "super_admin"
       );
+// Set a reasonable timeout that works everywhere
+const navigationTimeout = setTimeout(() => {
+  if (isSuperAdmin) {
+    navigate("/dashboard/admin", { replace: true });
+  } else {
+    navigate("/dashboard", { replace: true });
+  }
+}, 50);
 
-      if (isSuperAdmin) {
-        navigate("/super-admin");
-      } else {
-        navigate("/dashboard");
-      }
+// Optional: Add a safety net (cleanup on component unmount)
+      return () => clearTimeout(navigationTimeout);
+      
     },
     onError: (error: Error) => {
       toast({

@@ -45,6 +45,7 @@ import ActivitiesPage from "./pages/activities/ActivitiesPage";
 import  WalletManagement from "./pages/Wallet/WalletManagement";
 import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
 import HealthcareProviders from "./pages/super-admin/HealthcareProviders";
+import SuperAdminReports from "./pages/super-admin/SuperAdminReport";
 
 const queryClient = new QueryClient();
 
@@ -168,12 +169,16 @@ const App = () => (
 
           {/* Super Admin Routes */}
           <Route
-            path="/super-admin"
+            path="/dashboard/admin"
             element={<SuperAdminDashboard />}
           />
           <Route
-            path="/super-admin/healthcare-providers"
+            path="/dashboard/admin/healthcare-providers"
             element={<HealthcareProviders />}
+          />
+            <Route
+            path="/dashboard/admin/reports"
+            element={<SuperAdminReports />}
           />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
