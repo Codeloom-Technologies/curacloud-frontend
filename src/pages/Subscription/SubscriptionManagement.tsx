@@ -803,7 +803,7 @@ const SubscriptionManagement = () => {
                       <h4 className="font-semibold">Actions</h4>
                       <div className="flex gap-3 flex-wrap">
 
-                        {currentSubscription.status === "active" || currentSubscription.status === "Trialing" && (
+                        {currentSubscription.status === "active" || currentSubscription.status === "trialing" && (
                         <Button 
                           variant="destructive" 
                           onClick={onCancelSubscription}
