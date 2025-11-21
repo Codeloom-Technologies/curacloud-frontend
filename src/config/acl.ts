@@ -40,14 +40,18 @@ export type Permission =
   | "reports"
   | "settings"
   | "subscription" |
-  'wallet' |'admins'
+  'wallet' 
+  | 'admins'
   ;
 
 // ACL Configuration: Maps roles to their allowed permissions
 export const rolePermissions: Record<RoleSlug, Permission[]> = {
   // Super Admin - Only super admin specific access
   super_admin: [
-    "admins",
+    "super_admin.dashboard",
+    'super_admin.healthcare_providers',
+    "super_admin.settings",
+    "super_admin.analytics",
     // "patients",
     // "patients.register",
     // "patients.records",

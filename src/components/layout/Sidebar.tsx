@@ -9,11 +9,10 @@ import {
   Settings,
   ChevronDown,
   Heart,
-  Receipt,
-  Shield,
-  TrendingUp,
-  BookText,
+  BookText, Receipt,
   Wallet, Building2,ReceiptIcon,
+  TrendingUp,
+  Shield
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -39,34 +38,60 @@ interface NavigationItem {
 }
 
 const superAdminNavigationItems: NavigationItem[] = [
-  {
+    {
     title: "Dashboard",
-    icon: Shield,
-    href: "/super-admin",
+    icon: LayoutDashboard,
+    href: "/dashboard/admin",
     permission: "super_admin.dashboard" as Permission,
   },
   {
-    title: "Healthcare Providers",
+    title: "Manage Providers",
     icon: Building2,
-    href: "/super-admin/healthcare-providers",
+    href: "/dashboard/admin",
     permission: "super_admin.healthcare_providers" as Permission,
+    children: [
+      {
+        title: "Providers",
+        href: "/dashboard/admin/healthcare-providers",
+        permission: "super_admin.healthcare_providers" as Permission,
+      },
+    ],
   },
-  {
-    title: "User Management",
-    icon: Users,
-    href: "/super-admin/users",
-    permission: "super_admin.users" as Permission,
-  },
+  //   {
+  //   title: "Reports",
+  //   icon: ReceiptIcon,
+  //   href: "/dashboard/admin",
+  //   permission: "admins" as Permission,
+  //   children: [
+  //       {
+  //       title: "Analytics",
+  //       href: "/dashboard/admin/reports",
+  //       permission: "admins" as Permission,
+  //     },
+  //   ],
+  // },
+  // {
+  //   title: "Healthcare Providers",
+  //   icon: Building2,
+  //   href: "/super-admin/healthcare-providers",
+  //   permission: "super_admin.healthcare_providers" as Permission,
+  // },
+  // {
+  //   title: "User Management",
+  //   icon: Users,
+  //   href: "/super-admin/users",
+  //   permission: "super_admin.users" as Permission,
+  // },
   {
     title: "Analytics & Reports",
     icon: TrendingUp,
-    href: "/super-admin/analytics",
+    href: "/dashboard/admin/reports",
     permission: "super_admin.analytics" as Permission,
   },
   {
     title: "System Settings",
     icon: Settings,
-    href: "/super-admin/system-settings",
+    href: "/dashboard/settings",
     permission: "super_admin.settings" as Permission,
   },
 ];

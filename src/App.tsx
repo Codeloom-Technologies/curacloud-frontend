@@ -168,8 +168,7 @@ const App = () => (
           />
 
           {/* Super Admin Routes */}
-          
-          <Route      
+          <Route
             path="/dashboard/admin"
             element={<SuperAdminDashboard />}
           />
