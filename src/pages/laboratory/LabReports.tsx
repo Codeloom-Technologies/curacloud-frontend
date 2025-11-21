@@ -8,122 +8,62 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { FileText, Download, Printer, Send, Calendar, User, AlertTriangle, TrendingUp, TrendingDown, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-// Mock data - replace with actual API call
-const labReports = [
-  {
-    id: "L0002",
-    orderId: "LO001",
-    patientName: "John Smith",
-    patientId: "P001",
-    age: 45,
-    gender: "Male",
-    testType: "Complete Blood Count",
-    reportDate: "2024-01-16",
-    orderDate: "2024-01-15",
-    physician: "Dr. Johnson",
-    department: "Internal Medicine",
-    status: "Final",
-    priority: "Urgent",
-    results: [
-      { parameter: "Hemoglobin", value: "12.5", unit: "g/dL", referenceRange: "13.5-17.5", flag: "Low" },
-      { parameter: "White Blood Cell Count", value: "8.2", unit: "× 10³/μL", referenceRange: "4.5-11.0", flag: "Normal" },
-      { parameter: "Platelet Count", value: "350", unit: "× 10³/μL", referenceRange: "150-450", flag: "Normal" },
-    ],
-    technician: "John Martinez",
-    reviewedBy: "Dr. Patricia Wilson",
-    criticalValues: ["Hemoglobin: 12.5 g/dL (Low)"],
-    notes: "Patient shows signs of anemia. Recommend iron studies and follow-up.",
-    attachments: ["cbc_report_001.pdf", "blood_smear_001.jpg"]
-  },
-  {
-    id: "L0001",
-    orderId: "LO002",
-    patientName: "Sarah Davis",
-    patientId: "P002",
-    age: 52,
-    gender: "Female",
-    testType: "Lipid Panel",
-    reportDate: "2024-01-15",
-    orderDate: "2024-01-14",
-    physician: "Dr. Williams",
-    department: "Cardiology",
-    status: "Final",
-    priority: "Routine",
-    results: [
-      { parameter: "Total Cholesterol", value: "245", unit: "mg/dL", referenceRange: "<200", flag: "High" },
-      { parameter: "HDL Cholesterol", value: "45", unit: "mg/dL", referenceRange: ">40", flag: "Low" },
-      { parameter: "LDL Cholesterol", value: "165", unit: "mg/dL", referenceRange: "<100", flag: "High" },
-    ],
-    technician: "Sarah Johnson",
-    reviewedBy: "Dr. Michael Chen",
-    criticalValues: [],
-    notes: "Elevated lipid levels observed. Consider lifestyle modifications.",
-    attachments: ["lipid_panel_002.pdf"]
-  }
-];
+import { getLabOrderReport } from "@/services/lab";
+import { useQuery } from "@tanstack/react-query";
 
 export default function LabReportView() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [report, setReport] = useState(null);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  console.log('id', id)
 
-  useEffect(() => {
-    // Simulate API call
-    const fetchReport = async () => {
-      setLoading(true);
-      try {
-        // In real app, this would be: await api.getLabReport(id);
-        setTimeout(() => {
-        const foundReport = labReports.find((report) => report.id == id);
-          console.log({fetchReport})
-          if (!foundReport) {
-            toast({
-              title: "Report Not Found",
-              description: "The requested lab report could not be found.",
-              variant: "destructive",
-            });
-            // navigate("/dashboard/lab/orders");
-            return;
-          }
-          setReport(foundReport);
-          setLoading(false);
-        }, 500);
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load lab report.",
-          variant: "destructive",
-        });
-        // navigate("/lab/orders");
-      }
-    };
+  const {
+    data: labReport,
+    isFetching,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["lab-order-view", id],
+    queryFn: () => getLabOrderReport(id!),
+    enabled: !!id,
+  });
 
-    if (id) {
-      fetchReport();
-    }
-  }, [id, navigate, toast]);
-
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'final': return 'bg-green-100 text-green-800 border-green-200';
       case 'preliminary': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'pending review': return 'bg-blue-100 text-blue-800 border-blue-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const getPriorityColor = (priority) => {
+  const getStatusText = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'final': return 'Final';
+      case 'preliminary': return 'Preliminary';
+      case 'pending review': return 'Pending Review';
+      default: return status;
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
     switch (priority?.toLowerCase()) {
       case 'urgent': return 'bg-red-100 text-red-800 border-red-200';
+      case 'stat': return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'routine': return 'bg-gray-100 text-gray-800 border-gray-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const getFlagIcon = (flag) => {
+  const getPriorityText = (priority: string) => {
+    switch (priority?.toLowerCase()) {
+      case 'routine': return 'Routine';
+      case 'urgent': return 'Urgent';
+      case 'stat': return 'STAT';
+      default: return priority;
+    }
+  };
+
+  const getFlagIcon = (flag: string) => {
     switch (flag?.toLowerCase()) {
       case 'high': return <TrendingUp className="h-4 w-4 text-red-500" />;
       case 'low': return <TrendingDown className="h-4 w-4 text-blue-500" />;
@@ -132,7 +72,7 @@ export default function LabReportView() {
     }
   };
 
-  const getFlagColor = (flag) => {
+  const getFlagColor = (flag: string) => {
     switch (flag?.toLowerCase()) {
       case 'high': return 'text-red-600 bg-red-50';
       case 'low': return 'text-blue-600 bg-blue-50';
@@ -144,7 +84,7 @@ export default function LabReportView() {
   const handleDownload = () => {
     toast({
       title: "Download Started",
-      description: `Downloading ${report?.testType} report...`,
+      description: `Downloading ${labReport?.testType} report...`,
       variant: "success",
     });
     // Implement actual download logic
@@ -157,7 +97,7 @@ export default function LabReportView() {
   const handleSendToPhysician = () => {
     toast({
       title: "Report Sent",
-      description: `Lab report sent to ${report?.physician}`,
+      description: `Lab report sent to ${labReport?.physician}`,
       variant: "success",
     });
   };
@@ -166,7 +106,7 @@ export default function LabReportView() {
     navigate("/dashboard/lab/orders");
   };
 
-  if (loading) {
+  if (isLoading || isFetching) {
     return (
       <div className="flex h-screen bg-background">
         <Sidebar />
@@ -185,7 +125,7 @@ export default function LabReportView() {
     );
   }
 
-  if (!report) {
+  if (error || !labReport) {
     return (
       <div className="flex h-screen bg-background">
         <Sidebar />
@@ -195,7 +135,9 @@ export default function LabReportView() {
             <div className="max-w-6xl mx-auto text-center py-12">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-2">Report Not Found</h2>
-              <p className="text-muted-foreground mb-4">The requested lab report could not be found.</p>
+              <p className="text-muted-foreground mb-4">
+                {error ? "Error loading lab report" : "The requested lab report could not be found."}
+              </p>
               <Button onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Lab Orders
@@ -206,6 +148,8 @@ export default function LabReportView() {
       </div>
     );
   }
+
+  const report = labReport;
 
   return (
     <div className="flex h-screen bg-background">
@@ -260,23 +204,23 @@ export default function LabReportView() {
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between border-b pb-2">
                         <span className="font-medium text-muted-foreground">Name:</span>
-                        <span className="font-semibold">{report.patientName}</span>
+                        <span className="font-semibold">{report?.patient?.user?.fullName}</span>
                       </div>
                       <div className="flex justify-between border-b pb-2">
                         <span className="font-medium text-muted-foreground">Patient ID:</span>
-                        <span>{report.patientId}</span>
+                        <span>{report.patient?.medicalRecordNumber || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between border-b pb-2">
-                        <span className="font-medium text-muted-foreground">Age/Gender:</span>
-                        <span>{report.age} years, {report.gender}</span>
+                        <span className="font-medium text-muted-foreground">Gender:</span>
+                        <span>{report.patient?.user?.gender || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between border-b pb-2">
                         <span className="font-medium text-muted-foreground">Ordering Physician:</span>
-                        <span>{report.physician}</span>
+                        <span>{report.physician || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="font-medium text-muted-foreground">Department:</span>
-                        <span>{report.department}</span>
+                        <span>{report.department || 'N/A'}</span>
                       </div>
                     </div>
                   </div>
@@ -290,28 +234,28 @@ export default function LabReportView() {
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between border-b pb-2">
                         <span className="font-medium text-muted-foreground">Report ID:</span>
-                        <span className="font-semibold">{report.id}</span>
+                        <span className="font-semibold">{report.reportId || report.id}</span>
                       </div>
                       <div className="flex justify-between border-b pb-2">
                         <span className="font-medium text-muted-foreground">Order ID:</span>
                         <span>{report.orderId}</span>
                       </div>
                       <div className="flex justify-between border-b pb-2">
-                        <span className="font-medium text-muted-foreground">Order Date:</span>
-                        <span>{report.orderDate}</span>
+                        <span className="font-medium text-muted-foreground">Test Type:</span>
+                        <span>{report.testType}</span>
                       </div>
                       <div className="flex justify-between border-b pb-2">
                         <span className="font-medium text-muted-foreground">Report Date:</span>
-                        <span>{report.reportDate}</span>
+                        <span>{new Date(report.reportDate).toLocaleDateString()}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="font-medium text-muted-foreground">Status/Priority:</span>
                         <div className="flex gap-2">
                           <Badge className={getStatusColor(report.status)}>
-                            {report.status}
+                            {getStatusText(report.status)}
                           </Badge>
                           <Badge className={getPriorityColor(report.priority)}>
-                            {report.priority}
+                            {getPriorityText(report.priority)}
                           </Badge>
                         </div>
                       </div>
@@ -341,7 +285,7 @@ export default function LabReportView() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {report.results.map((result, index) => (
+                    {report.results?.map((result, index) => (
                       <TableRow key={index} className={result.flag !== 'Normal' ? 'bg-muted/30' : ''}>
                         <TableCell className="font-medium">{result.parameter}</TableCell>
                         <TableCell>
@@ -355,7 +299,7 @@ export default function LabReportView() {
                           {result.referenceRange}
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline" className={getFlagColor(result.flag).replace('bg-', '')}>
+                          <Badge variant="outline" className={getFlagColor(result.flag).replace('text-', '').replace('bg-', '')}>
                             {result.flag}
                           </Badge>
                         </TableCell>
@@ -377,18 +321,18 @@ export default function LabReportView() {
                   <div className="space-y-4 text-sm">
                     <div className="flex justify-between border-b pb-2">
                       <span className="font-medium text-muted-foreground">Technician:</span>
-                      <span>{report.technician}</span>
+                      <span>{report.technician || 'N/A'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="font-medium text-muted-foreground">Reviewed By:</span>
-                      <span>{report.reviewedBy}</span>
+                      <span>{report.reviewedBy || 'N/A'}</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Attachments */}
-              {report.attachments.length > 0 && (
+              {report.attachments && report.attachments.length > 0 && (
                 <Card className="print:shadow-none print:border-0">
                   <CardHeader>
                     <CardTitle className="text-lg">Attachments</CardTitle>
@@ -409,22 +353,30 @@ export default function LabReportView() {
               )}
             </div>
 
-            {/* Clinical Notes */}
-            {report.notes && (
+            {/* Clinical Notes & Interpretation */}
+            {(report.clinicalNotes || report.interpretation) && (
               <Card className="print:shadow-none print:border-0">
                 <CardHeader>
                   <CardTitle className="text-lg">Clinical Interpretation</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm">{report.notes}</p>
+                    {report.interpretation && (
+                      <p className="text-sm mb-3">{report.interpretation}</p>
+                    )}
+                    {report.clinicalNotes && (
+                      <div className="mt-2 pt-2 border-t border-blue-200">
+                        <p className="text-xs text-muted-foreground font-medium">Clinical Notes:</p>
+                        <p className="text-sm mt-1">{report.clinicalNotes}</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
             )}
 
             {/* Critical Values Alert */}
-            {report.criticalValues.length > 0 && (
+            {report.criticalValues && report.criticalValues.length > 0 && (
               <Card className="bg-red-50 border-red-200 print:shadow-none">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
@@ -445,7 +397,7 @@ export default function LabReportView() {
 
             {/* Print Footer */}
             <div className="hidden print:block mt-8 pt-4 border-t text-center text-sm text-muted-foreground">
-              <p>Generated on {report.reportDate} by {report.technician}</p>
+              <p>Generated on {new Date(report.reportDate).toLocaleDateString()} by {report.technician}</p>
               <p>Hospital Laboratory Management System</p>
             </div>
           </div>

@@ -59,7 +59,7 @@ import {
   getPrescriptionStats,
 } from "@/services/prescription";
 import { getAllDoctors } from "@/services/staff";
-import { fetchPatientByMRN, fetchPatients } from "@/services/patient";
+import {  fetchPatients } from "@/services/patient";
 import { FREQUENCY_OPTIONS } from "@/constants/medical/prescription";
 import {
   Pagination,
