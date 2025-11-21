@@ -39,17 +39,47 @@ export type Permission =
   | "staff.records"
   | "reports"
   | "settings"
-  | "subscription" | 'wallet';
+  | "subscription" |
+  'wallet' |'admins'
+  ;
 
 // ACL Configuration: Maps roles to their allowed permissions
 export const rolePermissions: Record<RoleSlug, Permission[]> = {
   // Super Admin - Only super admin specific access
   super_admin: [
-    "super_admin.dashboard",
-    "super_admin.healthcare_providers",
-    "super_admin.users",
-    "super_admin.analytics",
-    "super_admin.settings",
+    "admins",
+    // "patients",
+    // "patients.register",
+    // "patients.records",
+    // "appointments",
+    // "appointments.calendar",
+    // "appointments.checkin",
+    // "patient-vitals",
+    // "patient-vitals.appointments",
+    // "medical-records",
+    // "consultations",
+    // "prescriptions",
+    // "medical-history",
+    // "laboratory",
+    // "laboratory.orders",
+    // "laboratory.results",
+    // "laboratory.reports",
+    // "radiology",
+    // "pharmacy",
+    // "pharmacy.inventory",
+    // "pharmacy.prescriptions",
+    // "pharmacy.dispensing",
+    // "pharmacy.stock",
+    // "inventory",
+    // "billing",
+    // "billing.invoices",
+    // "billing.payments",
+    // "billing.reports",
+    // "staff",
+    // "staff.register",
+    // "staff.records",
+    // "reports",
+    "settings",
   ],
 
   // Admin - Most access except some sensitive features

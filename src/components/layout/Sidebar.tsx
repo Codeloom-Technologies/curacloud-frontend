@@ -9,14 +9,11 @@ import {
   Settings,
   ChevronDown,
   Heart,
-  BookText, 
   Receipt,
-  DollarSign,
-  PiggyBank,
-  Wallet,
   Shield,
-  Building2,
-  TrendingUp
+  TrendingUp,
+  BookText,
+  Wallet, Building2,ReceiptIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -286,7 +283,40 @@ const navigationItems: NavigationItem[] = [
       },
     ],
   },
+  // dashboard
+    {
+    title: "Dashboard",
+    icon: LayoutDashboard,
+    href: "/dashboard/admin",
+    permission: "admins" as Permission,
+  },
   {
+    title: "Manage Providers",
+    icon: Building2,
+    href: "/dashboard/admin",
+    permission: "admins" as Permission,
+    children: [
+      {
+        title: "Providers",
+        href: "/dashboard/admin/healthcare-providers",
+        permission: "admins" as Permission,
+      },
+    ],
+  },
+    {
+    title: "Reports",
+    icon: ReceiptIcon,
+    href: "/dashboard/admin",
+    permission: "admins" as Permission,
+    children: [
+        {
+        title: "Analytics",
+        href: "/dashboard/admin/reports",
+        permission: "admins" as Permission,
+      },
+    ],
+  },
+   {
     title: "Settings",
     icon: Settings,
     href: "/dashboard/settings",
