@@ -34,7 +34,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { getActiveSubscriptionPlan, getSubscriptionPlans } from "@/services/subscription";
+import { getActiveSubscriptionPlan, getSubscriptionPlans, getSubscriptionsHistory } from "@/services/subscription";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { formatNaira } from "@/lib/formatters";
@@ -42,6 +42,7 @@ import { useSubscription } from "@/hooks/use-subscription";
 import { useAuthStore } from "@/store/authStore";
 import { getBalance } from "@/services/wallet";
 import { useNavigate } from "react-router-dom";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 type PaymentMethod = 'card' | 'wallet';
 
@@ -53,25 +54,6 @@ type PlanSelection = {
   features: string[];
 } | null;
 
-// Mock wallet service - replace with your actual API calls
-const walletService = {
-  getBalance: async (): Promise<number> => {
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(15000), 1000); // 15,000 Naira balance
-    });
-  },
-  
-  getTransactionHistory: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve([
-        { id: 1, amount: 5000, type: 'credit', description: 'Wallet Top-up', date: new Date('2024-01-15') },
-        { id: 2, amount: -3000, type: 'debit', description: 'Subscription Payment', date: new Date('2024-01-10') },
-        { id: 3, amount: 10000, type: 'credit', description: 'Wallet Top-up', date: new Date('2024-01-05') },
-      ]), 1000);
-    });
-  }
-};
 
 const SubscriptionManagement = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -80,18 +62,21 @@ const SubscriptionManagement = () => {
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('card');
   const [selectedPlan, setSelectedPlan] = useState<PlanSelection>(null);
   const [showBalance, setShowBalance] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { toast } = useToast();
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  const perPage = 10;
 
   const { 
     handleUpgrade, 
     handleAutoRenew, 
     handleCancel, 
+    onReactivate,
     isCreating, 
     isUpdating, 
-    isCancelling 
+    isCancelling , isReactivating
   } = useSubscription();
 
   const { 
@@ -116,12 +101,12 @@ const SubscriptionManagement = () => {
       staleTime: 60000, // Consider data fresh for 1 minute
   });
 
-    // Wallet balance query
+
+  // Wallet balance query
     const { 
       data: wallet, 
       isLoading: isLoadingWallet,
       refetch: refetchWallet,
-      isRefetching
     } = useQuery({
       queryKey: ["wallet-balance"],
       queryFn: () => getBalance(),
@@ -131,6 +116,22 @@ const SubscriptionManagement = () => {
     });
 
   const walletBalance = wallet?.balance
+
+    const { 
+    data: subscriptionsHistory, 
+    isLoading: isLoadingHistory,
+      isFetching: isFetchingHistory ,
+    refetch
+  } = useQuery({
+    queryKey: ["subscription-history"],
+    queryFn: () => getSubscriptionsHistory(1,perPage),
+     refetchInterval: 30000,
+     refetchOnWindowFocus: true,
+    staleTime: 60000,
+  });
+  const histories = subscriptionsHistory?.histories || []
+  const meta = subscriptionsHistory?.meta ?? {};
+  const totalPages = meta.lastPage ?? 1;
 
   const getBillingPeriod = (subscription: any) => {
     if (!subscription?.currentPeriodStartsAt || !subscription?.currentPeriodEndsAt) 
@@ -204,9 +205,9 @@ const SubscriptionManagement = () => {
           <div className="space-y-1">
             <p>Your wallet balance is insufficient for this transaction.</p>
             <p className="font-semibold">
-              Needed: {formatNaira(selectedPlan.price)} | Available: {formatNaira(walletBalance)}
+              Needed: {formatNaira(Math.abs(selectedPlan.price))} | Available: {formatNaira(Math.abs(walletBalance))}
             </p>
-            <p>Shortage: {formatNaira(shortage)}</p>
+            <p>Shortage: {formatNaira(Math.abs(shortage))}</p>
           </div>
         ),
         variant: "destructive",
@@ -299,9 +300,28 @@ const SubscriptionManagement = () => {
       });
       return;
     }
-    await handleCancel(currentSubscription.id);
+    await handleCancel(currentSubscription.id, {feedback: '', reason:''});
+  };
+  
+    const handleReactivate = async () => {
+    if (!currentSubscription?.id) {
+      toast({
+        title: "No Active Subscription",
+        description: "You don't have an active subscription to manage.",
+        variant: "destructive",
+      });
+      return;
+    }
+    await onReactivate(currentSubscription.id);
   };
 
+    const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      refetch();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
   // Payment Method Modal
   const PaymentModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -327,13 +347,13 @@ const SubscriptionManagement = () => {
             <CardHeader className="pb-4">
               <CardTitle className="text-xl flex items-center gap-2">
                 <Crown className="h-5 w-5 text-purple-500" />
-                {selectedPlan?.name} Plan
+                {selectedPlan?.name}
               </CardTitle>
               <CardDescription>{selectedPlan?.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-2xl font-bold">{formatNaira(selectedPlan?.price || 0)}</span>
+                <span className="text-2xl font-bold">{formatNaira(Math.abs(selectedPlan?.price) || 0)}</span>
                 <Badge variant="secondary">per month</Badge>
               </div>
               
@@ -501,7 +521,7 @@ const SubscriptionManagement = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Amount</span>
-                    <span className="text-sm font-medium">{formatNaira(selectedPlan.price)}</span>
+                    <span className="text-sm font-medium">{formatNaira(Math.abs(selectedPlan.price))}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Payment Method</span>
@@ -510,7 +530,7 @@ const SubscriptionManagement = () => {
                   <Separator />
                   <div className="flex justify-between">
                     <span className="font-semibold">Total</span>
-                    <span className="font-bold text-lg">{formatNaira(selectedPlan.price)}</span>
+                    <span className="font-bold text-lg">{formatNaira(Math.abs(selectedPlan.price))}</span>
                   </div>
                 </div>
               </CardContent>
@@ -545,7 +565,7 @@ const SubscriptionManagement = () => {
                   Processing...
                 </>
               ) : (
-                `Pay ${formatNaira(selectedPlan?.price || 0)}`
+                `Pay ${formatNaira(Math.abs(selectedPlan?.price) || 0)}`
               )}
             </Button>
           </div>
@@ -580,7 +600,7 @@ const SubscriptionManagement = () => {
           {/* Current Balance */}
           <div className="text-center">
             <p className="text-sm text-muted-foreground mb-2">Current Balance</p>
-            <p className="text-3xl font-bold">{formatNaira(walletBalance)}</p>
+            <p className="text-3xl font-bold">{formatNaira(Math.abs(walletBalance))}</p>
           </div>
 
           {/* Quick Actions */}
@@ -690,7 +710,7 @@ const SubscriptionManagement = () => {
                 {!isLoadingWallet && (
                   <Badge variant="secondary" className="flex items-center gap-1">
                     <Wallet className="h-3 w-3" />
-                    Wallet: {formatNaira(walletBalance)}
+                    Wallet: {formatNaira(Math.abs(walletBalance))}
                   </Badge>
                 )}
               </div>
@@ -750,7 +770,7 @@ const SubscriptionManagement = () => {
                       <div className="flex items-center gap-2">
                         <CreditCard className="h-5 w-5 text-muted-foreground" />
                         <span className="text-lg font-semibold">
-                          {formatNaira(currentSubscription.plan?.price?.toLocaleString())}
+                          {formatNaira(Math.abs(currentSubscription.plan?.price?.toLocaleString()))}
                           <span className="text-sm text-muted-foreground ml-1">
                             /{getBillingPeriod(currentSubscription)}
                           </span>
@@ -782,15 +802,29 @@ const SubscriptionManagement = () => {
                     <div className="space-y-4">
                       <h4 className="font-semibold">Actions</h4>
                       <div className="flex gap-3 flex-wrap">
+
+                        {currentSubscription.status === "active" && (
                         <Button 
-                          variant="outline" 
+                          variant="destructive" 
                           onClick={onCancelSubscription}
-                          disabled={currentSubscription.status !== 'active' || isCancelling}
+                          disabled={isCancelling}
                         >
                           {isCancelling ? "Cancelling..." : "Cancel Subscription"}
                         </Button>
-                        <Button variant="outline">Update Payment Method</Button>
-                        <Button variant="outline">View Invoices</Button>
+                      )}
+                      
+                       {currentSubscription.status === "canceled" && (
+                        <Button 
+                         className="h-11 bg-gradient-primary transition-all"
+                          disabled={isReactivating}
+                          onClick={handleReactivate}
+                        >
+                          {isReactivating ? "Reactivating..." : "Reactivate Subscription"}                             
+                        </Button>
+                      )}
+                        
+
+                        {/* <Button variant="outline">Update Payment Method</Button> */}
                       </div>
                     </div>
                   </div>
@@ -836,7 +870,7 @@ const SubscriptionManagement = () => {
                         </CardTitle>
                         <div className="mb-2">
                           <span className="text-4xl font-bold">
-                            {isEnterprise ? 'Custom' : formatNaira(plan.price)}
+                            {isEnterprise ? 'Custom' : formatNaira(Math.abs(plan.price))}
                           </span> 
                           <span className="text-muted-foreground">
                             {isEnterprise ? '' : '/month'}
@@ -913,25 +947,128 @@ const SubscriptionManagement = () => {
             </div>
 
             {/* Billing History */}
-            <Card className="animate-fade-in">
-              <CardHeader>
-                <CardTitle>Billing History</CardTitle>
-                <CardDescription>
-                  Recent invoices and payment history
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-                  <p className="text-muted-foreground">
-                    No billing history available
-                  </p>
-                  <Button variant="outline" className="mt-4">
-                    View All Invoices
-                  </Button>
-                </div>
+<Card className="animate-fade-in">
+  <CardHeader>
+    <CardTitle>Billing History</CardTitle>
+    <CardDescription>
+      Recent invoices and payment history
+    </CardDescription>
+  </CardHeader>
+  <CardContent>
+    {isLoadingHistory || isFetchingHistory ? (
+      // Loading state
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Loading billing history...</p>
+      </div>
+    ) : histories && histories?.length > 0 ? (
+      // Data available state
+      <div className="space-y-4">
+        {histories.map((subscription) => (
+          <div
+            key={subscription?.id}
+            className="flex items-center justify-between p-4 border rounded-lg"
+          >
+            <div className="flex items-center space-x-4">
+              <div className={`p-2 rounded-full ${
+                subscription.status === 'successful' 
+                  ? 'bg-green-100 text-green-600' 
+                  : 'bg-yellow-100 text-yellow-600'
+              }`}>
+                <FileText className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="font-medium">{subscription?.plan?.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  Reference: {subscription?.reference}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {new Date(subscription?.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="font-medium">
+                {(formatNaira(Math.abs(subscription?.plan?.price)))}
+              </p>
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                subscription.status === 'successful'
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-yellow-100 text-yellow-800'
+              }`}>
+                {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
+              </span>
+            </div>
+          </div>
+        ))}
+  
+      </div>
+    ) : (
+      // Empty state
+      <div className="text-center py-8">
+        <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+        <p className="text-muted-foreground">
+          No billing history available
+        </p>
+        <Button variant="outline" className="mt-4">
+          View All Invoices
+        </Button>
+      </div>
+    )}
               </CardContent>
+
+
+              
             </Card>
+            
+
+                  {!isLoadingHistory && histories.length > 0 && (
+                            <div className="mt-6 flex justify-center">
+                              <Pagination>
+                                <PaginationContent>
+                                  <PaginationItem>
+                                    <PaginationPrevious
+                                      onClick={() =>
+                                        currentPage > 1 && handlePageChange(currentPage - 1)
+                                      }
+                                      className={
+                                        currentPage === 1
+                                          ? "pointer-events-none opacity-50"
+                                          : "cursor-pointer"
+                                      }
+                                    />
+                                  </PaginationItem>
+              
+                                  {Array.from({ length: totalPages }).map((_, i) => (
+                                    <PaginationItem key={i}>
+                                      <PaginationLink
+                                        onClick={() => handlePageChange(i + 1)}
+                                        isActive={currentPage === i + 1}
+                                        className="cursor-pointer"
+                                      >
+                                        {i + 1}
+                                      </PaginationLink>
+                                    </PaginationItem>
+                                  ))}
+              
+                                  <PaginationItem>
+                                    <PaginationNext
+                                      onClick={() =>
+                                        currentPage < totalPages &&
+                                        handlePageChange(currentPage + 1)
+                                      }
+                                      className={
+                                        currentPage === totalPages
+                                          ? "pointer-events-none opacity-50"
+                                          : "cursor-pointer"
+                                      }
+                                    />
+                                  </PaginationItem>
+                                </PaginationContent>
+                              </Pagination>
+                            </div>
+                          )}
+              
           </div>
         </main>
       </div>
