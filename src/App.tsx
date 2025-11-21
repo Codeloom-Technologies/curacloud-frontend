@@ -46,6 +46,7 @@ import  WalletManagement from "./pages/Wallet/WalletManagement";
 import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
 import HealthcareProviders from "./pages/super-admin/HealthcareProviders";
 import SuperAdminReports from "./pages/super-admin/SuperAdminReport";
+import LabReportView from "./pages/laboratory/LabReports";
 
 const queryClient = new QueryClient();
 
@@ -94,8 +95,7 @@ const App = () => (
 
           {/* Laboratory Routes */}
           <Route path="/dashboard/lab/orders" element={<LabOrders />} />
-          <Route path="/dashboard/lab/results" element={<ResultsEntry />} />
-          <Route path="/dashboard/lab/reports" element={<LabReports />} />
+          <Route path="/dashboard/lab/reports/:id" element={<LabReportView />} />
 
           {/* Staff/HR Routes */}
           <Route path="/dashboard/staff" element={<StaffDirectory />} />

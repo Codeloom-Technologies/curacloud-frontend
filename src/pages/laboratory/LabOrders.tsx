@@ -11,13 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Plus, Calendar, User, FileText, Clock, Download, Upload, Eye, Edit, TestTube, AlertTriangle } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Search, Plus, Calendar, User, FileText, Clock, Download, Upload, Eye, Edit, TestTube, AlertTriangle, FileUp, Type, X, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 // Enhanced sample data for lab orders
 const sampleLabOrders = [
   {
-    id: "LO001",
+    id: "L0001",
     patientName: "John Smith",
     patientId: "P001",
     orderDate: "2024-01-15",
@@ -28,10 +30,15 @@ const sampleLabOrders = [
     notes: "Patient experiencing fatigue and weakness",
     requiredSamples: ["Blood"],
     estimatedCompletion: "2024-01-16",
-    results: null
+    results: null,
+    parameters: [
+      { name: "Hemoglobin", unit: "g/dL", range: "13.5-17.5" },
+      { name: "White Blood Cell Count", unit: "× 10³/μL", range: "4.5-11.0" },
+      { name: "Platelet Count", unit: "× 10³/μL", range: "150-450" },
+    ]
   },
   {
-    id: "LO002",
+    id: "L0002",
     patientName: "Sarah Davis",
     patientId: "P002",
     orderDate: "2024-01-14",
@@ -42,10 +49,16 @@ const sampleLabOrders = [
     notes: "Annual checkup - cholesterol monitoring",
     requiredSamples: ["Blood"],
     estimatedCompletion: "2024-01-17",
-    results: null
+    results: null,
+    parameters: [
+      { name: "Total Cholesterol", unit: "mg/dL", range: "<200" },
+      { name: "HDL Cholesterol", unit: "mg/dL", range: ">40" },
+      { name: "LDL Cholesterol", unit: "mg/dL", range: "<100" },
+      { name: "Triglycerides", unit: "mg/dL", range: "<150" },
+    ]
   },
   {
-    id: "LO003",
+    id: "L0003",
     patientName: "Michael Brown",
     patientId: "P003",
     orderDate: "2024-01-13",
@@ -61,7 +74,8 @@ const sampleLabOrders = [
       fileName: "thyroid_results_001.pdf",
       uploadedAt: "2024-01-15 14:30",
       uploadedBy: "Lab Technician",
-      findings: "Normal thyroid function levels"
+      findings: "Normal thyroid function levels",
+      method: "file" // or "manual"
     }
   }
 ];
@@ -72,10 +86,13 @@ export default function LabOrders() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [priorityFilter, setPriorityFilter] = useState("all");
   const [isNewOrderOpen, setIsNewOrderOpen] = useState(false);
-  const [isUploadResultsOpen, setIsUploadResultsOpen] = useState(false);
+  const [isResultsDialogOpen, setIsResultsDialogOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState("all");
+  const [activeTab, setActiveTab] = useState("file");
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [testResults, setTestResults] = useState<any[]>([]);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const filteredOrders = sampleLabOrders.filter((order) => {
     const matchesSearch = order.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -114,23 +131,98 @@ export default function LabOrders() {
     setIsNewOrderOpen(false);
   };
 
-  const handleFileUpload = (event: React.FormEvent) => {
-    event.preventDefault();
-    toast({
-      title: "Results Uploaded",
-      description: "Lab results have been successfully uploaded.",
-      variant: "success",
-    });
-    setIsUploadResultsOpen(false);
+  const openResultsDialog = (order: any, method: 'file' | 'manual' = 'file') => {
+    setSelectedOrder(order);
+    setActiveTab(method);
+    setIsResultsDialogOpen(true);
+    
+    if (method === 'manual') {
+      // Pre-populate results based on test parameters
+      const initialResults = order.parameters.map((param: any) => ({
+        parameter: param.name,
+        value: "",
+        unit: param.unit,
+        referenceRange: param.range,
+        flag: "Normal"
+      }));
+      setTestResults(initialResults);
+    } else {
+      setUploadedFiles([]);
+    }
   };
 
-  const handleUploadResults = (order: any) => {
-    setSelectedOrder(order);
-    setIsUploadResultsOpen(true);
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    setUploadedFiles(prev => [...prev, ...files]);
+  };
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleViewReport = (order:any) => navigate(`/dashboard/lab/reports/${order.id}`)
+
+  const updateResult = (index: number, field: string, value: string) => {
+    const updatedResults = [...testResults];
+    updatedResults[index] = { ...updatedResults[index], [field]: value };
+    
+    // Auto-detect flag based on value and reference range
+    if (field === 'value' && value) {
+      const range = updatedResults[index].referenceRange;
+      const numValue = parseFloat(value);
+      
+      if (range.includes('-')) {
+        const [min, max] = range.split('-').map(parseFloat);
+        if (numValue < min) updatedResults[index].flag = 'Low';
+        else if (numValue > max) updatedResults[index].flag = 'High';
+        else updatedResults[index].flag = 'Normal';
+      } else if (range.startsWith('<')) {
+        const max = parseFloat(range.slice(1));
+        updatedResults[index].flag = numValue > max ? 'High' : 'Normal';
+      } else if (range.startsWith('>')) {
+        const min = parseFloat(range.slice(1));
+        updatedResults[index].flag = numValue < min ? 'Low' : 'Normal';
+      }
+    }
+    
+    setTestResults(updatedResults);
+  };
+
+  const addCustomParameter = () => {
+    setTestResults(prev => [...prev, {
+      parameter: "",
+      value: "",
+      unit: "",
+      referenceRange: "",
+      flag: "Normal"
+    }]);
+  };
+
+  const removeParameter = (index: number) => {
+    setTestResults(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const submitFileResults = async (e: React.FormEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Results Uploaded",
+      description: `Lab results for ${selectedOrder?.patientName} have been uploaded successfully.`,
+      variant: "success",
+    });
+    setIsResultsDialogOpen(false);
+  };
+
+  const submitManualResults = async (e: React.FormEvent) => {
+    e.preventDefault();
+    toast({
+      title: "Results Submitted",
+      description: `Manual lab results for ${selectedOrder?.patientName} have been saved successfully.`,
+      variant: "success",
+    });
+    setIsResultsDialogOpen(false);
   };
 
   const handleViewResults = (order: any) => {
-    // Simulate viewing/downloading results
     toast({
       title: "Downloading Results",
       description: `Downloading ${order.results.fileName}`,
@@ -417,17 +509,30 @@ export default function LabOrders() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button variant="outline" size="sm">
+                           <Button 
+                              variant="outline" 
+                              size="sm" 
+                              onClick={() => handleViewReport(order)}
+                            >
                               <Eye className="h-4 w-4" />
                             </Button>
                             {order.status !== 'Completed' && (
-                              <Button 
-                                variant="outline" 
-                                size="sm"
-                                onClick={() => handleUploadResults(order)}
-                              >
-                                <Upload className="h-4 w-4" />
-                              </Button>
+                              <div className="flex gap-1">
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => openResultsDialog(order, 'file')}
+                                >
+                                  <FileUp className="h-4 w-4" />
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  onClick={() => openResultsDialog(order, 'manual')}
+                                >
+                                  <Type className="h-4 w-4" />
+                                </Button>
+                              </div>
                             )}
                             {order.results && (
                               <Button 
@@ -463,84 +568,254 @@ export default function LabOrders() {
         </main>
       </div>
 
-      {/* Upload Results Dialog */}
-      <Dialog open={isUploadResultsOpen} onOpenChange={setIsUploadResultsOpen}>
-        <DialogContent className="max-w-2xl">
+      {/* Results Dialog with Tabs */}
+      <Dialog open={isResultsDialogOpen} onOpenChange={setIsResultsDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Upload Lab Results</DialogTitle>
+            <DialogTitle>
+              Add Lab Results - {selectedOrder?.patientName}
+            </DialogTitle>
+            <CardDescription>
+              {selectedOrder?.testType} | Order ID: {selectedOrder?.id}
+            </CardDescription>
           </DialogHeader>
+          
           {selectedOrder && (
-            <form onSubmit={handleFileUpload} className="space-y-4">
-              <div className="p-4 bg-muted rounded-lg">
-                <h4 className="font-medium mb-2">Order Details</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-muted-foreground">Patient:</span>
-                    <p>{selectedOrder.patientName}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Test Type:</span>
-                    <p>{selectedOrder.testType}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Order ID:</span>
-                    <p>{selectedOrder.id}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Priority:</span>
-                    <p>{selectedOrder.priority}</p>
-                  </div>
-                </div>
-              </div>
+            <div className="space-y-4">
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="file" className="flex items-center gap-2">
+                    <FileUp className="h-4 w-4" />
+                    Upload File
+                  </TabsTrigger>
+                  <TabsTrigger value="manual" className="flex items-center gap-2">
+                    <Type className="h-4 w-4" />
+                    Enter Manually
+                  </TabsTrigger>
+                </TabsList>
+                
+                {/* File Upload Tab */}
+                <TabsContent value="file" className="space-y-4">
+                  <form onSubmit={submitFileResults}>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Upload Result Files</Label>
+                        <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+                          <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-sm text-muted-foreground mb-2">
+                            Drag and drop your lab result files here, or click to browse
+                          </p>
+                          <Input 
+                            type="file" 
+                            multiple
+                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xlsx,.csv"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                            id="file-upload"
+                          />
+                          <Button 
+                            variant="outline" 
+                            type="button" 
+                            onClick={() => document.getElementById('file-upload')?.click()}
+                          >
+                            Browse Files
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Supported formats: PDF, DOC, DOCX, JPG, JPEG, PNG, XLSX, CSV (Max: 25MB per file)
+                        </p>
+                      </div>
 
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="results-file">Upload Results File</Label>
-                  <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
-                    <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Drag and drop your lab results file here, or click to browse
-                    </p>
-                    <Button variant="outline" type="button">
-                      Browse Files
-                    </Button>
-                    <Input 
-                      id="results-file"
-                      type="file" 
-                      className="hidden" 
-                      accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Supported formats: PDF, DOC, DOCX, JPG, JPEG, PNG (Max: 10MB)
-                  </p>
-                </div>
+                      {uploadedFiles.length > 0 && (
+                        <div className="space-y-2">
+                          <Label>Selected Files</Label>
+                          {uploadedFiles.map((file, index) => (
+                            <div key={index} className="flex items-center justify-between p-2 bg-muted/50 rounded">
+                              <div className="flex items-center gap-2">
+                                <FileText className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm">{file.name}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                                </span>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeFile(index)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="findings">Findings Summary</Label>
-                  <Textarea 
-                    id="findings"
-                    placeholder="Enter a brief summary of the lab findings..."
-                    rows={3}
-                  />
-                </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="technician">Lab Technician</Label>
+                          <Input id="technician" placeholder="Enter technician name" required />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="report-date">Report Date</Label>
+                          <Input id="report-date" type="date" required />
+                        </div>
+                      </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="technician">Lab Technician</Label>
-                  <Input 
-                    id="technician"
-                    placeholder="Enter technician name"
-                  />
-                </div>
-              </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="findings">Clinical Interpretation</Label>
+                        <Textarea 
+                          id="findings"
+                          placeholder="Enter clinical interpretation and notes..."
+                          rows={3}
+                        />
+                      </div>
 
-              <div className="flex justify-end gap-2 pt-4">
-                <Button type="button" variant="outline" onClick={() => setIsUploadResultsOpen(false)}>
-                  Cancel
-                </Button>
-                <Button type="submit">Upload Results</Button>
-              </div>
-            </form>
+                      <div className="flex items-center space-x-2">
+                        <Switch id="critical-values" />
+                        <Label htmlFor="critical-values">Mark as containing critical values</Label>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-4">
+                      <Button type="button" variant="outline" onClick={() => setIsResultsDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={uploadedFiles.length === 0}>
+                        <Upload className="h-4 w-4 mr-1" />
+                        Upload Results
+                      </Button>
+                    </div>
+                  </form>
+                </TabsContent>
+
+                {/* Manual Entry Tab */}
+                <TabsContent value="manual" className="space-y-4">
+                  <form onSubmit={submitManualResults}>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <Label>Test Parameters and Results</Label>
+                        <Button type="button" variant="outline" size="sm" onClick={addCustomParameter}>
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Parameter
+                        </Button>
+                      </div>
+                      
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Parameter</TableHead>
+                            <TableHead>Result</TableHead>
+                            <TableHead>Unit</TableHead>
+                            <TableHead>Reference Range</TableHead>
+                            <TableHead>Flag</TableHead>
+                            <TableHead className="w-[80px]">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {testResults.map((result, index) => (
+                            <TableRow key={index}>
+                              <TableCell>
+                                <Input
+                                  value={result.parameter}
+                                  onChange={(e) => updateResult(index, 'parameter', e.target.value)}
+                                  placeholder="Parameter name"
+                                  required
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Input
+                                  value={result.value}
+                                  onChange={(e) => updateResult(index, 'value', e.target.value)}
+                                  placeholder="Value"
+                                  required
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Input
+                                  value={result.unit}
+                                  onChange={(e) => updateResult(index, 'unit', e.target.value)}
+                                  placeholder="Unit"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Input
+                                  value={result.referenceRange}
+                                  onChange={(e) => updateResult(index, 'referenceRange', e.target.value)}
+                                  placeholder="Reference range"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <Select
+                                  value={result.flag}
+                                  onValueChange={(value) => updateResult(index, 'flag', value)}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Normal">Normal</SelectItem>
+                                    <SelectItem value="Low">Low</SelectItem>
+                                    <SelectItem value="High">High</SelectItem>
+                                    <SelectItem value="Critical">Critical</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </TableCell>
+                              <TableCell>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeParameter(index)}
+                                  disabled={testResults.length <= 1}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="manual-technician">Lab Technician</Label>
+                          <Input id="manual-technician" placeholder="Enter technician name" required />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="manual-report-date">Report Date</Label>
+                          <Input id="manual-report-date" type="date" required />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="manual-interpretation">Clinical Interpretation</Label>
+                        <Textarea 
+                          id="manual-interpretation"
+                          placeholder="Enter clinical interpretation, notes, and recommendations..."
+                          rows={3}
+                        />
+                      </div>
+
+                      <div className="flex items-center space-x-2">
+                        <Switch id="manual-critical" />
+                        <Label htmlFor="manual-critical">Mark report as containing critical values</Label>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2 pt-4">
+                      <Button type="button" variant="outline" onClick={() => setIsResultsDialogOpen(false)}>
+                        Cancel
+                      </Button>
+                      <Button type="submit">
+                        <Send className="h-4 w-4 mr-1" />
+                        Submit Results
+                      </Button>
+                    </div>
+                  </form>
+                </TabsContent>
+              </Tabs>
+            </div>
           )}
         </DialogContent>
       </Dialog>

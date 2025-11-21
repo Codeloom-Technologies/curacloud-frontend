@@ -226,11 +226,11 @@ const navigationItems: NavigationItem[] = [
       //   href: "/dashboard/lab/results",
       //   permission: "laboratory.results" as Permission,
       // },
-      {
-        title: "Reports",
-        href: "/dashboard/lab/reports",
-        permission: "laboratory.reports" as Permission,
-      },
+      // {
+      //   title: "Reports",
+      //   href: "/dashboard/lab/reports",
+      //   permission: "laboratory.reports" as Permission,
+      // },
     ],
   },
   {
