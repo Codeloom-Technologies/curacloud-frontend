@@ -12,7 +12,9 @@ import {
   BookText, Receipt,
   Wallet, Building2,ReceiptIcon,
   TrendingUp,
-  Shield
+  Shield,
+  TestTube2,
+  TestTubeIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -210,7 +212,7 @@ const navigationItems: NavigationItem[] = [
   },
     {
     title: "Laboratory",
-    icon: Pill,
+    icon: TestTubeIcon,
     href: "/dashboard/laboratory",
     permission: "laboratory" as Permission,
     children: [
@@ -219,11 +221,11 @@ const navigationItems: NavigationItem[] = [
         href: "/dashboard/lab/orders",
         permission: "laboratory.orders" as Permission,
       },
-      {
-        title: "Results",
-        href: "/dashboard/lab/results",
-        permission: "laboratory.results" as Permission,
-      },
+      // {
+      //   title: "Results",
+      //   href: "/dashboard/lab/results",
+      //   permission: "laboratory.results" as Permission,
+      // },
       {
         title: "Reports",
         href: "/dashboard/lab/reports",
