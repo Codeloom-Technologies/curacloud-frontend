@@ -43,7 +43,8 @@ export default function Login() {
     mutationFn: submitLogging,
     onSuccess: (data) => {
       // Store auth data in zustand store
-      setAuth(data.user, data.accessToken);
+      console.log({data:data.hospitals})
+      setAuth(data.user, data.accessToken, data.hospitals);
 
       toast({
         variant: "success",
@@ -60,7 +61,7 @@ const navigationTimeout = setTimeout(() => {
   if (isSuperAdmin) {
     navigate("/dashboard/admin", { replace: true });
   } else {
-    navigate("/dashboard", { replace: true });
+    navigate("/auth/healthcare-selection", { replace: true });
   }
 }, 50);
 

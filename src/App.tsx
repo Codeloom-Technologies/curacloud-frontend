@@ -47,6 +47,7 @@ import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
 import HealthcareProviders from "./pages/super-admin/HealthcareProviders";
 import SuperAdminReports from "./pages/super-admin/SuperAdminReport";
 import LabReportView from "./pages/laboratory/LabReports";
+import HealthcareSelection from "./pages/HealthcareSelection";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const App = () => (
           <Route path="/auth/reset-password" element={<ForgotPassword />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/auth/login" element={<Login />} />
+          <Route path="/auth/healthcare-selection" element={<HealthcareSelection />} />
           <Route path="/dashboard/patients" element={<PatientDirectory />} />
           <Route
             path="/dashboard/patients/register"

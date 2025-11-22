@@ -60,5 +60,6 @@ export interface LoginResponse {
   data: {
     user: User;
     accessToken: AccessToken;
+    hospitals: any
   };
 }
