@@ -6,7 +6,7 @@ interface AuthState {
   user: User | null;
   token: AccessToken | null;
   isAuthenticated: boolean;
-  setAuth: (user: User, token: AccessToken, hospitals:any) => void;
+  setAuth: (user: User, token: AccessToken, hospitals?:any, hospital?:any) => void;
   clearAuth: () => void;
   initAuth: () => void;
 }
@@ -18,17 +18,22 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
 
-      setAuth: (user: User, token: AccessToken,hospitals:any) => {
+      setAuth: (user: User, token: AccessToken,hospitals?:any,hospital?:any) => {
         set({ user, token, isAuthenticated: true });
         localStorage.setItem("authUser", JSON.stringify(user));
         localStorage.setItem("authToken", JSON.stringify(token));
         localStorage.setItem("hospitals", JSON.stringify(hospitals));
+        localStorage.setItem("hospital", JSON.stringify(hospital));
+
       },
 
       clearAuth: () => {
         set({ user: null, token: null, isAuthenticated: false });
         localStorage.removeItem("authUser");
         localStorage.removeItem("authToken");
+        localStorage.removeItem("hospitals");
+        localStorage.removeItem("hospital");
+
       },
 
       initAuth: () => {

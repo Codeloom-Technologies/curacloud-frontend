@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Building2, User, Shield, LogIn, Loader2, Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { createSetHospital } from "@/services/auth";
+import { useAuthStore } from "@/store/authStore";
 
 interface Hospital {
   id: number;
@@ -31,11 +34,12 @@ interface UserData {
 
 export default function HealthcareSelection() {
   const [selectedHospital, setSelectedHospital] = useState<Hospital | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { setAuth, isAuthenticated } = useAuthStore();
+  
 
   useEffect(() => {
     // Get login data from localStorage
@@ -82,7 +86,34 @@ export default function HealthcareSelection() {
     setSelectedHospital(hospital);
   };
 
-  const handleContinue = async () => {
+  const createSetHospitalMutation = useMutation({
+    mutationFn: createSetHospital,
+    onSuccess: (data) => {
+      console.log(data)
+       setAuth(data.user, data.accessToken, null, data.hospitals);
+      // // Clean up temporary storage
+      // localStorage.removeItem('hospitals');
+      // localStorage.removeItem('authUser');
+      // localStorage.removeItem('hospitals');
+
+      toast({
+        title: "Welcome!",
+        description: `Successfully logged into ${selectedHospital?.name}`,
+        variant: "success",
+      });
+      navigate("/dashboard");
+    },
+    onError: (error: any) => {
+      console.error('Hospital selection error:', error);
+      toast({
+        title: "Connection Failed",
+        description: error?.message || "Unable to connect to healthcare facility",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleContinue = () => {
     if (!selectedHospital) {
       toast({
         title: "Select Healthcare Facility",
@@ -92,63 +123,11 @@ export default function HealthcareSelection() {
       return;
     }
 
-    setIsLoading(true);
+    const payload:any = {
+      hospitalId: selectedHospital.id
+    };
 
-    try {
-      // Get the initial access token from wherever it's stored
-      const initialLoginData = localStorage.getItem('initialLoginData');
-      const accessToken = initialLoginData 
-        ? JSON.parse(initialLoginData).data.accessToken.value
-        : localStorage.getItem('authToken');
-
-      if (!accessToken) {
-        throw new Error("No access token found");
-      }
-
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/set-hospital`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          hospitalId: selectedHospital.id
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Store new token and navigate to dashboard
-        localStorage.setItem('authToken', data.data.accessToken.value);
-        localStorage.setItem('userData', JSON.stringify(data.data.user));
-        localStorage.setItem('selectedHospital', JSON.stringify(selectedHospital));
-        
-        // Clean up temporary storage
-        localStorage.removeItem('initialLoginData');
-        localStorage.removeItem('hospitals');
-        localStorage.removeItem('authUser');
-        
-        toast({
-          title: "Welcome!",
-          description: `Successfully logged into ${selectedHospital.name}`,
-          variant: "success",
-        });
-
-        navigate("/dashboard");
-      } else {
-        throw new Error(data.message || "Failed to set hospital");
-      }
-    } catch (error) {
-      console.error('Hospital selection error:', error);
-      toast({
-        title: "Connection Failed",
-        description: error instanceof Error ? error.message : "Unable to connect to healthcare facility",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    createSetHospitalMutation.mutate(payload);
   };
 
   const getRoleBadgeColor = (roleSlug: string) => {
@@ -319,11 +298,11 @@ export default function HealthcareSelection() {
               <div className="pt-4 border-t border-blue-100">
                 <Button
                   onClick={handleContinue}
-                  disabled={!selectedHospital || isLoading}
+                  disabled={!selectedHospital || createSetHospitalMutation.isPending}
                   className="w-full h-12 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 bg-blue-600 hover:bg-blue-700 text-white"
                   size="lg"
                 >
-                  {isLoading ? (
+                  {createSetHospitalMutation.isPending ? (
                     <>
                       <Loader2 className="h-5 w-5 mr-2 animate-spin" />
                       Connecting to {selectedHospital?.name}...

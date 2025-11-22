@@ -8,9 +8,10 @@ export const apiClient = async (
   options: RequestInit = {}
 ): Promise<Response | any> => {
   const authToken = localStorage.getItem("authToken");
-
+    const hospital = localStorage.getItem("hospital");
   const token = JSON.parse(authToken);
-
+  const hospitalID = JSON.parse(hospital).xHospitalId
+console.log({hospitalID})
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     ...options.headers,
@@ -20,6 +21,10 @@ export const apiClient = async (
     headers["Authorization"] = `Bearer ${token.value}`;
   }
 
+
+  if (hospitalID) {
+    headers["X-Hospital-ID"] = `${hospitalID}`;
+  }
   const response = await fetch(`${BASE_URL}${endpoint}`, {
     ...options,
     headers,

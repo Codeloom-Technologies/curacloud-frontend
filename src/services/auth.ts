@@ -33,3 +33,16 @@ export const verifyEmail = async (token: string) => {
   }
   return response;
 };
+
+
+export const createSetHospital = async (hospitalId: string) => {
+  const response = await apiClient(`/auth/set-hospital`, {
+    method: "POST",
+    body: JSON.stringify(hospitalId)
+  });
+
+  if (!response) {
+    throw new Error("Failed to verify email");
+  }
+  return response;
+};
