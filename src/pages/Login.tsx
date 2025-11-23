@@ -31,7 +31,8 @@ export default function Login() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/dashboard");
+      // navigate("/dashboard");
+      navigate('/auth/healthcare-selection')
     }
   }, [isAuthenticated, navigate]);
 
@@ -42,10 +43,7 @@ export default function Login() {
   const mutation = useMutation({
     mutationFn: submitLogging,
     onSuccess: (data) => {
-      // Store auth data in zustand store
-      console.log({data:data.hospitals})
       setAuth(data.user, data.accessToken, data.hospitals);
-
       toast({
         variant: "success",
         title: "Login Successful",

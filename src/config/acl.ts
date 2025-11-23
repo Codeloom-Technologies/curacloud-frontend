@@ -211,9 +211,10 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
   // Doctor - Clinical patient care
   doctor: [
     "dashboard",
-    "patients",
-    "patients.register",
+  "pharmacy.prescriptions",
+    "pharmacy.dispensing",
     "patients.records",
+    "pharmacy",
     "appointments",
     "appointments.calendar",
     "appointments.checkin",
@@ -225,7 +226,6 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "medical-history",
     "laboratory",
     "laboratory.orders",
-    "laboratory.reports",
     "radiology",
     "settings",
   ],

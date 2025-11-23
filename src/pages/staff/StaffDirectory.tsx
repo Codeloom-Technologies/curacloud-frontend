@@ -63,7 +63,7 @@ interface Staff {
   phone: string;
   role: string;
   department: string;
-  status: "Active" | "on-leave" | "inactive";
+  status: "active" | "on-leave" | "inactive" | 'pending';
   joinDate: string;
 }
 
@@ -192,12 +192,14 @@ const StaffDirectory = () => {
 
   const getStatusColor = (status: Staff["status"]) => {
     switch (status) {
-      case "Active":
+      case "active":
         return "bg-green-500/10 text-green-500 border-green-500/20";
       case "on-leave":
         return "bg-yellow-500/10 text-yellow-500 border-yellow-500/20";
       case "inactive":
         return "bg-red-500/10 text-red-500 border-red-500/20";
+      case "pending":
+        return "bg-yello-500/10 text-blue-500 border-red-500/20";
       default:
         return "";
     }
@@ -596,7 +598,7 @@ const StaffDirectory = () => {
                           variant="outline"
                           className={getStatusColor(staff.user.status)}
                         >
-                          {staff.user.status}
+                          {staff.user.status?.charAt(0).toUpperCase() + staff.user.status.slice(1)}
                         </Badge>
                       </TableCell>
                       <TableCell>

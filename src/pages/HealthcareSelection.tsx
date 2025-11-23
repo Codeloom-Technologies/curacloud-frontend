@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,14 +6,30 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Building2, User, Shield, LogIn, Loader2, Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation } from "@tanstack/react-query";
-import { createSetHospital } from "@/services/auth";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { connectedHospital, createSetHospital } from "@/services/auth";
 import { useAuthStore } from "@/store/authStore";
 
 interface Hospital {
   id: number;
   name: string;
   xHospitalId: string;
+}
+
+interface UserInfo {
+  reference: string;
+  id: number;
+  fullName: string;
+  email: string;
+}
+
+interface HospitalResponse {
+  id: number;
+  healthcareProviderId: number;
+  userId: number;
+  status: string;
+  healthcareProvider: Hospital;
+  user: UserInfo;
 }
 
 interface Role {
@@ -35,52 +51,78 @@ interface UserData {
 export default function HealthcareSelection() {
   const [selectedHospital, setSelectedHospital] = useState<Hospital | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
-  const [hospitals, setHospitals] = useState<Hospital[]>([]);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { setAuth, isAuthenticated } = useAuthStore();
+  const { setAuth } = useAuthStore();
   
+  // Fetch hospitals from API
+  const {
+    data: hospitalsResponse,
+    isLoading: isHospitalsLoading,
+    isError: isHospitalsError,
+    error: hospitalsError,
+  } = useQuery({
+    queryKey: ["connected-hospitals"],
+    queryFn: () => connectedHospital(),
+  });
 
-  useEffect(() => {
-    // Get login data from localStorage
-    const hospitalsData = localStorage.getItem('hospitals');
-    const authUserData = localStorage.getItem('authUser');
 
-    console.log('Hospitals from localStorage:', hospitalsData);
-    console.log('User data from localStorage:', authUserData);
+  // Use useMemo to prevent hospitals array recreation on every render
+  const hospitals: Hospital[] = useMemo(() => {
+    return hospitalsResponse?.map((item: HospitalResponse) => ({
+      id: item.healthcareProvider.id,
+      name: item.healthcareProvider.name,
+      xHospitalId: item.healthcareProvider.xHospitalId
+    })) || [];
+  }, [hospitalsResponse]);
 
-    if (hospitalsData && authUserData) {
-      try {
-        const parsedHospitals = JSON.parse(hospitalsData);
-        const parsedUserData = JSON.parse(authUserData);
-
-        console.log('Parsed hospitals:', parsedHospitals);
-        console.log('Parsed user data:', parsedUserData);
-
-        setUserData(parsedUserData);
-        setHospitals(parsedHospitals);
-        
-        // Auto-select if only one hospital
-        if (parsedHospitals?.length === 1) {
-          setSelectedHospital(parsedHospitals[0]);
-        }
-      } catch (error) {
-        console.error('Error parsing localStorage data:', error);
-        toast({
-          title: "Data Error",
-          description: "Failed to load your healthcare facilities",
-          variant: "destructive",
-        });
+  // Extract user data from the first hospital response
+  const extractedUserData = useMemo(() => {
+    if (hospitalsResponse && hospitalsResponse.length > 0) {
+      const firstHospital = hospitalsResponse[0];
+      if (firstHospital.user) {
+        return {
+          reference: firstHospital.user.reference,
+          email: firstHospital.user.email,
+          fullName: firstHospital.user.fullName,
+          title: "Dr",
+          status: "Active", // Default status
+          isActive: true, // Default active
+          roles: []
+        };
       }
-    } else {
-      console.error('Missing data in localStorage');
-      toast({
-        title: "Missing Data",
-        description: "Unable to find your healthcare facilities. Please login again.",
-        variant: "destructive",
-      });
     }
-  }, [toast]);
+    return null;
+  }, [hospitalsResponse]);
+
+  // Load user data from API response instead of localStorage
+  useEffect(() => {
+    if (extractedUserData) {
+      setUserData(extractedUserData);
+    } else {
+      // Fallback to localStorage if API doesn't have user data
+      const authUserData = localStorage.getItem('authUser');
+      if (authUserData) {
+        try {
+          const parsedUserData = JSON.parse(authUserData);
+          setUserData(parsedUserData);
+        } catch (error) {
+          toast({
+            title: "Data Error",
+            description: "Failed to load your user information",
+            variant: "destructive",
+          });
+        }
+      }
+    }
+  }, [extractedUserData, toast]);
+
+  // Auto-select hospital when hospitals are loaded
+  useEffect(() => {
+    if (hospitals.length === 1 && !selectedHospital) {
+      setSelectedHospital(hospitals[0]);
+    }
+  }, [hospitals, selectedHospital]);
 
   const handleHospitalSelect = (hospital: Hospital) => {
     setSelectedHospital(hospital);
@@ -89,18 +131,18 @@ export default function HealthcareSelection() {
   const createSetHospitalMutation = useMutation({
     mutationFn: createSetHospital,
     onSuccess: (data) => {
-      console.log(data)
-       setAuth(data.user, data.accessToken, null, data.hospitals);
-      // // Clean up temporary storage
-      // localStorage.removeItem('hospitals');
-      // localStorage.removeItem('authUser');
-      // localStorage.removeItem('hospitals');
-
+      // Store hospital data in localStorage for API calls
+      if (selectedHospital) {
+        localStorage.setItem('hospital', JSON.stringify(selectedHospital));
+      }
+      setAuth(data.user, data.accessToken, null, data.hospitalToken);
+      
       toast({
         title: "Welcome!",
         description: `Successfully logged into ${selectedHospital?.name}`,
         variant: "success",
       });
+      
       navigate("/dashboard");
     },
     onError: (error: any) => {
@@ -123,7 +165,7 @@ export default function HealthcareSelection() {
       return;
     }
 
-    const payload:any = {
+    const payload: any = {
       hospitalId: selectedHospital.id
     };
 
@@ -150,12 +192,47 @@ export default function HealthcareSelection() {
       .slice(0, 2);
   };
 
-  if (!userData || hospitals.length === 0) {
+  // Loading state
+  if (isHospitalsLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
           <p className="text-blue-800">Loading your healthcare facilities...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (isHospitalsError) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
+        <div className="text-center">
+          <Building2 className="h-16 w-16 text-blue-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-blue-900 mb-2">Unable to Load Facilities</h2>
+          <p className="text-blue-700 mb-4">
+            {hospitalsError?.message || "Failed to load healthcare facilities"}
+          </p>
+          <Button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // No user data
+  if (!userData) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
+        <div className="text-center">
+          <User className="h-16 w-16 text-blue-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-blue-900 mb-2">User Data Missing</h2>
+          <p className="text-blue-700">Please login again to continue.</p>
         </div>
       </div>
     );
@@ -198,18 +275,20 @@ export default function HealthcareSelection() {
               </CardTitle>
               <CardDescription className="text-blue-700">{userData.email}</CardDescription>
               
-              <div className="flex flex-wrap gap-2 justify-center mt-3">
-                {userData.roles.map((role) => (
-                  <Badge 
-                    key={role.id} 
-                    variant="outline" 
-                    className={getRoleBadgeColor(role.slug)}
-                  >
-                    <Shield className="h-3 w-3 mr-1" />
-                    {role.name}
-                  </Badge>
-                ))}
-              </div>
+              {userData.roles && userData.roles.length > 0 && (
+                <div className="flex flex-wrap gap-2 justify-center mt-3">
+                  {userData.roles.map((role) => (
+                    <Badge 
+                      key={role.id} 
+                      variant="outline" 
+                      className={getRoleBadgeColor(role.slug)}
+                    >
+                      <Shield className="h-3 w-3 mr-1" />
+                      {role.name}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </CardHeader>
             
             <CardContent className="space-y-4 pt-4 border-t border-blue-100">

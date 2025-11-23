@@ -81,7 +81,7 @@ const StaffRecords = () => {
                   variant="outline"
                   className="bg-green-500/10 text-green-500 border-green-500/20"
                 >
-                  {staffData?.user?.status}
+                  {staffData?.user?.status.charAt(0).toUpperCase() + staffData?.user?.status.slice(1)}
                 </Badge>
                 <span className="text-muted-foreground">
                   {staffData?.user?.roles[0]?.name} -{" "}

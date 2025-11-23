@@ -46,3 +46,12 @@ export const createSetHospital = async (hospitalId: string) => {
   }
   return response;
 };
+
+export const connectedHospital = async () => {
+  const response = await apiClient(`/auth/connected-hospital`);
+
+  if (!response) {
+    throw new Error("Failed to ftech");
+  }
+  return response;
+};

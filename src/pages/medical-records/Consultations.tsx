@@ -284,6 +284,8 @@ export default function Consultations() {
         return "bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400";
       case "cancelled":
         return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
+      case "pending":
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400";
     }
@@ -500,7 +502,7 @@ export default function Consultations() {
                               consultation?.status ?? "In Progress"
                             )}
                           >
-                            {consultation?.status ?? "In Progress"}
+                            {consultation?.status?.charAt(0).toUpperCase() + consultation.status.slice(1)}
                           </Badge>
                           <Badge
                             className={getTypeColor(

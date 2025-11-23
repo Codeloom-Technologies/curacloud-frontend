@@ -62,7 +62,7 @@ export default function StockManagement() {
   const [selectedMedication, setSelectedMedication] = useState<any>(null);
 
   const [adjustmentData, setAdjustmentData] = useState({
-    type: "Stock In",
+    type: "stock in",
     quantity: "",
     reason: "",
   });
@@ -161,7 +161,7 @@ export default function StockManagement() {
   };
 
   const getMovementBadge = (type: string) => {
-    if (type === "Stock In") {
+    if (type === "stock in") {
       return (
         <Badge variant="default" className="bg-green-100 text-green-800">
           <TrendingUp className="h-3 w-3 mr-1" />
@@ -276,8 +276,8 @@ export default function StockManagement() {
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Stock In">Add Stock</SelectItem>
-                          <SelectItem value="Stock Out">
+                          <SelectItem value="stock in">Add Stock</SelectItem>
+                          <SelectItem value="stock out">
                             Remove Stock
                           </SelectItem>
                         </SelectContent>

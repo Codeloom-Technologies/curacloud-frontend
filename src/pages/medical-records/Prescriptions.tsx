@@ -359,6 +359,8 @@ export default function Prescriptions() {
         return "bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400";
       case "expired":
         return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400";
+       case "pending":
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400";
       default:
         return "bg-gray-100 text-gray-800 dark:bg-gray-900/20 dark:text-gray-400";
     }
@@ -569,7 +571,7 @@ export default function Prescriptions() {
                           <Badge
                             className={getStatusColor(prescription?.status)}
                           >
-                            {prescription?.status}
+                            {prescription?.status.charAt(0).toUpperCase() + prescription.status.slice(1)}
                           </Badge>
                         </div>
                       </div>
