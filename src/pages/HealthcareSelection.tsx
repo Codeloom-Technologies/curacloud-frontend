@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Building2, User, Shield, LogIn, Loader2, Heart } from "lucide-react";
+import { Building2, User, Shield, LogIn, Loader2, Heart, LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { connectedHospital, createSetHospital } from "@/services/auth";
 import { useAuthStore } from "@/store/authStore";
 
@@ -53,27 +53,40 @@ export default function HealthcareSelection() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { setAuth } = useAuthStore();
+  const { setAuth, clearAuth } = useAuthStore();
+  const queryClient = useQueryClient();
   
-  // Fetch hospitals from API
+  // Clear any cached data when component mounts
+  useEffect(() => {
+    // Clear specific queries to ensure fresh data
+    queryClient.removeQueries({ queryKey: ["connected-hospitals"] });
+  }, [queryClient]);
+
+  // Fetch hospitals from API with proper configuration
   const {
     data: hospitalsResponse,
     isLoading: isHospitalsLoading,
     isError: isHospitalsError,
     error: hospitalsError,
+    refetch: refetchHospitals,
   } = useQuery({
     queryKey: ["connected-hospitals"],
     queryFn: () => connectedHospital(),
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (react-query v4+)
+    retry: 2,
+    refetchOnWindowFocus: false,
   });
-
 
   // Use useMemo to prevent hospitals array recreation on every render
   const hospitals: Hospital[] = useMemo(() => {
-    return hospitalsResponse?.map((item: HospitalResponse) => ({
+    if (!hospitalsResponse) return [];
+    
+    return hospitalsResponse.map((item: HospitalResponse) => ({
       id: item.healthcareProvider.id,
       name: item.healthcareProvider.name,
       xHospitalId: item.healthcareProvider.xHospitalId
-    })) || [];
+    }));
   }, [hospitalsResponse]);
 
   // Extract user data from the first hospital response
@@ -86,8 +99,8 @@ export default function HealthcareSelection() {
           email: firstHospital.user.email,
           fullName: firstHospital.user.fullName,
           title: "Dr",
-          status: "Active", // Default status
-          isActive: true, // Default active
+          status: "Active",
+          isActive: true,
           roles: []
         };
       }
@@ -131,10 +144,14 @@ export default function HealthcareSelection() {
   const createSetHospitalMutation = useMutation({
     mutationFn: createSetHospital,
     onSuccess: (data) => {
+      // Clear all cached queries before proceeding
+      queryClient.clear();
+      
       // Store hospital data in localStorage for API calls
       if (selectedHospital) {
         localStorage.setItem('hospital', JSON.stringify(selectedHospital));
       }
+      
       setAuth(data.user, data.accessToken, null, data.hospitalToken);
       
       toast({
@@ -143,7 +160,12 @@ export default function HealthcareSelection() {
         variant: "success",
       });
       
-      navigate("/dashboard");
+      // Navigate and force a hard reload to ensure clean state
+      setTimeout(() => {
+        navigate("/dashboard", { replace: true });
+        // Force reload to ensure all components get fresh data
+        window.location.reload();
+      }, 100);
     },
     onError: (error: any) => {
       console.error('Hospital selection error:', error);
@@ -154,6 +176,28 @@ export default function HealthcareSelection() {
       });
     },
   });
+
+  const handleLogout = () => {
+    // Clear all cached data
+    queryClient.clear();
+    // Clear localStorage
+    localStorage.removeItem('authUser');
+    localStorage.removeItem('hospital');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('hospitalToken');
+    
+    // Clear auth store
+    clearAuth();
+    
+    // Navigate to login
+    navigate("/auth/login", { replace: true });
+    
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out",
+      variant: "default",
+    });
+  };
 
   const handleContinue = () => {
     if (!selectedHospital) {
@@ -172,15 +216,21 @@ export default function HealthcareSelection() {
     createSetHospitalMutation.mutate(payload);
   };
 
+  const handleRefresh = () => {
+    // Clear cache and refetch
+    queryClient.removeQueries({ queryKey: ["connected-hospitals"] });
+    refetchHospitals();
+  };
+
   const getRoleBadgeColor = (roleSlug: string) => {
     const colors: { [key: string]: string } = {
       health_care: "bg-blue-100 text-blue-800 border-blue-200",
-      doctor: "bg-blue-100 text-blue-800 border-blue-200",
-      nurse: "bg-blue-100 text-blue-800 border-blue-200",
-      inventory_manager: "bg-blue-100 text-blue-800 border-blue-200",
-      admin: "bg-blue-100 text-blue-800 border-blue-200",
+      doctor: "bg-green-100 text-green-800 border-green-200",
+      nurse: "bg-purple-100 text-purple-800 border-purple-200",
+      inventory_manager: "bg-orange-100 text-orange-800 border-orange-200",
+      admin: "bg-red-100 text-red-800 border-red-200",
     };
-    return colors[roleSlug] || "bg-blue-100 text-blue-800 border-blue-200";
+    return colors[roleSlug] || "bg-gray-100 text-gray-800 border-gray-200";
   };
 
   const getInitials = (name: string) => {
@@ -214,12 +264,22 @@ export default function HealthcareSelection() {
           <p className="text-blue-700 mb-4">
             {hospitalsError?.message || "Failed to load healthcare facilities"}
           </p>
-          <Button 
-            onClick={() => window.location.reload()} 
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            Try Again
-          </Button>
+          <div className="flex gap-4 justify-center">
+            <Button 
+              onClick={handleRefresh}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Try Again
+            </Button>
+            <Button 
+              onClick={handleLogout}
+              variant="outline"
+              className="border-blue-600 text-blue-600 hover:bg-blue-50"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -232,7 +292,14 @@ export default function HealthcareSelection() {
         <div className="text-center">
           <User className="h-16 w-16 text-blue-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-blue-900 mb-2">User Data Missing</h2>
-          <p className="text-blue-700">Please login again to continue.</p>
+          <p className="text-blue-700 mb-4">Please login again to continue.</p>
+          <Button 
+            onClick={handleLogout}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            Back to Login
+          </Button>
         </div>
       </div>
     );
@@ -302,16 +369,39 @@ export default function HealthcareSelection() {
                 <span className="text-blue-700">User ID</span>
                 <span className="font-mono text-xs text-blue-600">{userData.reference.slice(0, 8)}...</span>
               </div>
+              
+              {/* Logout Button */}
+              <div className="pt-4 border-t border-blue-100">
+                <Button 
+                  onClick={handleLogout}
+                  variant="outline" 
+                  className="w-full border-blue-600 text-blue-600 hover:bg-blue-50"
+                  size="sm"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
           {/* Healthcare Selection */}
           <Card className="lg:col-span-2 border-0 shadow-xl bg-white/90 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl text-blue-900">
-                <Building2 className="h-6 w-6 text-blue-600" />
-                Available Healthcare Facilities
-              </CardTitle>
+              <div className="flex justify-between items-center">
+                <CardTitle className="flex items-center gap-2 text-2xl text-blue-900">
+                  <Building2 className="h-6 w-6 text-blue-600" />
+                  Available Healthcare Facilities
+                </CardTitle>
+                <Button 
+                  onClick={handleRefresh}
+                  variant="outline"
+                  size="sm"
+                  className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                >
+                  Refresh
+                </Button>
+              </div>
               <CardDescription className="text-blue-700">
                 Choose where you'll be working today. Your access and permissions may vary by facility.
               </CardDescription>

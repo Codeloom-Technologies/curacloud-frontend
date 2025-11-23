@@ -181,15 +181,15 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
   // Finance/Accounts - Billing and financial operations
   finance_accounts: [
     "dashboard",
-    "patients",
-    "patients.records",
+    // "patients",
+    // "patients.records",
     "billing",
     "billing.invoices",
     "billing.payments",
     "billing.reports",
-    "reports",
+    // "reports",
     "settings",
-    'subscription'
+    // 'subscription'
   ],
 
   // IT Support - Technical and system settings
@@ -301,14 +301,14 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
   // Cashier - Payment processing
   cashier: [
     "dashboard",
-    "patients",
-    "patients.records",
+    // "patients",
+    // "patients.records",
     "billing",
     "billing.invoices",
     "billing.payments",
     "settings",
-    'wallet',
-    'subscription'
+    // 'wallet',
+    // 'subscription'
   ],
 
   // Attendant - Basic patient assistance
