@@ -48,6 +48,7 @@ import HealthcareProviders from "./pages/super-admin/HealthcareProviders";
 import SuperAdminReports from "./pages/super-admin/SuperAdminReport";
 import LabReportView from "./pages/laboratory/LabReports";
 import HealthcareSelection from "./pages/HealthcareSelection";
+import AcceptInvite from "./pages/AcceptInvite";
 
 const queryClient = new QueryClient();
 
@@ -66,6 +67,9 @@ const App = () => (
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/healthcare-selection" element={<HealthcareSelection />} />
+          <Route path="/auth/verify-invitation" element={<AcceptInvite />} />
+
+          
           <Route path="/dashboard/patients" element={<PatientDirectory />} />
           <Route
             path="/dashboard/patients/register"

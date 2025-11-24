@@ -55,3 +55,21 @@ export const connectedHospital = async () => {
   }
   return response;
 };
+
+
+
+export const verifyInvitation = async (token: string) => {
+  const response = await apiClient(`/auth/verify-invitation`, {
+    method: 'POST',
+    body: JSON.stringify({token})
+  });
+  return response;
+};
+
+export const acceptInvitation = async (data: { token: string; password: string }) => {
+  const response = await apiClient("/auth/accept-invitation", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+  return response;
+};

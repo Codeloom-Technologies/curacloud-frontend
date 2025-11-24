@@ -164,7 +164,7 @@ export default function HealthcareSelection() {
       setTimeout(() => {
         navigate("/dashboard", { replace: true });
         // Force reload to ensure all components get fresh data
-        window.location.reload();
+        // window.location.reload();
       }, 100);
     },
     onError: (error: any) => {
