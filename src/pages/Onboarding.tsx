@@ -305,11 +305,11 @@ export default function Onboarding() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Heart className="h-6 w-6 text-white" />
+                <Heart className="h-6 w-6 text-primary-foreground" />
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Curacloud
-            </h1>
+           <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  Curacloud
+                </h1>
           </div>
           <p className="text-muted-foreground text-lg">
             Join thousands of healthcare providers transforming patient care

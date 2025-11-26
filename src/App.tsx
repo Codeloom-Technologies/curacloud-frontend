@@ -49,6 +49,9 @@ import SuperAdminReports from "./pages/super-admin/SuperAdminReport";
 import LabReportView from "./pages/laboratory/LabReports";
 import HealthcareSelection from "./pages/HealthcareSelection";
 import AcceptInvite from "./pages/AcceptInvite";
+import AboutPage from "./pages/AboutUs";
+import CareersPage from "./pages/CareerPage";
+import ContactPage from "./pages/ContactUs";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +63,9 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/about-us" element={<AboutPage />} />
+          <Route path="/careers" element={<CareersPage />} />
+          <Route path="/contact-us" element={<ContactPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/auth/onboarding" element={<Onboarding />} />
           <Route path="/auth/verify-email" element={<EmailVerification />} />
