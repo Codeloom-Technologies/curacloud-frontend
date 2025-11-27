@@ -5,7 +5,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { FileText, Download, Printer, Send, Calendar, User, AlertTriangle, TrendingUp, TrendingDown, ArrowLeft } from "lucide-react";
+import { 
+  FileText, 
+  Download, 
+  Printer, 
+  Send, 
+  Calendar, 
+  User, 
+  AlertTriangle, 
+  TrendingUp, 
+  TrendingDown, 
+  ArrowLeft,
+  Eye,
+  FileImage,
+  File,
+  FileOutput
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { getLabOrderReport } from "@/services/lab";
 import { useQuery } from "@tanstack/react-query";
@@ -25,6 +40,7 @@ export default function LabReportView() {
     queryFn: () => getLabOrderReport(id!),
     enabled: !!id,
   });
+  console.log(labReport)
 
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -80,6 +96,30 @@ export default function LabReportView() {
     }
   };
 
+  const getFileIcon = (filename: string) => {
+    const ext = filename.toLowerCase().split('.').pop();
+    switch (ext) {
+      case 'pdf': return <FileOutput className="h-5 w-5 text-red-500" />;
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif': return <FileImage className="h-5 w-5 text-green-500" />;
+      case 'doc':
+      case 'docx': return <FileText className="h-5 w-5 text-blue-500" />;
+      case 'xlsx':
+      case 'csv': return <FileText className="h-5 w-5 text-green-600" />;
+      default: return <File className="h-5 w-5 text-gray-500" />;
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   const handleDownload = () => {
     toast({
       title: "Download Started",
@@ -103,6 +143,46 @@ export default function LabReportView() {
 
   const handleBack = () => {
     navigate("/dashboard/lab/orders");
+  };
+
+  const handleViewFile = (file: any) => {
+    if (file.url) {
+      window.open(file.url, '_blank');
+    } else if (file.url) {
+      // Handle local file path - you might need to create a download endpoint
+      toast({
+        title: "Opening File",
+        description: `Opening ${file.filename}`,
+        variant: "default",
+      });
+    }
+  };
+
+  const handleDownloadFile = async (file: any) => {
+    try {
+      if (file.url) {
+        // For S3 files, create a download link
+        const link = document.createElement('a');
+        link.href = file.url;
+        link.download = file.filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else if (file.filepath) {
+        // For local files, you might need to call a download endpoint
+        toast({
+          title: "Download Started",
+          description: `Downloading ${file.filename}`,
+          variant: "success",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Download Failed",
+        description: "Failed to download file",
+        variant: "destructive",
+      });
+    }
   };
 
   if (isLoading || isFetching) {
@@ -149,6 +229,8 @@ export default function LabReportView() {
   }
 
   const report = labReport;
+  const hasFileResults = report?.report?.attachments && report.report.attachments.length > 0;
+  const hasManualResults = report?.report?.results && report.report.results.length > 0;
 
   return (
     <div className="flex h-screen bg-background">
@@ -264,50 +346,145 @@ export default function LabReportView() {
               </CardContent>
             </Card>
 
-            {/* Test Results */}
-            <Card className="print:shadow-none print:border-0">
-              <CardHeader>
-                <CardTitle>Test Results</CardTitle>
-                <CardDescription>
-                  Laboratory findings and analysis for {report.testType}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[300px]">Test Parameter</TableHead>
-                      <TableHead>Result</TableHead>
-                      <TableHead>Unit</TableHead>
-                      <TableHead>Reference Range</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {report?.report?.results?.map((result, index) => (
-                      <TableRow key={index} className={result.flag !== 'Normal' ? 'bg-muted/30' : ''}>
-                        <TableCell className="font-medium">{result.parameter}</TableCell>
-                        <TableCell>
-                          <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${getFlagColor(result.flag)}`}>
-                            {getFlagIcon(result.flag)}
-                            <span className="font-semibold">{result.value}</span>
+            {/* Upload Method Indicator */}
+            {report?.report?.uploadMethod && (
+              <Card className="print:shadow-none print:border-0">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-5 w-5 text-blue-500" />
+                      <div>
+                        <p className="font-medium">Results Upload Method</p>
+                        <p className="text-sm text-muted-foreground">
+                          {report.report.uploadMethod === 'file' 
+                            ? 'File Upload - Results available as attached documents'
+                            : 'Manual Entry - Results entered directly into system'}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className={
+                      report.report.uploadMethod === 'file' 
+                        ? 'bg-blue-50 text-blue-700 border-blue-200'
+                        : 'bg-green-50 text-green-700 border-green-200'
+                    }>
+                      {report.report.uploadMethod.toUpperCase()}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* File-based Results */}
+            {hasFileResults && (
+              <Card className="print:shadow-none print:border-0">
+                <CardHeader>
+                  <CardTitle>Attached Result Files</CardTitle>
+                  <CardDescription>
+                    Laboratory results provided as document files
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {report.report.attachments.map((file: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center gap-3 flex-1">
+                          {getFileIcon(file.filename)}
+                          <div className="flex-1">
+                            <p className="font-medium">{file.filename}</p>
+                            <div className="flex gap-4 text-sm text-muted-foreground">
+                              <span>{formatFileSize(file.fileSize)}</span>
+                              <span>{file.mimeType}</span>
+                              <span>Uploaded: {new Date(file.uploadedAt).toLocaleDateString()}</span>
+                            </div>
+                            {file.description && (
+                              <p className="text-sm text-muted-foreground mt-1">{file.description}</p>
+                            )}
                           </div>
-                        </TableCell>
-                        <TableCell className="text-sm">{result.unit}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {result.referenceRange}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={getFlagColor(result.flag).replace('text-', '').replace('bg-', '')}>
-                            {result.flag}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleViewFile(file)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDownloadFile(file)}
+                          >
+                            <Download className="h-4 w-4 mr-1" />
+                            Download
+                          </Button>
+                        </div>
+                      </div>
                     ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Manual Entry Results */}
+            {hasManualResults && (
+              <Card className="print:shadow-none print:border-0">
+                <CardHeader>
+                  <CardTitle>Test Results</CardTitle>
+                  <CardDescription>
+                    Laboratory findings and analysis for {report.testType}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[300px]">Test Parameter</TableHead>
+                        <TableHead>Result</TableHead>
+                        <TableHead>Unit</TableHead>
+                        <TableHead>Reference Range</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {report.report.results.map((result: any, index: number) => (
+                        <TableRow key={index} className={result.flag !== 'Normal' ? 'bg-muted/30' : ''}>
+                          <TableCell className="font-medium">{result.parameter}</TableCell>
+                          <TableCell>
+                            <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${getFlagColor(result.flag)}`}>
+                              {getFlagIcon(result.flag)}
+                              <span className="font-semibold">{result.value}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm">{result.unit}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {result.referenceRange}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={getFlagColor(result.flag).replace('text-', '').replace('bg-', '')}>
+                              {result.flag}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* No Results Message */}
+            {!hasFileResults && !hasManualResults && (
+              <Card className="print:shadow-none print:border-0">
+                <CardContent className="p-6 text-center">
+                  <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No Results Available</h3>
+                  <p className="text-muted-foreground">
+                    Laboratory results are not yet available for this order.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Additional Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:grid-cols-2">
@@ -320,36 +497,42 @@ export default function LabReportView() {
                   <div className="space-y-4 text-sm">
                     <div className="flex justify-between border-b pb-2">
                       <span className="font-medium text-muted-foreground">Technician:</span>
-                      <span>{report?.report?.technician?.fullName || 'N/A'}</span>
+                      <span>{report?.report?.technician?.fullName || report?.report?.technicianId || 'N/A'}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between border-b pb-2">
                       <span className="font-medium text-muted-foreground">Reviewed By:</span>
                       <span>{report.reviewedBy || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium text-muted-foreground">Testing Date:</span>
+                      <span>{report?.report?.testingDate ? new Date(report.report.testingDate).toLocaleDateString() : 'N/A'}</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Attachments */}
-              {report.attachments && report.attachments.length > 0 && (
-                <Card className="print:shadow-none print:border-0">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Attachments</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {report.attachments.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                          <span className="text-sm">{file}</span>
-                          <Button variant="outline" size="sm">
-                            <Download className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))}
+              {/* Data Source Information */}
+              <Card className="print:shadow-none print:border-0">
+                <CardHeader>
+                  <CardTitle className="text-lg">Data Source</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4 text-sm">
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="font-medium text-muted-foreground">Upload Method:</span>
+                      <span className="capitalize">{report?.report?.uploadMethod || 'N/A'}</span>
                     </div>
-                  </CardContent>
-                </Card>
-              )}
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="font-medium text-muted-foreground">Data Source:</span>
+                      <span className="capitalize">{report?.report?.dataSource || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium text-muted-foreground">Instrument Used:</span>
+                      <span>{report?.report?.instrumentUsed || 'N/A'}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Clinical Notes & Interpretation */}
@@ -383,7 +566,7 @@ export default function LabReportView() {
                     <span className="font-semibold text-red-800 text-lg">Critical Values Alert</span>
                   </div>
                   <ul className="text-sm text-red-700 space-y-2">
-                    {report.criticalValues.map((value, index) => (
+                    {report.criticalValues.map((value: string, index: number) => (
                       <li key={index} className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-red-600 rounded-full"></div>
                         {value}

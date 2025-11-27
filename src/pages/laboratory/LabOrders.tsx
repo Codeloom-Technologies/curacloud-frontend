@@ -549,7 +549,6 @@ export default function LabOrders() {
     formData.append('testingDate', testingDate);
     formData.append('clinicalNotes', interpretation);
     formData.append('hasCriticalValues', hasCriticalValues.toString());
-
     createLabReportWithFilesMutation.mutate(formData as any);
   };
 

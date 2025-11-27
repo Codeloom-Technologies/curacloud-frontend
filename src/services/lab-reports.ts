@@ -1,5 +1,5 @@
 import { apiClient } from "@/lib/api-client";
-import { apiUploadClient } from "@/lib/api-upload-client";
+import {  uploadClient } from "@/lib/api-upload-client";
 
 export interface CreateLabReportData {
   labOrderId: number
@@ -51,10 +51,7 @@ export const createLabReport = async (data: CreateLabReportData) => {
 }
 
 export const createLabReportWithFiles = async (formData: FormData) => {
-    const response = await apiUploadClient('/lab-reports/with-files', {
-        body: formData,
-        method: 'POST'
-  })
+    const response = await uploadClient('/lab-reports/with-files', formData)
   return response
 }
 
