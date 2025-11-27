@@ -272,7 +272,7 @@ export default function Appointments() {
 
   const handleUpdateAppointmentStatus = (id: number) => {
     const payload = {
-      status: "Checked-in",
+      status: "checked-in",
     };
     updateStatusMutation.mutate({ id, payload });
   };
@@ -303,25 +303,25 @@ export default function Appointments() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Scheduled":
+      case "scheduled":
         return "bg-blue-100 text-blue-800 border-blue-200";
-      case "Confirmed":
+      case "confirmed":
         return "bg-green-100 text-green-800 border-green-200";
-      case "Checked-in":
+      case "checked-in":
         return "bg-purple-100 text-purple-800 border-purple-200";
-      case "Completed":
+      case "completed":
         return "bg-gray-100 text-gray-800 border-gray-200";
-      case "Cancelled":
+      case "cancelled":
         return "bg-red-100 text-red-800 border-red-200";
-      case "In-progress":
+      case "in-progress":
         return "bg-green-100 text-green-800 border-green-200";
-      case "Waiting":
+      case "waiting":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "Ready":
+      case "ready":
         return "bg-green-100 text-green-800 border-green-200";
-      case "In-consultation":
+      case "in-consultation":
         return "bg-blue-100 text-blue-800 border-blue-200";
-      case "No-show":
+      case "no-show":
         return "bg-red-100 text-red-800 border-red-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
@@ -557,7 +557,7 @@ export default function Appointments() {
                             <Badge
                               className={getStatusColor(appointment.status)}
                             >
-                              {appointment.status}
+                              {appointment?.status.charAt(0).toUpperCase() + appointment?.status?.slice(1) }
                             </Badge>
                           </div>
 
@@ -587,13 +587,13 @@ export default function Appointments() {
                         </div>
 
                         <div className="flex gap-2">
-                          {appointment.status === "Scheduled" && (
+                          {appointment.status === "scheduled" && (
                             <Button variant="outline" size="sm">
                               Reschedule
                             </Button>
                           )}
 
-                          {appointment.status === "Scheduled" && (
+                          {appointment.status === "scheduled" && (
                             <Button
                               disabled={updateStatusMutation.isPending}
                               onClick={() =>

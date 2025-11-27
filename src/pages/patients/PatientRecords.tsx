@@ -128,7 +128,7 @@ export default function PatientRecords() {
                       <div className="flex items-center gap-2 mt-2">
                         <Badge
                           className={
-                            patient.user.status === "Active"
+                            patient.user.status === "active"
                               ? "bg-success/10 text-success"
                               : "bg-muted"
                           }

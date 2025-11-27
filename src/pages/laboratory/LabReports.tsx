@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -6,124 +5,80 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { FileText, Download, Printer, Send, Calendar, User, AlertTriangle, TrendingUp, TrendingDown, ArrowLeft } from "lucide-react";
+import { 
+  FileText, 
+  Download, 
+  Printer, 
+  Send, 
+  Calendar, 
+  User, 
+  AlertTriangle, 
+  TrendingUp, 
+  TrendingDown, 
+  ArrowLeft,
+  Eye,
+  FileImage,
+  File,
+  FileOutput
+} from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-// Mock data - replace with actual API call
-const labReports = [
-  {
-    id: "L0002",
-    orderId: "LO001",
-    patientName: "John Smith",
-    patientId: "P001",
-    age: 45,
-    gender: "Male",
-    testType: "Complete Blood Count",
-    reportDate: "2024-01-16",
-    orderDate: "2024-01-15",
-    physician: "Dr. Johnson",
-    department: "Internal Medicine",
-    status: "Final",
-    priority: "Urgent",
-    results: [
-      { parameter: "Hemoglobin", value: "12.5", unit: "g/dL", referenceRange: "13.5-17.5", flag: "Low" },
-      { parameter: "White Blood Cell Count", value: "8.2", unit: "× 10³/μL", referenceRange: "4.5-11.0", flag: "Normal" },
-      { parameter: "Platelet Count", value: "350", unit: "× 10³/μL", referenceRange: "150-450", flag: "Normal" },
-    ],
-    technician: "John Martinez",
-    reviewedBy: "Dr. Patricia Wilson",
-    criticalValues: ["Hemoglobin: 12.5 g/dL (Low)"],
-    notes: "Patient shows signs of anemia. Recommend iron studies and follow-up.",
-    attachments: ["cbc_report_001.pdf", "blood_smear_001.jpg"]
-  },
-  {
-    id: "L0001",
-    orderId: "LO002",
-    patientName: "Sarah Davis",
-    patientId: "P002",
-    age: 52,
-    gender: "Female",
-    testType: "Lipid Panel",
-    reportDate: "2024-01-15",
-    orderDate: "2024-01-14",
-    physician: "Dr. Williams",
-    department: "Cardiology",
-    status: "Final",
-    priority: "Routine",
-    results: [
-      { parameter: "Total Cholesterol", value: "245", unit: "mg/dL", referenceRange: "<200", flag: "High" },
-      { parameter: "HDL Cholesterol", value: "45", unit: "mg/dL", referenceRange: ">40", flag: "Low" },
-      { parameter: "LDL Cholesterol", value: "165", unit: "mg/dL", referenceRange: "<100", flag: "High" },
-    ],
-    technician: "Sarah Johnson",
-    reviewedBy: "Dr. Michael Chen",
-    criticalValues: [],
-    notes: "Elevated lipid levels observed. Consider lifestyle modifications.",
-    attachments: ["lipid_panel_002.pdf"]
-  }
-];
+import { getLabOrderReport } from "@/services/lab";
+import { useQuery } from "@tanstack/react-query";
 
 export default function LabReportView() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [report, setReport] = useState(null);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  console.log('id', id)
 
-  useEffect(() => {
-    // Simulate API call
-    const fetchReport = async () => {
-      setLoading(true);
-      try {
-        // In real app, this would be: await api.getLabReport(id);
-        setTimeout(() => {
-        const foundReport = labReports.find((report) => report.id == id);
-          console.log({fetchReport})
-          if (!foundReport) {
-            toast({
-              title: "Report Not Found",
-              description: "The requested lab report could not be found.",
-              variant: "destructive",
-            });
-            // navigate("/dashboard/lab/orders");
-            return;
-          }
-          setReport(foundReport);
-          setLoading(false);
-        }, 500);
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load lab report.",
-          variant: "destructive",
-        });
-        // navigate("/lab/orders");
-      }
-    };
+  const {
+    data: labReport,
+    isFetching,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["lab-order-view", id],
+    queryFn: () => getLabOrderReport(id!),
+    enabled: !!id,
+  });
+  console.log(labReport)
 
-    if (id) {
-      fetchReport();
-    }
-  }, [id, navigate, toast]);
-
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'final': return 'bg-green-100 text-green-800 border-green-200';
       case 'preliminary': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'pending review': return 'bg-blue-100 text-blue-800 border-blue-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const getPriorityColor = (priority) => {
+  const getStatusText = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'final': return 'Final';
+      case 'preliminary': return 'Preliminary';
+      case 'pending review': return 'Pending Review';
+      default: return status;
+    }
+  };
+
+  const getPriorityColor = (priority: string) => {
     switch (priority?.toLowerCase()) {
       case 'urgent': return 'bg-red-100 text-red-800 border-red-200';
+      case 'stat': return 'bg-purple-100 text-purple-800 border-purple-200';
       case 'routine': return 'bg-gray-100 text-gray-800 border-gray-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const getFlagIcon = (flag) => {
+  const getPriorityText = (priority: string) => {
+    switch (priority?.toLowerCase()) {
+      case 'routine': return 'Routine';
+      case 'urgent': return 'Urgent';
+      case 'stat': return 'STAT';
+      default: return priority;
+    }
+  };
+
+  const getFlagIcon = (flag: string) => {
     switch (flag?.toLowerCase()) {
       case 'high': return <TrendingUp className="h-4 w-4 text-red-500" />;
       case 'low': return <TrendingDown className="h-4 w-4 text-blue-500" />;
@@ -132,7 +87,7 @@ export default function LabReportView() {
     }
   };
 
-  const getFlagColor = (flag) => {
+  const getFlagColor = (flag: string) => {
     switch (flag?.toLowerCase()) {
       case 'high': return 'text-red-600 bg-red-50';
       case 'low': return 'text-blue-600 bg-blue-50';
@@ -141,10 +96,34 @@ export default function LabReportView() {
     }
   };
 
+  const getFileIcon = (filename: string) => {
+    const ext = filename.toLowerCase().split('.').pop();
+    switch (ext) {
+      case 'pdf': return <FileOutput className="h-5 w-5 text-red-500" />;
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'gif': return <FileImage className="h-5 w-5 text-green-500" />;
+      case 'doc':
+      case 'docx': return <FileText className="h-5 w-5 text-blue-500" />;
+      case 'xlsx':
+      case 'csv': return <FileText className="h-5 w-5 text-green-600" />;
+      default: return <File className="h-5 w-5 text-gray-500" />;
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   const handleDownload = () => {
     toast({
       title: "Download Started",
-      description: `Downloading ${report?.testType} report...`,
+      description: `Downloading ${labReport?.testType} report...`,
       variant: "success",
     });
     // Implement actual download logic
@@ -157,7 +136,7 @@ export default function LabReportView() {
   const handleSendToPhysician = () => {
     toast({
       title: "Report Sent",
-      description: `Lab report sent to ${report?.physician}`,
+      description: `Lab report sent to ${labReport?.physician}`,
       variant: "success",
     });
   };
@@ -166,7 +145,47 @@ export default function LabReportView() {
     navigate("/dashboard/lab/orders");
   };
 
-  if (loading) {
+  const handleViewFile = (file: any) => {
+    if (file.url) {
+      window.open(file.url, '_blank');
+    } else if (file.url) {
+      // Handle local file path - you might need to create a download endpoint
+      toast({
+        title: "Opening File",
+        description: `Opening ${file.filename}`,
+        variant: "default",
+      });
+    }
+  };
+
+  const handleDownloadFile = async (file: any) => {
+    try {
+      if (file.url) {
+        // For S3 files, create a download link
+        const link = document.createElement('a');
+        link.href = file.url;
+        link.download = file.filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else if (file.filepath) {
+        // For local files, you might need to call a download endpoint
+        toast({
+          title: "Download Started",
+          description: `Downloading ${file.filename}`,
+          variant: "success",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Download Failed",
+        description: "Failed to download file",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (isLoading || isFetching) {
     return (
       <div className="flex h-screen bg-background">
         <Sidebar />
@@ -185,7 +204,7 @@ export default function LabReportView() {
     );
   }
 
-  if (!report) {
+  if (error || !labReport) {
     return (
       <div className="flex h-screen bg-background">
         <Sidebar />
@@ -195,7 +214,9 @@ export default function LabReportView() {
             <div className="max-w-6xl mx-auto text-center py-12">
               <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-2">Report Not Found</h2>
-              <p className="text-muted-foreground mb-4">The requested lab report could not be found.</p>
+              <p className="text-muted-foreground mb-4">
+                {error ? "Error loading lab report" : "The requested lab report could not be found."}
+              </p>
               <Button onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Lab Orders
@@ -206,6 +227,10 @@ export default function LabReportView() {
       </div>
     );
   }
+
+  const report = labReport;
+  const hasFileResults = report?.report?.attachments && report.report.attachments.length > 0;
+  const hasManualResults = report?.report?.results && report.report.results.length > 0;
 
   return (
     <div className="flex h-screen bg-background">
@@ -260,23 +285,23 @@ export default function LabReportView() {
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between border-b pb-2">
                         <span className="font-medium text-muted-foreground">Name:</span>
-                        <span className="font-semibold">{report.patientName}</span>
+                        <span className="font-semibold">{report?.patient?.user?.fullName}</span>
                       </div>
                       <div className="flex justify-between border-b pb-2">
                         <span className="font-medium text-muted-foreground">Patient ID:</span>
-                        <span>{report.patientId}</span>
+                        <span>{report.patient?.medicalRecordNumber || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between border-b pb-2">
-                        <span className="font-medium text-muted-foreground">Age/Gender:</span>
-                        <span>{report.age} years, {report.gender}</span>
+                        <span className="font-medium text-muted-foreground">Gender:</span>
+                        <span>{report.patient?.user?.gender || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between border-b pb-2">
                         <span className="font-medium text-muted-foreground">Ordering Physician:</span>
-                        <span>{report.physician}</span>
+                        <span>{report.physician || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="font-medium text-muted-foreground">Department:</span>
-                        <span>{report.department}</span>
+                        <span>{report.department || 'N/A'}</span>
                       </div>
                     </div>
                   </div>
@@ -290,28 +315,28 @@ export default function LabReportView() {
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between border-b pb-2">
                         <span className="font-medium text-muted-foreground">Report ID:</span>
-                        <span className="font-semibold">{report.id}</span>
+                        <span className="font-semibold">{report?.report?.reportId || report.id}</span>
                       </div>
                       <div className="flex justify-between border-b pb-2">
                         <span className="font-medium text-muted-foreground">Order ID:</span>
                         <span>{report.orderId}</span>
                       </div>
                       <div className="flex justify-between border-b pb-2">
-                        <span className="font-medium text-muted-foreground">Order Date:</span>
-                        <span>{report.orderDate}</span>
+                        <span className="font-medium text-muted-foreground">Test Type:</span>
+                        <span>{report.testType}</span>
                       </div>
                       <div className="flex justify-between border-b pb-2">
                         <span className="font-medium text-muted-foreground">Report Date:</span>
-                        <span>{report.reportDate}</span>
+                        <span>{new Date(report.reportDate).toLocaleDateString()}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="font-medium text-muted-foreground">Status/Priority:</span>
                         <div className="flex gap-2">
                           <Badge className={getStatusColor(report.status)}>
-                            {report.status}
+                            {getStatusText(report.status)}
                           </Badge>
                           <Badge className={getPriorityColor(report.priority)}>
-                            {report.priority}
+                            {getPriorityText(report.priority)}
                           </Badge>
                         </div>
                       </div>
@@ -321,50 +346,145 @@ export default function LabReportView() {
               </CardContent>
             </Card>
 
-            {/* Test Results */}
-            <Card className="print:shadow-none print:border-0">
-              <CardHeader>
-                <CardTitle>Test Results</CardTitle>
-                <CardDescription>
-                  Laboratory findings and analysis for {report.testType}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[300px]">Test Parameter</TableHead>
-                      <TableHead>Result</TableHead>
-                      <TableHead>Unit</TableHead>
-                      <TableHead>Reference Range</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {report.results.map((result, index) => (
-                      <TableRow key={index} className={result.flag !== 'Normal' ? 'bg-muted/30' : ''}>
-                        <TableCell className="font-medium">{result.parameter}</TableCell>
-                        <TableCell>
-                          <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${getFlagColor(result.flag)}`}>
-                            {getFlagIcon(result.flag)}
-                            <span className="font-semibold">{result.value}</span>
+            {/* Upload Method Indicator */}
+            {report?.report?.uploadMethod && (
+              <Card className="print:shadow-none print:border-0">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-5 w-5 text-blue-500" />
+                      <div>
+                        <p className="font-medium">Results Upload Method</p>
+                        <p className="text-sm text-muted-foreground">
+                          {report.report.uploadMethod === 'file' 
+                            ? 'File Upload - Results available as attached documents'
+                            : 'Manual Entry - Results entered directly into system'}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant="outline" className={
+                      report.report.uploadMethod === 'file' 
+                        ? 'bg-blue-50 text-blue-700 border-blue-200'
+                        : 'bg-green-50 text-green-700 border-green-200'
+                    }>
+                      {report.report.uploadMethod.toUpperCase()}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* File-based Results */}
+            {hasFileResults && (
+              <Card className="print:shadow-none print:border-0">
+                <CardHeader>
+                  <CardTitle>Attached Result Files</CardTitle>
+                  <CardDescription>
+                    Laboratory results provided as document files
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {report.report.attachments.map((file: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center gap-3 flex-1">
+                          {getFileIcon(file.filename)}
+                          <div className="flex-1">
+                            <p className="font-medium">{file.filename}</p>
+                            <div className="flex gap-4 text-sm text-muted-foreground">
+                              <span>{formatFileSize(file.fileSize)}</span>
+                              <span>{file.mimeType}</span>
+                              <span>Uploaded: {new Date(file.uploadedAt).toLocaleDateString()}</span>
+                            </div>
+                            {file.description && (
+                              <p className="text-sm text-muted-foreground mt-1">{file.description}</p>
+                            )}
                           </div>
-                        </TableCell>
-                        <TableCell className="text-sm">{result.unit}</TableCell>
-                        <TableCell className="text-sm text-muted-foreground">
-                          {result.referenceRange}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline" className={getFlagColor(result.flag).replace('bg-', '')}>
-                            {result.flag}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleViewFile(file)}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleDownloadFile(file)}
+                          >
+                            <Download className="h-4 w-4 mr-1" />
+                            Download
+                          </Button>
+                        </div>
+                      </div>
                     ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Manual Entry Results */}
+            {hasManualResults && (
+              <Card className="print:shadow-none print:border-0">
+                <CardHeader>
+                  <CardTitle>Test Results</CardTitle>
+                  <CardDescription>
+                    Laboratory findings and analysis for {report.testType}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[300px]">Test Parameter</TableHead>
+                        <TableHead>Result</TableHead>
+                        <TableHead>Unit</TableHead>
+                        <TableHead>Reference Range</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {report.report.results.map((result: any, index: number) => (
+                        <TableRow key={index} className={result.flag !== 'Normal' ? 'bg-muted/30' : ''}>
+                          <TableCell className="font-medium">{result.parameter}</TableCell>
+                          <TableCell>
+                            <div className={`flex items-center gap-2 px-3 py-1 rounded-full ${getFlagColor(result.flag)}`}>
+                              {getFlagIcon(result.flag)}
+                              <span className="font-semibold">{result.value}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm">{result.unit}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {result.referenceRange}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className={getFlagColor(result.flag).replace('text-', '').replace('bg-', '')}>
+                              {result.flag}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* No Results Message */}
+            {!hasFileResults && !hasManualResults && (
+              <Card className="print:shadow-none print:border-0">
+                <CardContent className="p-6 text-center">
+                  <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium mb-2">No Results Available</h3>
+                  <p className="text-muted-foreground">
+                    Laboratory results are not yet available for this order.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Additional Information */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:grid-cols-2">
@@ -377,54 +497,68 @@ export default function LabReportView() {
                   <div className="space-y-4 text-sm">
                     <div className="flex justify-between border-b pb-2">
                       <span className="font-medium text-muted-foreground">Technician:</span>
-                      <span>{report.technician}</span>
+                      <span>{report?.report?.technician?.fullName || report?.report?.technicianId || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="font-medium text-muted-foreground">Reviewed By:</span>
+                      <span>{report.reviewedBy || 'N/A'}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="font-medium text-muted-foreground">Reviewed By:</span>
-                      <span>{report.reviewedBy}</span>
+                      <span className="font-medium text-muted-foreground">Testing Date:</span>
+                      <span>{report?.report?.testingDate ? new Date(report.report.testingDate).toLocaleDateString() : 'N/A'}</span>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Attachments */}
-              {report.attachments.length > 0 && (
-                <Card className="print:shadow-none print:border-0">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Attachments</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {report.attachments.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between p-2 bg-muted/30 rounded">
-                          <span className="text-sm">{file}</span>
-                          <Button variant="outline" size="sm">
-                            <Download className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ))}
+              {/* Data Source Information */}
+              <Card className="print:shadow-none print:border-0">
+                <CardHeader>
+                  <CardTitle className="text-lg">Data Source</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4 text-sm">
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="font-medium text-muted-foreground">Upload Method:</span>
+                      <span className="capitalize">{report?.report?.uploadMethod || 'N/A'}</span>
                     </div>
-                  </CardContent>
-                </Card>
-              )}
+                    <div className="flex justify-between border-b pb-2">
+                      <span className="font-medium text-muted-foreground">Data Source:</span>
+                      <span className="capitalize">{report?.report?.dataSource || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium text-muted-foreground">Instrument Used:</span>
+                      <span>{report?.report?.instrumentUsed || 'N/A'}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-            {/* Clinical Notes */}
-            {report.notes && (
+            {/* Clinical Notes & Interpretation */}
+            {(report.clinicalNotes || report.interpretation) && (
               <Card className="print:shadow-none print:border-0">
                 <CardHeader>
                   <CardTitle className="text-lg">Clinical Interpretation</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm">{report.notes}</p>
+                    {report.interpretation && (
+                      <p className="text-sm mb-3">{report.interpretation}</p>
+                    )}
+                    {report.clinicalNotes && (
+                      <div className="mt-2 pt-2 border-t border-blue-200">
+                        <p className="text-xs text-muted-foreground font-medium">Clinical Notes:</p>
+                        <p className="text-sm mt-1">{report.clinicalNotes}</p>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
             )}
 
             {/* Critical Values Alert */}
-            {report.criticalValues.length > 0 && (
+            {report.criticalValues && report.criticalValues.length > 0 && (
               <Card className="bg-red-50 border-red-200 print:shadow-none">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3 mb-4">
@@ -432,7 +566,7 @@ export default function LabReportView() {
                     <span className="font-semibold text-red-800 text-lg">Critical Values Alert</span>
                   </div>
                   <ul className="text-sm text-red-700 space-y-2">
-                    {report.criticalValues.map((value, index) => (
+                    {report.criticalValues.map((value: string, index: number) => (
                       <li key={index} className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-red-600 rounded-full"></div>
                         {value}
@@ -445,7 +579,7 @@ export default function LabReportView() {
 
             {/* Print Footer */}
             <div className="hidden print:block mt-8 pt-4 border-t text-center text-sm text-muted-foreground">
-              <p>Generated on {report.reportDate} by {report.technician}</p>
+              <p>Generated on {new Date(report.reportDate).toLocaleDateString()} by {report.technician}</p>
               <p>Hospital Laboratory Management System</p>
             </div>
           </div>

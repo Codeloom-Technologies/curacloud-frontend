@@ -33,3 +33,43 @@ export const verifyEmail = async (token: string) => {
   }
   return response;
 };
+
+
+export const createSetHospital = async (hospitalId: string) => {
+  const response = await apiClient(`/auth/set-hospital`, {
+    method: "POST",
+    body: JSON.stringify(hospitalId)
+  });
+
+  if (!response) {
+    throw new Error("Failed to verify email");
+  }
+  return response;
+};
+
+export const connectedHospital = async () => {
+  const response = await apiClient(`/auth/connected-hospital`);
+
+  if (!response) {
+    throw new Error("Failed to ftech");
+  }
+  return response;
+};
+
+
+
+export const verifyInvitation = async (token: string) => {
+  const response = await apiClient(`/auth/verify-invitation`, {
+    method: 'POST',
+    body: JSON.stringify({token})
+  });
+  return response;
+};
+
+export const acceptInvitation = async (data: { token: string; password: string }) => {
+  const response = await apiClient("/auth/accept-invitation", {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+  return response;
+};
