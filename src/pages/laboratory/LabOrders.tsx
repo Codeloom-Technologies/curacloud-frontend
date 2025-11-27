@@ -19,8 +19,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchPatients } from "@/services/patient";
 import { getAllDoctors } from "@/services/staff";
 import { createLabOrder, getLabOrders, getLabStats, uploadLabResults } from "@/services/lab";
+
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
+import { createLabReport, CreateLabReportData, createLabReportWithFiles, getLabReportsByOrder, LabResult } from "@/services/lab-reports";
 
 // Types
 interface LabOrder {
@@ -37,6 +39,20 @@ interface LabOrder {
   estimatedCompletion?: string;
   results?: any;
   orderingPhysician?: string;
+}
+
+interface LabReport {
+  id: string;
+  reportId: string;
+  labOrderId: number;
+  patientId: number;
+  status: 'draft' | 'preliminary' | 'final' | 'corrected' | 'cancelled';
+  results: LabResult[];
+  clinicalNotes?: string;
+  interpretation?: string;
+  attachments?: any[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function LabOrders() {
@@ -57,6 +73,11 @@ export default function LabOrders() {
   const [debouncedPatientSearch, setDebouncedPatientSearch] = useState("");
   const [doctorSearchQuery, setDoctorSearchQuery] = useState("");
   const [debouncedDoctorSearch, setDebouncedDoctorSearch] = useState("");
+  const [technicianName, setTechnicianName] = useState("");
+  const [reportDate, setReportDate] = useState("");
+  const [testingDate, setTestingDate] = useState("");
+  const [interpretation, setInterpretation] = useState("");
+  const [hasCriticalValues, setHasCriticalValues] = useState(false);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -105,6 +126,15 @@ export default function LabOrders() {
     return () => clearTimeout(handler);
   }, [doctorSearchQuery]);
 
+  // Set default dates when dialog opens
+  useEffect(() => {
+    if (isResultsDialogOpen) {
+      const today = new Date().toISOString().split('T')[0];
+      setReportDate(today);
+      setTestingDate(today);
+    }
+  }, [isResultsDialogOpen]);
+
   // Build filters object
   const buildFilters = () => {
     const filters: Record<string, any> = {};
@@ -125,7 +155,7 @@ export default function LabOrders() {
     data: labOrdersData, 
     isLoading: isLoadingOrders,
     isError,
-    error ,
+    error,
     refetch
   } = useQuery<any>({
     queryKey: ["lab-orders", currentPage, debouncedSearchTerm, statusFilter, priorityFilter],
@@ -158,6 +188,16 @@ export default function LabOrders() {
     enabled: isNewOrderOpen,
   });
 
+  // Fetch lab reports for selected order
+  const { 
+    data: labReportsData,
+  } = useQuery({
+    queryKey: ["lab-reports", selectedOrder?.id],
+    queryFn: () => selectedOrder ? getLabReportsByOrder(selectedOrder.id) : null,
+    enabled: !!selectedOrder,
+  });
+
+  const labReports = labReportsData?.data || [];
   const doctors = doctorsData?.doctors || [];
 
   // Create lab order mutation
@@ -182,14 +222,15 @@ export default function LabOrders() {
     },
   });
 
-  // Upload results mutation
-  const uploadResultsMutation = useMutation({
-    mutationFn: uploadLabResults,
-    onSuccess: () => {
+  // Create lab report mutation (for manual entry)
+  const createLabReportMutation = useMutation({
+    mutationFn: createLabReport,
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["lab-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["lab-reports", selectedOrder?.id] });
       toast({
-        title: "Results Uploaded",
-        description: `Lab results for ${selectedOrder?.patientName} have been uploaded successfully.`,
+        title: "Lab Report Created",
+        description: `Lab report for ${selectedOrder?.patientName} has been created successfully.`,
         variant: "success",
       });
       setIsResultsDialogOpen(false);
@@ -197,16 +238,37 @@ export default function LabOrders() {
     },
     onError: (error: any) => {
       toast({
-        title: "Error Uploading Results",
-        description: error.message || "Failed to upload results",
+        title: "Error Creating Lab Report",
+        description: error.message || "Failed to create lab report",
         variant: "destructive",
       });
     },
   });
 
+  // Create lab report with files mutation
+  const createLabReportWithFilesMutation = useMutation({
+    mutationFn: createLabReportWithFiles,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["lab-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["lab-reports", selectedOrder?.id] });
+      toast({
+        title: "Lab Report Created",
+        description: `Lab report with files for ${selectedOrder?.patientName} has been created successfully.`,
+        variant: "success",
+      });
+      setIsResultsDialogOpen(false);
+      resetResultsForm();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Creating Lab Report",
+        description: error.message || "Failed to create lab report with files",
+        variant: "destructive",
+      });
+    },
+  });
 
-
-    const { 
+  const { 
     data: labOrdersStats, 
     isLoading: isLoadingStats,
   } = useQuery<any>({
@@ -214,8 +276,6 @@ export default function LabOrders() {
     queryFn: () => getLabStats(),
   });
 
-
-  
   const handlePatientSelect = (patientId: string) => {
     const patient = patientData?.patients?.find((p: any) => p.id.toString() === patientId);
     
@@ -266,6 +326,12 @@ export default function LabOrders() {
     setUploadedFiles([]);
     setTestResults([]);
     setSelectedOrder(null);
+    setTechnicianName("");
+    setReportDate("");
+    setTestingDate("");
+    setInterpretation("");
+    setHasCriticalValues(false);
+    setActiveTab("file");
   };
 
   const getStatusColor = (status: string) => {
@@ -281,7 +347,7 @@ export default function LabOrders() {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'pending': return 'Pending';
-      case 'in_progress': return 'In Progress';
+      case 'in progress': return 'In Progress';
       case 'completed': return 'Completed';
       case 'cancelled': return 'Cancelled';
       default: return status;
@@ -306,14 +372,13 @@ export default function LabOrders() {
     }
   };
 
-    const handlePageChange = (page: number) => {
+  const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
       refetch();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
-
 
   const handleNewOrder = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -351,7 +416,7 @@ export default function LabOrders() {
         value: "",
         unit: param.unit,
         referenceRange: param.range,
-        flag: "Normal"
+        flag: "normal" as const
       }));
       setTestResults(initialResults);
     } else {
@@ -395,6 +460,10 @@ export default function LabOrders() {
     navigate(`/dashboard/lab/reports/${order.orderId}`);
   };
 
+  const handleViewExistingReports = (order: any) => {
+    navigate(`/dashboard/lab/orders/${order.id}/reports`);
+  };
+
   const updateResult = (index: number, field: string, value: string) => {
     const updatedResults = [...testResults];
     updatedResults[index] = { ...updatedResults[index], [field]: value };
@@ -403,21 +472,42 @@ export default function LabOrders() {
       const range = updatedResults[index].referenceRange;
       const numValue = parseFloat(value);
       
+      let flag: 'normal' | 'low' | 'high' | 'critical' = 'normal';
+      
       if (range.includes('-')) {
         const [min, max] = range.split('-').map(parseFloat);
-        if (numValue < min) updatedResults[index].flag = 'Low';
-        else if (numValue > max) updatedResults[index].flag = 'High';
-        else updatedResults[index].flag = 'Normal';
+        if (numValue < min) flag = 'low';
+        else if (numValue > max) flag = 'high';
+        else flag = 'normal';
       } else if (range.startsWith('<')) {
         const max = parseFloat(range.slice(1));
-        updatedResults[index].flag = numValue > max ? 'High' : 'Normal';
+        flag = numValue > max ? 'high' : 'normal';
       } else if (range.startsWith('>')) {
         const min = parseFloat(range.slice(1));
-        updatedResults[index].flag = numValue < min ? 'Low' : 'Normal';
+        flag = numValue < min ? 'low' : 'normal';
       }
+      
+      // Mark as critical if values are extremely out of range
+      if (flag === 'high' || flag === 'low') {
+        const rangeNumbers = range.match(/\d+/g)?.map(Number) || [];
+        if (rangeNumbers.length === 2) {
+          const [min, max] = rangeNumbers;
+          const rangeMid = (min + max) / 2;
+          const deviation = Math.abs(numValue - rangeMid) / rangeMid;
+          if (deviation > 0.5) {
+            flag = 'critical';
+          }
+        }
+      }
+      
+      updatedResults[index].flag = flag;
     }
     
     setTestResults(updatedResults);
+    
+    // Update hasCriticalValues based on results
+    const hasCritical = updatedResults.some(result => result.flag === 'critical');
+    setHasCriticalValues(hasCritical);
   };
 
   const addCustomParameter = () => {
@@ -426,7 +516,7 @@ export default function LabOrders() {
       value: "",
       unit: "",
       referenceRange: "",
-      flag: "Normal"
+      flag: "normal" as const
     }]);
   };
 
@@ -436,30 +526,74 @@ export default function LabOrders() {
 
   const submitFileResults = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedOrder || uploadedFiles.length === 0) return;
+    if (!selectedOrder || uploadedFiles.length === 0 || !technicianName) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields and upload at least one file",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const formData = new FormData();
+    
+    // Append files
     uploadedFiles.forEach(file => {
       formData.append('files', file);
     });
-    formData.append('orderId', selectedOrder.id);
-    formData.append('method', 'file');
+    
+    // Append report data
+    formData.append('labOrderId', selectedOrder.id);
+    formData.append('uploadMethod', 'file');
+    formData.append('reportDate', reportDate);
+    formData.append('testingDate', testingDate);
+    formData.append('clinicalNotes', interpretation);
+    formData.append('hasCriticalValues', hasCriticalValues.toString());
 
-    uploadResultsMutation.mutate(formData);
+    createLabReportWithFilesMutation.mutate(formData as any);
   };
 
   const submitManualResults = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedOrder) return;
+    if (!selectedOrder || !technicianName) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
 
-    const resultsData = {
-      orderId: selectedOrder.id,
-      method: 'manual',
+    // Check if all required fields are filled
+    const hasEmptyResults = testResults.some(result => 
+      !result.parameter.trim() || !result.value.toString().trim()
+    );
+    
+    if (hasEmptyResults) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all test parameters and values",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const reportData: CreateLabReportData = {
+      labOrderId: parseInt(selectedOrder.id),
+      uploadMethod: 'manual',
       results: testResults,
-      reportDate: new Date().toISOString(),
+      clinicalNotes: interpretation,
+      reportDate: reportDate,
+      testingDate: testingDate,
+      criticalValues: testResults.filter(result => result.flag === 'critical').map(result => ({
+        parameter: result.parameter,
+        value: result.value,
+        unit: result.unit,
+        referenceRange: result.referenceRange
+      }))
     };
 
-    uploadResultsMutation.mutate(resultsData);
+    createLabReportMutation.mutate(reportData);
   };
 
   const stats = {
@@ -468,7 +602,6 @@ export default function LabOrders() {
     inProgress: labOrdersStats?.inProgress || 0,
     completed: labOrdersStats?.completed || 0,
   };
-
 
   return (
     <div className="flex h-screen bg-background">
@@ -789,9 +922,7 @@ export default function LabOrders() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Total Orders</p>
-                      <p className="text-2xl font-bold">{                        isLoadingStats ? <Skeleton/> :
-
-                        stats.total}</p>
+                      <p className="text-2xl font-bold">{isLoadingStats ? <Skeleton/> : stats.total}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -804,11 +935,7 @@ export default function LabOrders() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Pending</p>
-                      <p className="text-2xl font-bold">{
-                        isLoadingStats ? <Skeleton/> :
-                        stats.pending
-                      
-                      }</p>
+                      <p className="text-2xl font-bold">{isLoadingStats ? <Skeleton/> : stats.pending}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -821,10 +948,7 @@ export default function LabOrders() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">In Progress</p>
-                      <p className="text-2xl font-bold">{
-                        isLoadingStats ? <Skeleton /> :
-                          stats.inProgress
-                      }</p>
+                      <p className="text-2xl font-bold">{isLoadingStats ? <Skeleton /> : stats.inProgress}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -837,9 +961,7 @@ export default function LabOrders() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-muted-foreground">Completed</p>
-                      <p className="text-2xl font-bold">{
-                                                isLoadingStats ? <Skeleton/> :
-                        stats.completed}</p>
+                      <p className="text-2xl font-bold">{isLoadingStats ? <Skeleton/> : stats.completed}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -947,10 +1069,17 @@ export default function LabOrders() {
                               {new Date(order.orderDate).toLocaleDateString()}
                             </TableCell>
                             <TableCell>
-                              {order.status === 'completed' ? (
-                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                  Available
-                                </Badge>
+                              {order.status === 'completed' || labReports.length > 0 ? (
+                                <div className="flex flex-col gap-1">
+                                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                    {labReports.length > 0 ? `${labReports.length} Report(s)` : 'Available'}
+                                  </Badge>
+                                  {labReports.some((report: LabReport) => report.status === 'final') && (
+                                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+                                      Finalized
+                                    </Badge>
+                                  )}
+                                </div>
                               ) : (
                                 <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
                                   Pending
@@ -966,6 +1095,19 @@ export default function LabOrders() {
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
+                                
+                                {/* Show existing reports button if reports exist */}
+                                {labReports.length > 0 && (
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => handleViewExistingReports(order)}
+                                  >
+                                    <FileText className="h-4 w-4" />
+                                    <span className="ml-1">{labReports.length}</span>
+                                  </Button>
+                                )}
+                                
                                 {order.status !== 'completed' && order.status !== 'cancelled' && (
                                   <div className="flex gap-1">
                                     <Button 
@@ -1014,53 +1156,52 @@ export default function LabOrders() {
                     )}
 
                     {/* Pagination */}
-             {!isLoadingOrders && labOrders.length > 0 && (
-              <div className="mt-6 flex justify-center">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious
-                        onClick={() =>
-                          currentPage > 1 && handlePageChange(currentPage - 1)
-                        }
-                        className={
-                          currentPage === 1
-                            ? "pointer-events-none opacity-50"
-                            : "cursor-pointer"
-                        }
-                      />
-                    </PaginationItem>
+                    {!isLoadingOrders && labOrders.length > 0 && (
+                      <div className="mt-6 flex justify-center">
+                        <Pagination>
+                          <PaginationContent>
+                            <PaginationItem>
+                              <PaginationPrevious
+                                onClick={() =>
+                                  currentPage > 1 && handlePageChange(currentPage - 1)
+                                }
+                                className={
+                                  currentPage === 1
+                                    ? "pointer-events-none opacity-50"
+                                    : "cursor-pointer"
+                                }
+                              />
+                            </PaginationItem>
 
-                    {Array.from({ length: totalPages }).map((_, i) => (
-                      <PaginationItem key={i}>
-                        <PaginationLink
-                          onClick={() => handlePageChange(i + 1)}
-                          isActive={currentPage === i + 1}
-                          className="cursor-pointer"
-                        >
-                          {i + 1}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ))}
+                            {Array.from({ length: totalPages }).map((_, i) => (
+                              <PaginationItem key={i}>
+                                <PaginationLink
+                                  onClick={() => handlePageChange(i + 1)}
+                                  isActive={currentPage === i + 1}
+                                  className="cursor-pointer"
+                                >
+                                  {i + 1}
+                                </PaginationLink>
+                              </PaginationItem>
+                            ))}
 
-                    <PaginationItem>
-                      <PaginationNext
-                        onClick={() =>
-                          currentPage < totalPages &&
-                          handlePageChange(currentPage + 1)
-                        }
-                        className={
-                          currentPage === totalPages
-                            ? "pointer-events-none opacity-50"
-                            : "cursor-pointer"
-                        }
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
-            )}
-
+                            <PaginationItem>
+                              <PaginationNext
+                                onClick={() =>
+                                  currentPage < totalPages &&
+                                  handlePageChange(currentPage + 1)
+                                }
+                                className={
+                                  currentPage === totalPages
+                                    ? "pointer-events-none opacity-50"
+                                    : "cursor-pointer"
+                                }
+                              />
+                            </PaginationItem>
+                          </PaginationContent>
+                        </Pagination>
+                      </div>
+                    )}
                   </>
                 )}
               </CardContent>
@@ -1154,27 +1295,59 @@ export default function LabOrders() {
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="technician">Lab Technician</Label>
-                          <Input id="technician" placeholder="Enter technician name" required />
+                          <Label htmlFor="file-technician">Lab Technician *</Label>
+                          <Input 
+                            id="file-technician" 
+                            placeholder="Enter technician name" 
+                            value={technicianName}
+                            onChange={(e) => setTechnicianName(e.target.value)}
+                            required 
+                          />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="report-date">Report Date</Label>
-                          <Input id="report-date" type="date" required />
+                          <Label htmlFor="file-report-date">Report Date *</Label>
+                          <Input 
+                            id="file-report-date" 
+                            type="date" 
+                            value={reportDate}
+                            onChange={(e) => setReportDate(e.target.value)}
+                            required 
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="file-testing-date">Testing Date *</Label>
+                          <Input 
+                            id="file-testing-date" 
+                            type="date" 
+                            value={testingDate}
+                            onChange={(e) => setTestingDate(e.target.value)}
+                            required 
+                          />
+                        </div>
+                        <div className="space-y-2 flex items-end">
+                          <div className="flex items-center space-x-2">
+                            <Switch 
+                              id="file-critical-values" 
+                              checked={hasCriticalValues}
+                              onCheckedChange={setHasCriticalValues}
+                            />
+                            <Label htmlFor="file-critical-values">Mark as containing critical values</Label>
+                          </div>
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="findings">Clinical Interpretation</Label>
+                        <Label htmlFor="file-interpretation">Clinical Interpretation</Label>
                         <Textarea 
-                          id="findings"
+                          id="file-interpretation"
                           placeholder="Enter clinical interpretation and notes..."
                           rows={3}
+                          value={interpretation}
+                          onChange={(e) => setInterpretation(e.target.value)}
                         />
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <Switch id="critical-values" />
-                        <Label htmlFor="critical-values">Mark as containing critical values</Label>
                       </div>
                     </div>
 
@@ -1191,14 +1364,14 @@ export default function LabOrders() {
                       </Button>
                       <Button 
                         type="submit" 
-                        disabled={uploadedFiles.length === 0 || uploadResultsMutation.isPending}
+                        disabled={uploadedFiles.length === 0 || createLabReportWithFilesMutation.isPending || !technicianName}
                       >
-                        {uploadResultsMutation.isPending ? (
-                          "Uploading..."
+                        {createLabReportWithFilesMutation.isPending ? (
+                          "Creating Report..."
                         ) : (
                           <>
                             <Upload className="h-4 w-4 mr-1" />
-                            Upload Results
+                            Create Lab Report
                           </>
                         )}
                       </Button>
@@ -1271,10 +1444,10 @@ export default function LabOrders() {
                                     <SelectValue />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    <SelectItem value="Normal">Normal</SelectItem>
-                                    <SelectItem value="Low">Low</SelectItem>
-                                    <SelectItem value="High">High</SelectItem>
-                                    <SelectItem value="Critical">Critical</SelectItem>
+                                    <SelectItem value="normal">Normal</SelectItem>
+                                    <SelectItem value="low">Low</SelectItem>
+                                    <SelectItem value="high">High</SelectItem>
+                                    <SelectItem value="critical">Critical</SelectItem>
                                   </SelectContent>
                                 </Select>
                               </TableCell>
@@ -1296,12 +1469,47 @@ export default function LabOrders() {
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="manual-technician">Lab Technician</Label>
-                          <Input id="manual-technician" placeholder="Enter technician name" required />
+                          <Label htmlFor="manual-technician">Lab Technician *</Label>
+                          <Input 
+                            id="manual-technician" 
+                            placeholder="Enter technician name" 
+                            value={technicianName}
+                            onChange={(e) => setTechnicianName(e.target.value)}
+                            required 
+                          />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="manual-report-date">Report Date</Label>
-                          <Input id="manual-report-date" type="date" required />
+                          <Label htmlFor="manual-report-date">Report Date *</Label>
+                          <Input 
+                            id="manual-report-date" 
+                            type="date" 
+                            value={reportDate}
+                            onChange={(e) => setReportDate(e.target.value)}
+                            required 
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="manual-testing-date">Testing Date *</Label>
+                          <Input 
+                            id="manual-testing-date" 
+                            type="date" 
+                            value={testingDate}
+                            onChange={(e) => setTestingDate(e.target.value)}
+                            required 
+                          />
+                        </div>
+                        <div className="space-y-2 flex items-end">
+                          <div className="flex items-center space-x-2">
+                            <Switch 
+                              id="manual-critical" 
+                              checked={hasCriticalValues}
+                              onCheckedChange={setHasCriticalValues}
+                            />
+                            <Label htmlFor="manual-critical">Contains critical values</Label>
+                          </div>
                         </div>
                       </div>
 
@@ -1311,12 +1519,9 @@ export default function LabOrders() {
                           id="manual-interpretation"
                           placeholder="Enter clinical interpretation, notes, and recommendations..."
                           rows={3}
+                          value={interpretation}
+                          onChange={(e) => setInterpretation(e.target.value)}
                         />
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <Switch id="manual-critical" />
-                        <Label htmlFor="manual-critical">Mark report as containing critical values</Label>
                       </div>
                     </div>
 
@@ -1333,14 +1538,14 @@ export default function LabOrders() {
                       </Button>
                       <Button 
                         type="submit"
-                        disabled={uploadResultsMutation.isPending}
+                        disabled={createLabReportMutation.isPending || testResults.some(r => !r.parameter || !r.value) || !technicianName}
                       >
-                        {uploadResultsMutation.isPending ? (
-                          "Submitting..."
+                        {createLabReportMutation.isPending ? (
+                          "Creating Report..."
                         ) : (
                           <>
                             <Send className="h-4 w-4 mr-1" />
-                            Submit Results
+                            Create Lab Report
                           </>
                         )}
                       </Button>

@@ -527,7 +527,7 @@ const RegisterStaff = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="role" className="flex items-center gap-1">
-                          Role <span className="text-destructive">*</span>
+                          Position <span className="text-destructive">*</span>
                         </Label>
                         <Select
                           required
@@ -538,15 +538,15 @@ const RegisterStaff = () => {
                             <SelectValue
                               placeholder={
                                 isLoadingRoles || isFetchingRoles
-                                  ? "Loading roles..."
-                                  : "Select role"
+                                  ? "Loading positions..."
+                                  : "Select position"
                               }
                             />
                           </SelectTrigger>
                           <SelectContent>
                             {roles.map((role) => (
                               <SelectItem key={role.id} value={role.id.toString()}>
-                                {role.name}
+                                {role.name.charAt(0).toUpperCase() + role.name.slice(1)}
                               </SelectItem>
                             ))}
                           </SelectContent>

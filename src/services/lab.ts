@@ -14,9 +14,6 @@ export const createLabOrder = async (payload: any) => {
 };
 
 
-
-
-
 export const uploadLabResults = async (payload: any) => {
   const response = await apiClient(`/lab-orders/`, {
     method: "PUT",

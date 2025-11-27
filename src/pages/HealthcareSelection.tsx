@@ -311,7 +311,7 @@ export default function HealthcareSelection() {
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-4 mb-6">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-12 h-12  bg-gradient-primary to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
               <Heart className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -331,7 +331,7 @@ export default function HealthcareSelection() {
               <div className="flex justify-center mb-4">
                 <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
                   <AvatarImage src="" />
-                  <AvatarFallback className="bg-gradient-to-br from-blue-600 to-blue-700 text-white text-lg font-semibold">
+                  <AvatarFallback className=" bg-gradient-primary to-blue-700 text-white text-lg font-semibold">
                     {getInitials(userData.fullName)}
                   </AvatarFallback>
                 </Avatar>
@@ -468,9 +468,9 @@ export default function HealthcareSelection() {
                 <Button
                   onClick={handleContinue}
                   disabled={!selectedHospital || createSetHospitalMutation.isPending}
-                  className="w-full h-12 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200 bg-blue-600 hover:bg-blue-700 text-white"
+                  className="w-full h-12 text-lg font-semibold shadow-lg  transition-all duration-200 bg-gradient-primary hover:shadow-glow text-white"
                   size="lg"
-                >
+                >  
                   {createSetHospitalMutation.isPending ? (
                     <>
                       <Loader2 className="h-5 w-5 mr-2 animate-spin" />

@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -234,7 +233,7 @@ export default function LabReportView() {
                     <div className="space-y-3 text-sm">
                       <div className="flex justify-between border-b pb-2">
                         <span className="font-medium text-muted-foreground">Report ID:</span>
-                        <span className="font-semibold">{report.reportId || report.id}</span>
+                        <span className="font-semibold">{report?.report?.reportId || report.id}</span>
                       </div>
                       <div className="flex justify-between border-b pb-2">
                         <span className="font-medium text-muted-foreground">Order ID:</span>
@@ -285,7 +284,7 @@ export default function LabReportView() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {report.results?.map((result, index) => (
+                    {report?.report?.results?.map((result, index) => (
                       <TableRow key={index} className={result.flag !== 'Normal' ? 'bg-muted/30' : ''}>
                         <TableCell className="font-medium">{result.parameter}</TableCell>
                         <TableCell>
@@ -321,7 +320,7 @@ export default function LabReportView() {
                   <div className="space-y-4 text-sm">
                     <div className="flex justify-between border-b pb-2">
                       <span className="font-medium text-muted-foreground">Technician:</span>
-                      <span>{report.technician || 'N/A'}</span>
+                      <span>{report?.report?.technician?.fullName || 'N/A'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="font-medium text-muted-foreground">Reviewed By:</span>
