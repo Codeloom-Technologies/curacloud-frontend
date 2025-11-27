@@ -169,7 +169,7 @@ const App = () => (
 
           {/* subscription routes */}
           <Route
-            path="/dashboard/subscription"
+            path="/dashboard/subscriptions"
             element={<SubscriptionManagement />}
           />
 

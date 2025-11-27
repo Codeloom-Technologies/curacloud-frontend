@@ -81,3 +81,9 @@ export const  createSubscription= async(data: CreateSubscriptionData) =>{
 const { data, meta } = response;
     return { histories: data, meta };
   }
+
+
+   export const  getSubscriptionStatus=async() =>{
+    const response = await apiClient('/subscriptions/status');
+    return response
+  }

@@ -180,11 +180,11 @@ const navigationItems: NavigationItem[] = [
         href: "/dashboard/prescriptions",
         permission: "prescriptions" as Permission,
       },
-      {
-        title: "Medical History",
-        href: "/dashboard/medical-history",
-        permission: "medical-history" as Permission,
-      },
+      // {
+      //   title: "Medical History",
+      //   href: "/dashboard/medical-history",
+      //   permission: "medical-history" as Permission,
+      // },
     ],
   },
   {
@@ -269,12 +269,12 @@ const navigationItems: NavigationItem[] = [
   {
     title: "Subscription",
     icon: CreditCard,
-    href: "/dashboard/Subscription",
+    href: "/dashboard/Subscriptions",
     permission: "subscription" as Permission,
     children: [
       {
         title: "Overview",
-        href: "/dashboard/subscription",
+        href: "/dashboard/subscriptions",
         permission: "subscription" as Permission,
       },
     ],
