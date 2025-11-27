@@ -242,7 +242,6 @@ export default function UpdatePatient() {
       },
     };
 
-    console.log("Submitting payload:", payload);
     mutation.mutate(payload);
   };
 

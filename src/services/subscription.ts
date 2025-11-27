@@ -59,12 +59,25 @@ export const  createSubscription= async(data: CreateSubscriptionData) =>{
     return response;
   }
 
-  export const  cancelSubscription=async(subscriptionId: string) =>{
-    const response = await apiClient(`/subscriptions/${subscriptionId}/cancel`);
+  export const  cancelSubscription=async(subscriptionId: string,data) =>{
+    const response = await apiClient(`/subscriptions/cancel`, {
+        method: "POST",
+        body: JSON.stringify(data)
+    });
     return response;
   }
 
-  export const  getPaymentHistory=async() =>{
-    const response = await apiClient('/subscriptions/payments');
+
+  export const  reactivateSubscription=async(subscriptionId: string) =>{
+    const response = await apiClient(`/subscriptions/reactivate`, {
+        method: "POST",
+        // body: JSON.stringify(data)
+    });
     return response;
+  }
+  
+  export const  getSubscriptionsHistory=async(page:number, perPage:number) =>{
+    const response = await apiClient('/subscriptions/subscription-history');
+const { data, meta } = response;
+    return { histories: data, meta };
   }

@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useToast } from './use-toast';
 import { PaymentService } from '@/services/payment';
-import { cancelSubscription, createSubscription, updateSubscription } from '@/services/subscription';
+import { cancelSubscription, createSubscription, reactivateSubscription, updateSubscription } from '@/services/subscription';
 import { useAuthStore } from '@/store/authStore';
 
 export const useSubscription = () => {
@@ -42,12 +42,26 @@ export const useSubscription = () => {
   });
 
   const cancelSubscriptionMutation = useMutation({
-    mutationFn: cancelSubscription,
+mutationFn: (variables: { subscriptionId: string; data: any }) => 
+      cancelSubscription(variables.subscriptionId, variables.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['active-subscription'] });
       toast({
         title: "Subscription Cancelled",
         description: "Your subscription has been cancelled.",
+        variant: "success",
+      });
+    },
+  });
+
+    const reactivateSubscriptionMutation = useMutation({
+mutationFn: (variables: { subscriptionId: string; }) => 
+      reactivateSubscription(variables.subscriptionId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['active-subscription'] });
+      toast({
+        title: "Subscription Reactivated",
+        description: "Your subscription has been reactivated.",
         variant: "success",
       });
     },
@@ -97,16 +111,23 @@ export const useSubscription = () => {
     });
   };
 
-  const handleCancel = async (subscriptionId: string) => {
-    await cancelSubscriptionMutation.mutateAsync(subscriptionId);
-  };
-
+  const handleCancel = async (subscriptionId: string, data?: { feedback: string; reason: string }) => {
+  await cancelSubscriptionMutation.mutateAsync({ subscriptionId, data: data || { feedback: '', reason: '' } });
+};
+  
+  const onReactivate = async (subscriptionId: string) => {
+    await reactivateSubscriptionMutation.mutateAsync({ subscriptionId });
+};
+  
+  
   return {
     handleUpgrade,
     handleAutoRenew,
     handleCancel,
+    onReactivate,
     isCreating: createSubscriptionMutation.isPending,
     isUpdating: updateSubscriptionMutation.isPending,
     isCancelling: cancelSubscriptionMutation.isPending,
+    isReactivating:reactivateSubscriptionMutation.isPending,
   };
 };

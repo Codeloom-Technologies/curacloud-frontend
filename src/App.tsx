@@ -43,6 +43,10 @@ import InvoiceView from "./pages/billing/invoiceView";
 import SubscriptionManagement from "./pages/Subscription/SubscriptionManagement";
 import ActivitiesPage from "./pages/activities/ActivitiesPage";
 import  WalletManagement from "./pages/Wallet/WalletManagement";
+import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
+import HealthcareProviders from "./pages/super-admin/HealthcareProviders";
+import SuperAdminReports from "./pages/super-admin/SuperAdminReport";
+import LabReportView from "./pages/laboratory/LabReports";
 
 const queryClient = new QueryClient();
 
@@ -91,8 +95,7 @@ const App = () => (
 
           {/* Laboratory Routes */}
           <Route path="/dashboard/lab/orders" element={<LabOrders />} />
-          <Route path="/dashboard/lab/results" element={<ResultsEntry />} />
-          <Route path="/dashboard/lab/reports" element={<LabReports />} />
+          <Route path="/dashboard/lab/reports/:id" element={<LabReportView />} />
 
           {/* Staff/HR Routes */}
           <Route path="/dashboard/staff" element={<StaffDirectory />} />
@@ -159,12 +162,24 @@ const App = () => (
           />
 
           {/* Wallet */}
-               {/* subscription toutes */}
           <Route
             path="/dashboard/wallet"
             element={<WalletManagement />}
           />
 
+          {/* Super Admin Routes */}
+          <Route
+            path="/dashboard/admin"
+            element={<SuperAdminDashboard />}
+          />
+          <Route
+            path="/dashboard/admin/healthcare-providers"
+            element={<HealthcareProviders />}
+          />
+            <Route
+            path="/dashboard/admin/reports"
+            element={<SuperAdminReports />}
+          />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

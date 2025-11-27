@@ -110,36 +110,17 @@ export default function AppointmentCalendar() {
     return dates;
   };
 
-  // const getAppointmentsForDate = (date: Date) => {
-  //   const dateKey = formatDate(date);
-  //   return calendarData[dateKey as keyof typeof calendarData] || [];
-  // };
-
-  // const getAppointmentForTimeSlot = (date: Date, time: string) => {
-  //   const appointments = getAppointmentsForDate(date);
-  //   return appointments.find((apt) => apt.time === time);
-  // };
 
   const getAppointmentsForDate = (date: Date) => {
     const formattedDate = formatDate(date);
-    // console.log("getAppointmentsForDate", formattedDate);
 
     return calendar.filter((apt: any) => apt.appointmentDate === formattedDate);
   };
 
-  // const getAppointmentForTimeSlot = (date: Date, time: string) => {
-  //   const appointments = getAppointmentsForDate(date);
-  //   console.log({ appointments });
-  //   return appointments.find((apt: any) =>
-  //     apt.appointmentTime.startsWith(time)
-  //   );
-  // };
 
   const getAppointmentForTimeSlot = (date: Date, time: string) => {
-    // console.log({ date }, { time });
 
     const appointments = getAppointmentsForDate(date);
-    // console.log({ appointmentsdate: appointments });
     return appointments.find((apt) => {
       const appointmentTime = apt.appointmentTime.slice(0, 5); // "16:30"
       return appointmentTime === time;

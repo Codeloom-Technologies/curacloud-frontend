@@ -24,7 +24,7 @@ import {
   User,
   Stethoscope,
 } from "lucide-react";
-import { fetchPatientByMRN, fetchPatients } from "@/services/patient";
+import { fetchPatients } from "@/services/patient";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getAllDoctors } from "@/services/staff";
 import {

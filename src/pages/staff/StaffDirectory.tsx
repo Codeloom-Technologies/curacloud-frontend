@@ -518,7 +518,7 @@ const StaffDirectory = () => {
                   {isStatsLoading && isStatsFetching ? (
                     <Skeleton className="h-8 w-16" />
                   ) : (
-                    statsData.inActiveStaffs || 0
+                    statsData?.inActiveStaffs || 0
                   )}
                 </div>
                 <div className="text-sm text-muted-foreground">
@@ -532,7 +532,7 @@ const StaffDirectory = () => {
                   {isStatsLoading && isStatsFetching ? (
                     <Skeleton className="h-8 w-16" />
                   ) : (
-                    statsData.newStaffsThisMonth || 0
+                    statsData?.newStaffsThisMonth || 0
                   )}
                 </div>
                 <div className="text-sm text-muted-foreground">

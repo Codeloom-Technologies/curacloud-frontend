@@ -275,7 +275,6 @@ export default function Consultations() {
   queryKey: ["consultation-stats"],
   queryFn: () => getConsultationStats(),
 });
-  console.log(statsData)
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {

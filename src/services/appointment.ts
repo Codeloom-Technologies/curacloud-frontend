@@ -69,7 +69,6 @@ export const fetchAppointmentStats = async (): Promise<any | any> => {
 };
 
 export const updateAppointmentStatus = async (id: number, payload: any) => {
-  console.log(payload);
   const response = await apiClient(`/appointments/${id}/status`, {
     method: "PATCH",
     body: JSON.stringify(payload),

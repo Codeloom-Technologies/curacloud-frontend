@@ -39,7 +39,6 @@ export default function PatientRecords() {
   });
 
   const patient = data || {};
-  console.log({ patient });
 
   useEffect(() => {}, [patientId, data]);
 

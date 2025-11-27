@@ -111,7 +111,6 @@ export const getActivities = async (
       meta: meta,
     };
   } catch (error) {
-    console.error("Error fetching activities:", error);
     throw error;
   }
 };
@@ -133,7 +132,6 @@ export const getRecentActivities = async (
       meta: meta,
     };
   } catch (error) {
-    console.error("Error fetching recent activities:", error);
     throw error;
   }
 };
@@ -174,7 +172,6 @@ export const searchActivities = async (
       meta: meta,
     };
   } catch (error) {
-    console.error("Error searching activities:", error);
     throw error;
   }
 };
@@ -210,7 +207,6 @@ export const getActivitiesByType = async (
       meta: data.meta,
     };
   } catch (error) {
-    console.error("Error fetching activities by type:", error);
     throw error;
   }
 };
@@ -236,7 +232,6 @@ export const getResourceActivities = async (
     const data = await response.json();
     return data.data || [];
   } catch (error) {
-    console.error("Error fetching resource activities:", error);
     throw error;
   }
 };
@@ -270,7 +265,6 @@ export const createActivity = async (activityData: {
     const data = await response.json();
     return data.data;
   } catch (error) {
-    console.error("Error creating activity:", error);
     throw error;
   }
 };
