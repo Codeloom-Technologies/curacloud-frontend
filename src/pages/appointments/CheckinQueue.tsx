@@ -120,13 +120,13 @@ export default function CheckinQueue() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case "Waiting":
+      case "waiting":
         return <Clock className="h-4 w-4" />;
-      case "Ready":
+      case "ready":
         return <CheckCircle className="h-4 w-4" />;
-      case "In-consultation":
+      case "in-consultation":
         return <Stethoscope className="h-4 w-4" />;
-      case "No-show":
+      case "no-show":
         return <XCircle className="h-4 w-4" />;
       default:
         return <AlertCircle className="h-4 w-4" />;
@@ -395,26 +395,26 @@ export default function CheckinQueue() {
                         </div>
 
                         <div className="flex gap-2">
-                          {item.status === "Scheduled" && (
+                          {item.status === "scheduled" && (
                             <Button
                               disabled={updateStatusMutation.isPending}
                               size="sm"
                               className="bg-gradient-primary"
                               onClick={() =>
-                                handleStatusUpdate(item.id, "Waiting")
+                                handleStatusUpdate(item.id, "waiting")
                               }
                             >
                               Check In
                             </Button>
                           )}
-                          {item.status === "Waiting" && (
+                          {item.status === "waiting" && (
                             <>
                               <Button
                                 disabled={updateStatusMutation.isPending}
                                 variant="outline"
                                 size="sm"
                                 onClick={() =>
-                                  handleStatusUpdate(item.id, "Ready")
+                                  handleStatusUpdate(item.id, "ready")
                                 }
                               >
                                 Mark Ready
@@ -424,32 +424,32 @@ export default function CheckinQueue() {
                                 variant="outline"
                                 size="sm"
                                 onClick={() =>
-                                  handleStatusUpdate(item.id, "No-show")
+                                  handleStatusUpdate(item.id, "no-show")
                                 }
                               >
                                 No Show
                               </Button>
                             </>
                           )}
-                          {item.status === "Ready" && (
+                          {item.status === "ready" && (
                             <Button
                               disabled={updateStatusMutation.isPending}
                               size="sm"
                               className="bg-gradient-primary"
                               onClick={() =>
-                                handleStatusUpdate(item.id, "In-consultation")
+                                handleStatusUpdate(item.id, "in-consultation")
                               }
                             >
                               Start Consultation
                             </Button>
                           )}
-                          {item.status === "In-consultation" && (
+                          {item.status === "in-consultation" && (
                             <Button
                               disabled={updateStatusMutation.isPending}
                               variant="outline"
                               size="sm"
                               onClick={() =>
-                                handleStatusUpdate(item.id, "Completed")
+                                handleStatusUpdate(item.id, "completed")
                               }
                             >
                               Complete

@@ -1,14 +1,16 @@
-export const BASE_URL = import.meta.env.VITE_BASE_URL;
+import { BASE_URL } from "./api-client";
 
-export const apiClient = async (
+// For file uploads (FormData)
+export const uploadClient = async (
   endpoint: string,
+  formData: FormData,
   options: RequestInit = {}
 ): Promise<Response | any> => {
   const authToken = localStorage.getItem("authToken");
   const hospitalToken = localStorage.getItem("hospitalToken");
 
   const headers: HeadersInit = {
-    "Content-Type": "application/json",
+    // ⚠️ No Content-Type header for FormData
     ...options.headers,
   };
 
@@ -24,24 +26,30 @@ export const apiClient = async (
     }
   }
 
-  // Handle hospital header - FIXED
+  // Handle hospital header
   if (hospitalToken && hospitalToken !== 'null' && hospitalToken !== 'undefined') {
     try {
-        headers["X-Hospital-Token"] = hospitalToken;
+      headers["X-Hospital-Token"] = hospitalToken;
     } catch (error) {
       // Don't throw, just continue without hospital header
     }
   }
 
+  console.log('🚀 Upload Client Headers:', headers);
+  console.log('📦 Endpoint:', `${BASE_URL}${endpoint}`);
 
   const response = await fetch(`${BASE_URL}${endpoint}`, {
-    ...options,
+    method: 'POST', // ✅ Explicitly set method
+    ...options,     // ⚠️ This could override method if options has method
     headers,
+    body: formData,
   });
+
+  console.log('📨 Response Status:', response.status);
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.message || "Failed to authenticate");
+    throw new Error(error.message || "Upload failed");
   }
 
   const responseData = await response.json();

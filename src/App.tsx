@@ -47,6 +47,11 @@ import SuperAdminDashboard from "./pages/super-admin/SuperAdminDashboard";
 import HealthcareProviders from "./pages/super-admin/HealthcareProviders";
 import SuperAdminReports from "./pages/super-admin/SuperAdminReport";
 import LabReportView from "./pages/laboratory/LabReports";
+import HealthcareSelection from "./pages/HealthcareSelection";
+import AcceptInvite from "./pages/AcceptInvite";
+import AboutPage from "./pages/AboutUs";
+import CareersPage from "./pages/CareerPage";
+import ContactPage from "./pages/ContactUs";
 
 const queryClient = new QueryClient();
 
@@ -58,12 +63,19 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/about-us" element={<AboutPage />} />
+          <Route path="/careers" element={<CareersPage />} />
+          <Route path="/contact-us" element={<ContactPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/auth/onboarding" element={<Onboarding />} />
           <Route path="/auth/verify-email" element={<EmailVerification />} />
           <Route path="/auth/reset-password" element={<ForgotPassword />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/auth/login" element={<Login />} />
+          <Route path="/auth/healthcare-selection" element={<HealthcareSelection />} />
+          <Route path="/auth/verify-invitation" element={<AcceptInvite />} />
+
+          
           <Route path="/dashboard/patients" element={<PatientDirectory />} />
           <Route
             path="/dashboard/patients/register"

@@ -157,9 +157,9 @@ export default function PatientDirectory() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "Active":
+      case "active":
         return "bg-success/10 text-success";
-      case "Inactive":
+      case "inactive":
         return "bg-muted text-muted-foreground";
       default:
         return "bg-muted text-muted-foreground";
@@ -495,7 +495,7 @@ export default function PatientDirectory() {
                   {isLoading || isFetching ? (
                     <Skeleton className="h-8 w-16" />
                   ) : (
-                    data["meta"].total || 0
+                    data["meta"]?.total || 0
                   )}
                   )
                 </CardTitle>
@@ -633,7 +633,7 @@ export default function PatientDirectory() {
                                   patient.user.status || "Active"
                                 )}
                               >
-                                {patient.user.status || "Active"}
+                                {patient.user.status?.charAt(0).toUpperCase() + patient?.user?.status?.slice(1) || "Active"}
                               </Badge>
                             </TableCell>
                             <TableCell>

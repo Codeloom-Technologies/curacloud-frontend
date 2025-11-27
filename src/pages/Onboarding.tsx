@@ -53,7 +53,64 @@ import {
   HEALTHCARE_PROVIDER_ROLES,
   HEALTHCARE_PROVIDER_TYPES,
 } from "@/constants";
+import { z } from "zod";
 
+const passwordSchema = z.object({
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number")
+    .regex(/[^A-Za-z0-9]/, "Password must contain at least one special character"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+// type PasswordFormData = z.infer<typeof passwordSchema>;
+
+// Password Strength Component
+function PasswordStrengthIndicator({ password }: { password: string }) {
+  const getStrength = (pass: string) => {
+    let score = 0;
+    if (pass.length >= 8) score++;
+    if (/[A-Z]/.test(pass)) score++;
+    if (/[a-z]/.test(pass)) score++;
+    if (/[0-9]/.test(pass)) score++;
+    if (/[^A-Za-z0-9]/.test(pass)) score++;
+    return score;
+  };
+
+  const strength = getStrength(password);
+  const strengthLabels = ["Very Weak", "Weak", "Fair", "Good", "Strong", "Very Strong"];
+  const strengthColors = ["bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-blue-500", "bg-green-500", "bg-green-600"];
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between text-sm">
+        <span className="text-blue-900">Password Strength</span>
+        <span className={`font-medium ${
+          strength >= 4 ? "text-green-600" : 
+          strength >= 2 ? "text-yellow-600" : "text-red-600"
+        }`}>
+          {strengthLabels[strength]}
+        </span>
+      </div>
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((index) => (
+          <div
+            key={index}
+            className={`h-2 flex-1 rounded-full transition-colors ${
+              index <= strength ? strengthColors[strength] : "bg-gray-200"
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
 export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
@@ -248,11 +305,11 @@ export default function Onboarding() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-              <Heart className="h-6 w-6 text-white" />
+                <Heart className="h-6 w-6 text-primary-foreground" />
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Curacloud
-            </h1>
+           <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                  Curacloud
+                </h1>
           </div>
           <p className="text-muted-foreground text-lg">
             Join thousands of healthcare providers transforming patient care
@@ -691,6 +748,10 @@ export default function Onboarding() {
                       }
                       className="h-12 text-lg border-2 focus:border-blue-300 transition-colors pr-12"
                     />
+                         {/* Password Strength Indicator */}
+              {formData.password && (
+                <PasswordStrengthIndicator password={formData.password} />
+              )}
                     <Button
                       type="button"
                       variant="ghost"

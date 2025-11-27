@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, Clock } from "lucide-react";
 
 const EmailVerification = () => {
   const [searchParams] = useSearchParams();
@@ -54,14 +54,31 @@ const EmailVerification = () => {
               <Alert className="border-green-500 bg-green-50 dark:bg-green-950">
                 <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
                 <AlertTitle className="text-green-800 dark:text-green-300">
-                  Success!
+                  Email Verified Successfully!
                 </AlertTitle>
                 <AlertDescription className="text-green-700 dark:text-green-400">
-                  {data?.message || "Email verified successfully!"}
+                  {data?.message || "Your email has been verified successfully!"}
                 </AlertDescription>
               </Alert>
-              <Button onClick={handleContinue} className="w-full">
-                Continue to Login
+              
+              <Alert className="border-blue-600 bg-blue-50 dark:bg-blue-950">
+                <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <AlertTitle className="text-blue-800 dark:text-blue-300">
+                  Account Under Review
+                </AlertTitle>
+                <AlertDescription className="text-blue-700 dark:text-blue-400">
+                  Your account is currently under review by the CuraCloud admin team. 
+                  This process typically takes up to 48 hours. You will receive a 
+                  notification once your account has been approved.
+                </AlertDescription>
+              </Alert>
+              
+              <div className="text-center text-sm text-muted-foreground mt-2">
+                <p>Thank you for your patience.</p>
+              </div>
+              
+              <Button onClick={handleContinue} className="w-full mt-4">
+                Return to Login
               </Button>
             </>
           )}

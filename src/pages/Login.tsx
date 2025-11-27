@@ -31,7 +31,8 @@ export default function Login() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/dashboard");
+      // navigate("/dashboard");
+      navigate('/auth/healthcare-selection')
     }
   }, [isAuthenticated, navigate]);
 
@@ -42,9 +43,7 @@ export default function Login() {
   const mutation = useMutation({
     mutationFn: submitLogging,
     onSuccess: (data) => {
-      // Store auth data in zustand store
-      setAuth(data.user, data.accessToken);
-
+      setAuth(data.user, data.accessToken, data.hospitals);
       toast({
         variant: "success",
         title: "Login Successful",
@@ -60,7 +59,7 @@ const navigationTimeout = setTimeout(() => {
   if (isSuperAdmin) {
     navigate("/dashboard/admin", { replace: true });
   } else {
-    navigate("/dashboard", { replace: true });
+    navigate("/auth/healthcare-selection", { replace: true });
   }
 }, 50);
 
