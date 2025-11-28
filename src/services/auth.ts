@@ -73,3 +73,23 @@ export const acceptInvitation = async (data: { token: string; password: string }
   });
   return response;
 };
+
+
+export const forgotPasswordMutation = async (email: string) => {
+  return await apiClient("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+};
+
+
+ export const resetPasswordMutation = async (data: { 
+  token: string; 
+  password: string; 
+  passwordConfirmation: string;
+ }) => {
+  return await apiClient("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+};

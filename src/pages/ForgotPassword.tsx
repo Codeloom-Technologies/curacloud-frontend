@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,43 +14,38 @@ import { Heart, ArrowLeft, Mail } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { forgotPasswordMutation } from "@/services/auth";
+
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      // TODO: Implement forgot password API call
-      // await apiClient("/auth/forgot-password", {
-      //   method: "POST",
-      //   body: JSON.stringify({ email }),
-      // });
-
-      // Simulating API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
+  // React Query mutation
+  const { mutate, isPending, isError, error } = useMutation({
+    mutationFn: forgotPasswordMutation,
+    onSuccess: () => {
       setIsSubmitted(true);
       toast({
         title: "Email Sent",
         description: "Check your inbox for password reset instructions.",
         variant: "success",
       });
-    } catch (error) {
+    },
+    onError: (error: Error) => {
       toast({
         title: "Error",
-        description: "Failed to send reset email. Please try again.",
+        description: error?.message || "Failed to send reset email. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
-    }
+    },
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    mutate(email);
   };
 
   return (
@@ -110,9 +106,9 @@ export default function ForgotPassword() {
                 <Button
                   type="submit"
                   className="w-full h-11 bg-gradient-primary hover:shadow-glow transition-all"
-                  disabled={isLoading}
+                  disabled={isPending}
                 >
-                  {isLoading ? "Sending..." : "Send Reset Link"}
+                  {isPending ? "Sending..." : "Send Reset Link"}
                 </Button>
               </form>
             )}

@@ -54,7 +54,6 @@ type PlanSelection = {
   features: string[];
 } | null;
 
-
 const SubscriptionManagement = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -76,7 +75,8 @@ const SubscriptionManagement = () => {
     onReactivate,
     isCreating, 
     isUpdating, 
-    isCancelling , isReactivating
+    isCancelling, 
+    isReactivating
   } = useSubscription();
 
   const { 
@@ -96,42 +96,76 @@ const SubscriptionManagement = () => {
   } = useQuery({
     queryKey: ["active-subscription"],
     queryFn: () => getActiveSubscriptionPlan(),
-     refetchInterval: 30000,
-      refetchOnWindowFocus: true,
-      staleTime: 60000, // Consider data fresh for 1 minute
+    refetchInterval: 30000,
+    refetchOnWindowFocus: true,
+    staleTime: 60000,
   });
 
-
   // Wallet balance query
-    const { 
-      data: wallet, 
-      isLoading: isLoadingWallet,
-      refetch: refetchWallet,
-    } = useQuery({
-      queryKey: ["wallet-balance"],
-      queryFn: () => getBalance(),
-      refetchInterval: 30000,
-      refetchOnWindowFocus: true,
-      staleTime: 60000, // Consider data fresh for 1 minute
-    });
+  const { 
+    data: wallet, 
+    isLoading: isLoadingWallet,
+    refetch: refetchWallet,
+  } = useQuery({
+    queryKey: ["wallet-balance"],
+    queryFn: () => getBalance(),
+    refetchInterval: 30000,
+    refetchOnWindowFocus: true,
+    staleTime: 60000,
+  });
 
-  const walletBalance = wallet?.balance
+  const walletBalance = wallet?.balance;
 
-    const { 
+  const { 
     data: subscriptionsHistory, 
     isLoading: isLoadingHistory,
-      isFetching: isFetchingHistory ,
+    isFetching: isFetchingHistory,
     refetch
   } = useQuery({
     queryKey: ["subscription-history"],
     queryFn: () => getSubscriptionsHistory(1,perPage),
-     refetchInterval: 30000,
-     refetchOnWindowFocus: true,
-    staleTime: 60000,
+    // refetchInterval: 30000,
+    refetchOnWindowFocus: true,
+    // staleTime: 60000,
   });
-  const histories = subscriptionsHistory?.histories || []
+  
+  const histories = subscriptionsHistory?.histories || [];
   const meta = subscriptionsHistory?.meta ?? {};
   const totalPages = meta.lastPage ?? 1;
+
+  // Helper functions for subscription status
+  const getSubscriptionStatus = (subscription: any) => {
+    if (!subscription) return 'none';
+    
+    const now = new Date();
+    const endsAt = subscription.currentPeriodEndsAt ? new Date(subscription.currentPeriodEndsAt) : null;
+    
+    // Check if subscription is expired by date
+    const isExpiredByDate = endsAt && endsAt < now;
+    
+    // Status-based checks
+    if (subscription.status === 'active' && isExpiredByDate) {
+      return 'expired';
+    }
+    
+    if (['expired', 'canceled', 'past_due', 'inactive'].includes(subscription.status)) {
+      return subscription.status;
+    }
+    
+    return subscription.status;
+  };
+
+  const isActiveSubscription = (planId: string) => {
+    const status = getSubscriptionStatus(currentSubscription);
+    return status === 'active' && currentSubscription?.plan?.id === planId;
+  };
+
+  const isExpiredSubscription = () => {
+    const status = getSubscriptionStatus(currentSubscription);
+    return ['expired', 'canceled', 'past_due', 'inactive'].includes(status);
+  };
+
+  const canSelectNewPlan = !currentSubscription || isExpiredSubscription();
 
   const getBillingPeriod = (subscription: any) => {
     if (!subscription?.currentPeriodStartsAt || !subscription?.currentPeriodEndsAt) 
@@ -144,16 +178,12 @@ const SubscriptionManagement = () => {
     return diffMonths >= 12 ? "yearly" : diffMonths >= 6 ? "half-yearly" : diffMonths >= 3 ? "quarterly" : "monthly";
   };
 
-  const isCurrentPlan = (planId: string) => {
-    return currentSubscription?.plan?.id === planId;
-  };
-
   const handleContactSupport = () => {
-       toast({
-        title: "Soon",
-        description: "Coming soon",
-        variant: "default",
-      });
+    toast({
+      title: "Soon",
+      description: "Coming soon",
+      variant: "default",
+    });
   };
 
   const handlePlanSelection = (plan: any) => {
@@ -182,102 +212,101 @@ const SubscriptionManagement = () => {
   };
 
   const handlePaymentConfirmation = async () => {
-  if (!selectedPlan || !user) {
-    toast({
-      title: "Error",
-      description: "Please select a plan and ensure you're logged in.",
-      variant: "destructive",
-    });
-    return;
-  }
+    if (!selectedPlan || !user) {
+      toast({
+        title: "Error",
+        description: "Please select a plan and ensure you're logged in.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const handleTopUp = () => {
-   return  navigate("/dashboard/wallet")
+      return navigate("/dashboard/wallet");
+    };
+
+    // Enhanced balance validation for wallet payments
+    if (selectedPaymentMethod === 'wallet') {
+      if (walletBalance < selectedPlan.price) {
+        const shortage = selectedPlan.price - walletBalance;
+        toast({
+          title: "Insufficient Wallet Balance",
+          description: (
+            <div className="space-y-1">
+              <p>Your wallet balance is insufficient for this transaction.</p>
+              <p className="font-semibold">
+                Needed: {formatNaira(Math.abs(selectedPlan.price))} | Available: {formatNaira(Math.abs(walletBalance))}
+              </p>
+              <p>Shortage: {formatNaira(Math.abs(shortage))}</p>
+            </div>
+          ),
+          variant: "destructive",
+          action: (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleTopUp}
+            >
+              Add Funds
+            </Button>
+          ),
+        });
+        return;
+      }
     }
 
-  // Enhanced balance validation for wallet payments
-  if (selectedPaymentMethod === 'wallet') {
-    if (walletBalance < selectedPlan.price) {
-      const shortage = selectedPlan.price - walletBalance;
+    try {
+      // Show processing toast
       toast({
-        title: "Insufficient Wallet Balance",
-        description: (
-          <div className="space-y-1">
-            <p>Your wallet balance is insufficient for this transaction.</p>
-            <p className="font-semibold">
-              Needed: {formatNaira(Math.abs(selectedPlan.price))} | Available: {formatNaira(Math.abs(walletBalance))}
-            </p>
-            <p>Shortage: {formatNaira(Math.abs(shortage))}</p>
-          </div>
-        ),
+        title: "Processing Payment",
+        description: "Please wait while we process your payment...",
+        variant: "default",
+      });
+
+      // Process the payment
+      await handleUpgrade(
+        selectedPlan.id, 
+        selectedPlan.price, 
+        selectedPlan?.name, 
+        selectedPaymentMethod
+      );
+
+      // Refresh wallet balance after successful payment if wallet was used
+      if (selectedPaymentMethod === 'wallet') {
+        await refetchWallet();
+      }
+
+      // Show success message
+      toast({
+        title: "Payment Successful!",
+        description: `You have successfully subscribed to the ${selectedPlan.name} plan.`,
+        variant: "success",
+      });
+
+      // Reset state
+      setShowPaymentModal(false);
+      setSelectedPlan(null);
+      
+    } catch (error: any) {
+      console.error('Payment error:', error);
+      
+      toast({
+        title: "Payment Failed",
+        description: error.message || "There was an error processing your payment. Please try again.",
         variant: "destructive",
         action: (
           <Button 
             variant="outline" 
             size="sm" 
-            onClick={handleTopUp}
+            onClick={() => refetchWallet()}
           >
-            Add Funds
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry
           </Button>
         ),
       });
-      return;
     }
-    // Don't return here - continue with wallet payment
-  }
-
-  try {
-    // Show processing toast
-    toast({
-      title: "Processing Payment",
-      description: "Please wait while we process your payment...",
-      variant: "default",
-    });
-
-    // Process the payment
-    await handleUpgrade(
-      selectedPlan.id, 
-      selectedPlan.price, 
-      selectedPlan?.name, 
-      selectedPaymentMethod
-    );
-
-    // Refresh wallet balance after successful payment if wallet was used
-    if (selectedPaymentMethod === 'wallet') {
-      await refetchWallet();
-    }
-
-    // Show success message
-    toast({
-      title: "Payment Successful!",
-      description: `You have successfully subscribed to the ${selectedPlan.name} plan.`,
-      variant: "success",
-    });
-
-    // Reset state
-    setShowPaymentModal(false);
-    setSelectedPlan(null);
-    
-  } catch (error: any) {
-    console.error('Payment error:', error);
-    
-    toast({
-      title: "Payment Failed",
-      description: error.message || "There was an error processing your payment. Please try again.",
-      variant: "destructive",
-      action: (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => refetchWallet()}
-        >
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Retry
-        </Button>
-      ),
-    });
-  }
-};
+  };
 
   const onAutoRenew = async (enabled: boolean) => {
     if (!currentSubscription?.id) {
@@ -303,7 +332,7 @@ const SubscriptionManagement = () => {
     await handleCancel(currentSubscription.id, {feedback: '', reason:''});
   };
   
-    const handleReactivate = async () => {
+  const handleReactivate = async () => {
     if (!currentSubscription?.id) {
       toast({
         title: "No Active Subscription",
@@ -315,13 +344,14 @@ const SubscriptionManagement = () => {
     await onReactivate(currentSubscription.id);
   };
 
-    const handlePageChange = (page: number) => {
+  const handlePageChange = (page: number) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
       refetch();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
+
   // Payment Method Modal
   const PaymentModal = () => (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -714,8 +744,8 @@ const SubscriptionManagement = () => {
                   </Badge>
                 )}
               </div>
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
-               Choose Your Plan
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                Choose Your Plan
               </h1>
               <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
                 Scalable pricing options designed to grow with your healthcare facility.
@@ -726,9 +756,14 @@ const SubscriptionManagement = () => {
             {currentSubscription && (
               <Card className="animate-fade-in">
                 <CardHeader>
-                  <CardTitle>Current Subscription</CardTitle>
+                  <CardTitle>
+                    {isExpiredSubscription() ? "Expired Subscription" : "Current Subscription"}
+                  </CardTitle>
                   <CardDescription>
-                    Overview of your current plan and usage
+                    {isExpiredSubscription() 
+                      ? "Your subscription has expired. Renew to continue using premium features."
+                      : "Overview of your current plan and usage"
+                    }
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -742,8 +777,12 @@ const SubscriptionManagement = () => {
                         <span className="text-lg font-semibold">
                           {currentSubscription.plan?.name || "No active plan"}
                         </span>
-                        <Badge variant={currentSubscription.status === 'active' ? "default" : "secondary"}>
-                          {currentSubscription.status?.charAt(0).toUpperCase() + currentSubscription.status?.slice(1)}
+                        <Badge variant={
+                          getSubscriptionStatus(currentSubscription) === 'active' 
+                            ? "default" 
+                            : "secondary"
+                        }>
+                          {getSubscriptionStatus(currentSubscription).charAt(0).toUpperCase() + getSubscriptionStatus(currentSubscription).slice(1)}
                         </Badge>
                       </div>
                     </div>
@@ -786,7 +825,7 @@ const SubscriptionManagement = () => {
                         <Switch
                           checked={currentSubscription.autoRenew || false}
                           onCheckedChange={onAutoRenew}
-                          disabled={currentSubscription?.status !== 'active' || isUpdating}
+                          disabled={getSubscriptionStatus(currentSubscription) !== 'active' || isUpdating}
                         />
                         <span className="text-sm">
                           {isUpdating ? "Updating..." : (currentSubscription.autoRenew ? "Enabled" : "Disabled")}
@@ -797,13 +836,41 @@ const SubscriptionManagement = () => {
 
                   <Separator className="my-6" />
 
-                  {/* Usage Stats */}
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <div className="space-y-4">
-                      <h4 className="font-semibold">Actions</h4>
-                      <div className="flex gap-3 flex-wrap">
-
-                        {currentSubscription.status === "active" || currentSubscription.status === "trialing" && (
+                  {/* Actions */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">Actions</h4>
+                    <div className="flex gap-3 flex-wrap">
+                      {/* Show Renew button for expired subscriptions */}
+                      {isExpiredSubscription() && (
+                        <Button 
+                          className="h-11 bg-gradient-primary transition-all"
+                          onClick={() => {
+                            // Auto-select the previous plan for renewal
+                            const previousPlan = subscriptionPlans?.find(
+                              plan => plan.id === currentSubscription.plan?.id
+                            );
+                            if (previousPlan) {
+                              handlePlanSelection(previousPlan);
+                            }
+                          }}
+                        >
+                          Renew Subscription
+                        </Button>
+                      )}
+                      
+                      {/* Show Reactivate for canceled subscriptions */}
+                      {getSubscriptionStatus(currentSubscription) === "canceled" && (
+                        <Button 
+                          className="h-11 bg-gradient-primary transition-all"
+                          disabled={isReactivating}
+                          onClick={handleReactivate}
+                        >
+                          {isReactivating ? "Reactivating..." : "Reactivate Subscription"}                             
+                        </Button>
+                      )}
+                      
+                      {/* Show Cancel only for active subscriptions */}
+                      {getSubscriptionStatus(currentSubscription) === "active" && (
                         <Button 
                           variant="destructive" 
                           onClick={onCancelSubscription}
@@ -812,20 +879,6 @@ const SubscriptionManagement = () => {
                           {isCancelling ? "Cancelling..." : "Cancel Subscription"}
                         </Button>
                       )}
-                      
-                       {currentSubscription.status === "canceled" && (
-                        <Button 
-                         className="h-11 bg-gradient-primary transition-all"
-                          disabled={isReactivating}
-                          onClick={handleReactivate}
-                        >
-                          {isReactivating ? "Reactivating..." : "Reactivate Subscription"}                             
-                        </Button>
-                      )}
-                        
-
-                        {/* <Button variant="outline">Update Payment Method</Button> */}
-                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -836,7 +889,7 @@ const SubscriptionManagement = () => {
             <div className="space-y-8 animate-fade-in">
               <div className="grid md:grid-cols-4 gap-4">
                 {subscriptionPlans?.map((plan) => {
-                  const isCurrent = isCurrentPlan(plan.id);
+                  const isCurrent = isActiveSubscription(plan.id);
                   const isPopular = plan.name?.includes('Growth Plan');
                   const isEnterprise = plan.name === 'Enterprise Plan';
                   
@@ -920,7 +973,7 @@ const SubscriptionManagement = () => {
                             isPopular ? "bg-primary hover:bg-primary/90" : "bg-primary hover:bg-primary/90"
                           } ${isEnterprise ? "bg-primary hover:bg-primary/90" : "bg-primary hover:bg-primary/90"}`}
                           variant={isCurrent ? "outline" : isPopular || isEnterprise ? "default" : "default"}
-                          disabled={isCurrent || isCreating}
+                          disabled={isCurrent || isCreating} // Only disable for ACTIVE current plans
                           onClick={() => handlePlanSelection(plan)}
                         >
                           {isCurrent ? (
@@ -934,7 +987,12 @@ const SubscriptionManagement = () => {
                             </>
                           ) : (
                             <>
-                              {currentSubscription ? "Upgrade Plan" : "Start Free Trial"} 
+                              {!currentSubscription 
+                                ? "Start Free Trial" 
+                                : isExpiredSubscription() 
+                                  ? "Renew Now" 
+                                  : "Upgrade Plan"
+                              } 
                               <ArrowRight className="ml-2 h-4 w-4" />
                             </>
                           )}
@@ -947,128 +1005,122 @@ const SubscriptionManagement = () => {
             </div>
 
             {/* Billing History */}
-<Card className="animate-fade-in">
-  <CardHeader>
-    <CardTitle>Billing History</CardTitle>
-    <CardDescription>
-      Recent invoices and payment history
-    </CardDescription>
-  </CardHeader>
-  <CardContent>
-    {isLoadingHistory || isFetchingHistory ? (
-      // Loading state
-      <div className="text-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-        <p className="text-muted-foreground">Loading billing history...</p>
-      </div>
-    ) : histories && histories?.length > 0 ? (
-      // Data available state
-      <div className="space-y-4">
-        {histories.map((subscription) => (
-          <div
-            key={subscription?.id}
-            className="flex items-center justify-between p-4 border rounded-lg"
-          >
-            <div className="flex items-center space-x-4">
-              <div className={`p-2 rounded-full ${
-                subscription.status === 'successful' 
-                  ? 'bg-green-100 text-green-600' 
-                  : 'bg-yellow-100 text-yellow-600'
-              }`}>
-                <FileText className="h-4 w-4" />
-              </div>
-              <div>
-                <p className="font-medium">{subscription?.plan?.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  Reference: {subscription?.reference}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(subscription?.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-            <div className="text-right">
-              <p className="font-medium">
-                {(formatNaira(Math.abs(subscription?.plan?.price)))}
-              </p>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                subscription.status === 'successful'
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-yellow-100 text-yellow-800'
-              }`}>
-                {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
-              </span>
-            </div>
-          </div>
-        ))}
-  
-      </div>
-    ) : (
-      // Empty state
-      <div className="text-center py-8">
-        <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
-        <p className="text-muted-foreground">
-          No billing history available
-        </p>
-        <Button variant="outline" className="mt-4">
-          View All Invoices
-        </Button>
-      </div>
-    )}
+            <Card className="animate-fade-in">
+              <CardHeader>
+                <CardTitle>Billing History</CardTitle>
+                <CardDescription>
+                  Recent invoices and payment history
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {isLoadingHistory || isFetchingHistory ? (
+                  // Loading state
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading billing history...</p>
+                  </div>
+                ) : histories && histories?.length > 0 ? (
+                  // Data available state
+                  <div className="space-y-4">
+                    {histories.map((subscription) => (
+                      <div
+                        key={subscription?.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className={`p-2 rounded-full ${
+                            subscription.status === 'successful' 
+                              ? 'bg-green-100 text-green-600' 
+                              : 'bg-yellow-100 text-yellow-600'
+                          }`}>
+                            <FileText className="h-4 w-4" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{subscription?.plan?.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              Reference: {subscription?.reference}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {new Date(subscription?.createdAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">
+                            {(formatNaira(Math.abs(subscription?.plan?.price)))}
+                          </p>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            subscription.status === 'successful'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {subscription.status.charAt(0).toUpperCase() + subscription.status.slice(1)}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  // Empty state
+                  <div className="text-center py-8">
+                    <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                    <p className="text-muted-foreground">
+                      No billing history available
+                    </p>
+                    <Button variant="outline" className="mt-4">
+                      View All Invoices
+                    </Button>
+                  </div>
+                )}
               </CardContent>
 
-
-              
+              {!isLoadingHistory && histories.length > 0 && (
+                <div className="mt-6 flex justify-center">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() =>
+                            currentPage > 1 && handlePageChange(currentPage - 1)
+                          }
+                          className={
+                            currentPage === 1
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
+                        />
+                      </PaginationItem>
+    
+                      {Array.from({ length: totalPages }).map((_, i) => (
+                        <PaginationItem key={i}>
+                          <PaginationLink
+                            onClick={() => handlePageChange(i + 1)}
+                            isActive={currentPage === i + 1}
+                            className="cursor-pointer"
+                          >
+                            {i + 1}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+    
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() =>
+                            currentPage < totalPages &&
+                            handlePageChange(currentPage + 1)
+                          }
+                          className={
+                            currentPage === totalPages
+                              ? "pointer-events-none opacity-50"
+                              : "cursor-pointer"
+                          }
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
             </Card>
-            
-
-                  {!isLoadingHistory && histories.length > 0 && (
-                            <div className="mt-6 flex justify-center">
-                              <Pagination>
-                                <PaginationContent>
-                                  <PaginationItem>
-                                    <PaginationPrevious
-                                      onClick={() =>
-                                        currentPage > 1 && handlePageChange(currentPage - 1)
-                                      }
-                                      className={
-                                        currentPage === 1
-                                          ? "pointer-events-none opacity-50"
-                                          : "cursor-pointer"
-                                      }
-                                    />
-                                  </PaginationItem>
-              
-                                  {Array.from({ length: totalPages }).map((_, i) => (
-                                    <PaginationItem key={i}>
-                                      <PaginationLink
-                                        onClick={() => handlePageChange(i + 1)}
-                                        isActive={currentPage === i + 1}
-                                        className="cursor-pointer"
-                                      >
-                                        {i + 1}
-                                      </PaginationLink>
-                                    </PaginationItem>
-                                  ))}
-              
-                                  <PaginationItem>
-                                    <PaginationNext
-                                      onClick={() =>
-                                        currentPage < totalPages &&
-                                        handlePageChange(currentPage + 1)
-                                      }
-                                      className={
-                                        currentPage === totalPages
-                                          ? "pointer-events-none opacity-50"
-                                          : "cursor-pointer"
-                                      }
-                                    />
-                                  </PaginationItem>
-                                </PaginationContent>
-                              </Pagination>
-                            </div>
-                          )}
-              
           </div>
         </main>
       </div>
