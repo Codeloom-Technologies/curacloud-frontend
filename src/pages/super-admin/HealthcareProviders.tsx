@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -50,11 +50,25 @@ import {
   Crown,
   Loader2,
   RefreshCw,
+  UserCheck,
+  CreditCard,
+  Zap,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Star,
+  BarChart3,
+  Settings,
+  Send,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
-import { fetchHealthcareProviders } from "@/services/admin";
-
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { activateProviderAccount, assignSubscriptionPlan, fetchHealthcareProviders } from "@/services/admin";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getSubscriptionPlans } from "@/services/subscription";
 
 export default function HealthcareProviders() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -63,6 +77,8 @@ export default function HealthcareProviders() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(10);
+  const [selectedProvider, setSelectedProvider] = useState<any>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   const { toast } = useToast();
 
@@ -87,6 +103,9 @@ export default function HealthcareProviders() {
   const providers = providersData?.providers || [];
   const pagination = providersData?.meta;
 
+  console.log(providers)
+  const queryClient = useQueryClient();
+
   const handleAddProvider = () => {
     toast({
       title: "Provider Added",
@@ -94,6 +113,68 @@ export default function HealthcareProviders() {
       variant: "success",
     });
     setIsDialogOpen(false);
+  };
+
+  const handleViewDetails = (provider: any) => {
+    setSelectedProvider(provider);
+    setIsDetailsOpen(true);
+  };
+
+ // Activate Account Mutation
+  const activateAccountMutation = useMutation({
+    mutationFn: activateProviderAccount,
+    onSuccess: () => {
+      toast({
+        title: "Account Activated",
+        description: "Provider account has been successfully activated.",
+        variant: "success",
+      });
+      
+      // Invalidate and refetch providers data
+      queryClient.invalidateQueries({ 
+        queryKey: ['healthcare-providers'] 
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Activation Failed",
+        description: error.message || "Failed to activate provider account.",
+        variant: "destructive",
+      });
+    },
+  });
+
+    const handleActivateAccount = async (providerId: string) => {
+    activateAccountMutation.mutate(providerId);
+  };
+
+ // Assign Plan Mutation
+  const assignPlanMutation = useMutation({
+    mutationFn: assignSubscriptionPlan,
+    onSuccess: () => {
+      toast({
+        title: "Plan Assigned",
+        description: "Subscription plan has been successfully assigned.",
+        variant: "success",
+      });
+      
+      // Invalidate and refetch providers data
+      queryClient.invalidateQueries({ 
+        queryKey: ['healthcare-providers'] 
+      });
+      setIsDetailsOpen(false);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Assignment Failed",
+        description: error.message || "Failed to assign subscription plan.",
+        variant: "destructive",
+      });
+    },
+  });
+
+    const handleAssignPlan = async (providerId: string, planId: string) => {
+    assignPlanMutation.mutate({ providerId, planId });
   };
 
   const getStatusVariant = (status: string) => {
@@ -111,16 +192,25 @@ export default function HealthcareProviders() {
 
   const getPlanColor = (plan: string) => {
     switch (plan) {
-      case "Enterprise":
+      case "Enterprise plan":
         return "bg-purple-100 text-purple-700 border-purple-200";
-      case "Professional":
+      case "Pro Plan":
         return "bg-blue-100 text-blue-700 border-blue-200";
-      case "Basic":
+      case "Basic Plan":
         return "bg-green-100 text-green-700 border-green-200";
       default:
         return "bg-gray-100 text-gray-700 border-gray-200";
     }
   };
+
+    const { 
+      data: subscriptionPlans, 
+      isLoading: isLoadingPlans,
+      error: plansError 
+    } = useQuery({
+      queryKey: ["subscription-plans"],
+      queryFn: () => getSubscriptionPlans(),
+    });
 
   const stats = [
     {
@@ -151,6 +241,324 @@ export default function HealthcareProviders() {
     setSearchQuery(value);
     setPage(1); // Reset to first page when searching
   };
+
+  // Provider Details Dialog
+  const ProviderDetailsDialog = () => (
+    <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        {selectedProvider && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500">
+                  <Building2 className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-bold">{selectedProvider?.healthcareProvider?.name}</span>
+                    <Badge variant={getStatusVariant(selectedProvider?.status)}>
+                      {selectedProvider?.status}
+                    </Badge>
+                  </div>
+                  <DialogDescription className="text-base mt-1">
+                    {selectedProvider?.address}, {selectedProvider?.country?.name}
+                  </DialogDescription>
+                </div>
+              </DialogTitle>
+            </DialogHeader>
+
+            <Tabs defaultValue="overview" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="overview" className="flex items-center gap-2">
+                  <BarChart3 className="h-4 w-4" />
+                  Overview
+                </TabsTrigger>
+                <TabsTrigger value="subscription" className="flex items-center gap-2">
+                  <Crown className="h-4 w-4" />
+                  Subscription
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" />
+                  Settings
+                </TabsTrigger>
+                <TabsTrigger value="actions" className="flex items-center gap-2">
+                  <Zap className="h-4 w-4" />
+                  Quick Actions
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Overview Tab */}
+              <TabsContent value="overview" className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Contact Information */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <UserCheck className="h-5 w-5 text-blue-600" />
+                        Contact Information
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <Mail className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">Email</p>
+                          <p className="text-sm text-muted-foreground">{selectedProvider?.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Phone className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">Phone</p>
+                          <p className="text-sm text-muted-foreground">{selectedProvider?.phoneNumber}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">Address</p>
+                          <p className="text-sm text-muted-foreground">{selectedProvider?.healthcareUsers[0]?.healthcareProvider?.address?.streetAddress}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Globe className="h-4 w-4 text-muted-foreground" />
+                        <div>
+                          <p className="font-medium">Country</p>
+                          <p className="text-sm text-muted-foreground">{selectedProvider?.country?.name}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Statistics */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Activity className="h-5 w-5 text-green-600" />
+                        Statistics
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">Total Users</span>
+                        <Badge variant="secondary" className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          {selectedProvider?.healthcareUsers?.length}
+                        </Badge>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">Member Since</span>
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(selectedProvider?.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium">Last Active</span>
+                        <span className="text-sm text-muted-foreground">2 hours ago</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Current Subscription */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <CreditCard className="h-5 w-5 text-purple-600" />
+                      Current Subscription
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {selectedProvider?.healthcareUsers[0]?.healthcareProvider?.subscription ? (
+                      <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/50">
+                        <div className="flex items-center gap-3">
+                          <Crown className="h-8 w-8 text-purple-600" />
+                          <div>
+                            <p className="font-semibold">
+                              {selectedProvider?.healthcareUsers[0]?.healthcareProvider?.subscription?.plan?.name}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              Active • Renews {new Date(selectedProvider?.healthcareUsers[0]?.healthcareProvider?.subscription.currentPeriodEndsAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge variant="default" className="bg-green-100 text-green-700 border-green-200">
+                          Active
+                        </Badge>
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 space-y-3">
+                        <CreditCard className="h-12 w-12 text-muted-foreground mx-auto" />
+                        <div>
+                          <p className="font-semibold">No Active Subscription</p>
+                          <p className="text-sm text-muted-foreground">
+                            This provider doesn't have an active subscription plan.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Subscription Tab */}
+              <TabsContent value="subscription" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Crown className="h-5 w-5 text-purple-600" />
+                      Assign Subscription Plan
+                    </CardTitle>
+                    <CardDescription>
+                      Select a subscription plan to assign to this healthcare provider
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {subscriptionPlans.map((plan) => (
+                      <div
+                        key={plan.id}
+                        className="flex items-center justify-between p-4 rounded-lg border hover:border-primary transition-colors"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100">
+                            <Crown className="h-6 w-6 text-purple-600" />
+                          </div>
+                          <div>
+                            <p className="font-semibold">{plan.name}</p>
+                            <p className="text-sm text-muted-foreground">{plan.price}/month</p>
+                            <div className="flex gap-2 mt-1">
+                              {plan.features.slice(0, 2).map((feature, index) => (
+                                <Badge key={index} variant="secondary" className="text-xs">
+                                  {feature}
+                                </Badge>
+                              ))}
+                              {plan.features.length > 2 && (
+                                <Badge variant="secondary" className="text-xs">
+                                  +{plan.features.length - 2} more
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <Button
+                          onClick={() => handleAssignPlan(selectedProvider.email, plan.id)}
+                          disabled={selectedProvider.healthcareProvider?.subscription?.plan?.name === plan.name}
+                        >
+                          {selectedProvider.healthcareProvider?.subscription?.plan?.name === plan.name ? (
+                            <>Current Plan</>
+                          ) : (
+                            <>Assign Plan</>
+                          )}
+                        </Button>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Settings Tab */}
+              <TabsContent value="settings" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Account Settings</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label htmlFor="account-status" className="font-semibold">
+                          Account Status
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Activate or deactivate this provider's account
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Badge variant={selectedProvider.status === "active" ? "default" : "secondary"}>
+                          {selectedProvider.status}
+                        </Badge>
+                        <Switch
+                          checked={selectedProvider.status === "active"}
+                          onCheckedChange={(checked) => 
+                            handleActivateAccount(selectedProvider.email)
+                          }
+                        />
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="font-semibold">Email Notifications</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Send important updates and announcements
+                        </p>
+                      </div>
+                      <Switch defaultChecked />
+                    </div>
+
+                    <Separator />
+
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="font-semibold">API Access</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Enable API access for integrations
+                        </p>
+                      </div>
+                      <Switch />
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Quick Actions Tab */}
+              <TabsContent value="actions" className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Button className="h-16 flex-col gap-2" variant="outline">
+                    <Send className="h-5 w-5" />
+                    Send Welcome Email
+                  </Button>
+                  <Button className="h-16 flex-col gap-2" variant="outline">
+                    <CreditCard className="h-5 w-5" />
+                    Generate Invoice
+                  </Button>
+                  <Button className="h-16 flex-col gap-2" variant="outline">
+                    <Settings className="h-5 w-5" />
+                    Reset Password
+                  </Button>
+                  <Button className="h-16 flex-col gap-2" variant="outline">
+                    <Users className="h-5 w-5" />
+                    Manage Users
+                  </Button>
+                </div>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Danger Zone</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="font-semibold text-destructive">Delete Provider</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Permanently delete this provider and all associated data
+                        </p>
+                      </div>
+                      <Button variant="destructive">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
 
   if (isError) {
     return (
@@ -354,10 +762,10 @@ export default function HealthcareProviders() {
                                   <Building2 className="h-6 w-6 text-white" />
                                 </div>
                                 <div>
-                                  <p className="font-semibold text-slate-900">{provider?.healthcareProvider?.name}</p>
+                                  <p className="font-semibold text-slate-900">{provider?.healthcareUsers[0]?.healthcareProvider.name}</p>
                                   <div className="flex items-center gap-1 mt-1">
                                     <MapPin className="h-3 w-3 text-muted-foreground" />
-                                    <p className="text-xs text-muted-foreground">{provider?.address}</p>
+                                    <p className="text-xs text-muted-foreground">{provider?.healthcareUsers[0]?.healthcareProvider?.address?.streetAddress}</p>
                                   </div>
                                 </div>
                               </div>
@@ -370,7 +778,7 @@ export default function HealthcareProviders() {
                                   <div className="flex items-center gap-1 mt-1">
                                     <Calendar className="h-3 w-3 text-muted-foreground" />
                                     <p className="text-xs text-muted-foreground">
-                                      Joined {new Date(provider?.healthcareProvider?.createdAt).toLocaleDateString()}
+                                      Joined {new Date(provider?.createdAt).toLocaleDateString()}
                                     </p>
                                   </div>
                                 </div>
@@ -391,13 +799,13 @@ export default function HealthcareProviders() {
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <Users className="h-4 w-4 text-purple-600" />
-                                <span className="font-semibold">{provider?.users}</span>
+                                <span className="font-semibold">{provider?.healthcareUsers.length}</span>
                                 <span className="text-sm text-muted-foreground">users</span>
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Badge variant="outline" className={getPlanColor(provider?.healthcareProvider?.subscription?.plan?.name)}>
-                                {provider?.healthcareProvider?.subscription?.plan?.name}
+                              <Badge variant="outline" className={getPlanColor(provider?.healthcareUsers[0]?.healthcareProvider?.subscription?.plan?.name)}>
+                                {provider?.healthcareUsers[0]?.healthcareProvider?.subscription?.plan?.name}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -414,7 +822,12 @@ export default function HealthcareProviders() {
                             </TableCell>
                             <TableCell>
                               <div className="flex justify-end gap-1">
-                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => handleViewDetails(provider)}
+                                >
                                   <Eye className="h-4 w-4" />
                                 </Button>
                                 <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -476,6 +889,9 @@ export default function HealthcareProviders() {
           </Card>
         </main>
       </div>
+
+      {/* Provider Details Dialog */}
+      <ProviderDetailsDialog />
 
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (

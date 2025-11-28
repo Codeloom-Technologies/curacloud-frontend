@@ -51,3 +51,30 @@ const { data, meta } = response;
       meta: meta,
     };
 };
+
+
+export const activateProviderAccount = async (providerId: string) => {
+  const response = await apiClient(`/admins/healthcares/${providerId}/activate`, {
+    method: 'PATCH',
+  });
+  
+  if (!response) {
+    throw new Error('Failed to activate account');
+  }
+  
+  return response
+};
+
+export const assignSubscriptionPlan = async (payload: { providerId: string; planId: string }) => {
+  // Replace with your actual API call
+  const response = await apiClient(`/admins/healthcares/${payload.providerId}/subscription`, {
+    method: 'POST',
+    body: JSON.stringify({ planId: payload.planId }),
+  });
+  
+  if (!response) {
+    throw new Error('Failed to assign subscription plan');
+  }
+  
+  return response
+};
