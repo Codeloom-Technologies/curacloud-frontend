@@ -52,6 +52,7 @@ import AcceptInvite from "./pages/AcceptInvite";
 import AboutPage from "./pages/AboutUs";
 import CareersPage from "./pages/CareerPage";
 import ContactPage from "./pages/ContactUs";
+import ResetPassword from "./pages/PasswordRecovery";
 
 const queryClient = new QueryClient();
 
@@ -74,6 +75,7 @@ const App = () => (
           <Route path="/auth/login" element={<Login />} />
           <Route path="/auth/healthcare-selection" element={<HealthcareSelection />} />
           <Route path="/auth/verify-invitation" element={<AcceptInvite />} />
+          <Route path="/auth/password-recovery" element={<ResetPassword />} />
 
           
           <Route path="/dashboard/patients" element={<PatientDirectory />} />
