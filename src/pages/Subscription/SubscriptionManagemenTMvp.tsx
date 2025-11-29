@@ -145,7 +145,7 @@ const SubscriptionManagementMvp = () => {
     accountName: "OBED MATHIAS GAIYA",
     accountNumber: "6141825641",
     amount: selectedPlan?.price || 0,
-    reference: `SUB-${user?.reference?.slice(-6) || 'USER'}-${Date.now().toString().slice(-4)}`,
+    reference: `SUB-${selectedPlan?.name || 'USER'}-${Date.now().toString().slice(-4)}`,
   };
 
   const copyToClipboard = (text: string, field: string) => {

@@ -54,6 +54,7 @@ import CareersPage from "./pages/CareerPage";
 import ContactPage from "./pages/ContactUs";
 import ResetPassword from "./pages/PasswordRecovery";
 import SubscriptionManagementMvp from "./pages/Subscription/SubscriptionManagemenTMvp";
+import IdleTimerContainer from "./components/IdleTimerContainer";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +64,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <IdleTimerContainer />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/about-us" element={<AboutPage />} />
