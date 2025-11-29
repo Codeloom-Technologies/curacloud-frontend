@@ -53,6 +53,7 @@ import AboutPage from "./pages/AboutUs";
 import CareersPage from "./pages/CareerPage";
 import ContactPage from "./pages/ContactUs";
 import ResetPassword from "./pages/PasswordRecovery";
+import SubscriptionManagementMvp from "./pages/Subscription/SubscriptionManagemenTMvp";
 
 const queryClient = new QueryClient();
 
@@ -170,9 +171,13 @@ const App = () => (
           <Route path="/dashboard/activities" element={<ActivitiesPage />} />
 
           {/* subscription routes */}
-          <Route
+          {/* <Route
             path="/dashboard/subscriptions"
             element={<SubscriptionManagement />}
+          /> */}
+          <Route
+            path="/dashboard/subscriptions"
+            element={<SubscriptionManagementMvp />}
           />
 
           {/* Wallet */}
