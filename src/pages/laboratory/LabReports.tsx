@@ -289,7 +289,7 @@ export default function LabReportView() {
                       </div>
                       <div className="flex justify-between border-b pb-2">
                         <span className="font-medium text-muted-foreground">Patient ID:</span>
-                        <span>{report.patient?.medicalRecordNumber || 'N/A'}</span>
+                        <span>{report?.patient?.patientProvider[0]?.medicalRecordNumber || 'N/A'}</span>
                       </div>
                       <div className="flex justify-between border-b pb-2">
                         <span className="font-medium text-muted-foreground">Gender:</span>
