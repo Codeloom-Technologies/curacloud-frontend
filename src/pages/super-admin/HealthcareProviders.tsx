@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,10 +42,8 @@ import {
   MapPin,
   Calendar,
   Eye,
-  MoreVertical,
   Filter,
   Download,
-  Shield,
   Activity,
   Crown,
   Loader2,
@@ -53,13 +51,10 @@ import {
   UserCheck,
   CreditCard,
   Zap,
-  CheckCircle,
-  XCircle,
-  Clock,
-  Star,
   BarChart3,
   Settings,
   Send,
+  CalendarDays,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -67,8 +62,36 @@ import { activateProviderAccount, assignSubscriptionPlan, fetchHealthcareProvide
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getSubscriptionPlans } from "@/services/subscription";
+
+// Billing cycle options with labels and multipliers for price calculation
+const BILLING_CYCLES = [
+  { value: 'monthly' as const, label: 'Monthly', multiplier: 1 },
+  { value: 'quarterly' as const, label: 'Quarterly', multiplier: 3 },
+  { value: 'half_yearly' as const, label: 'Half Yearly', multiplier: 6 },
+  { value: 'yearly' as const, label: 'Yearly', multiplier: 12 },
+  { value: 'custom' as const, label: 'Custom', multiplier: 1 },
+];
+
+// Type for billing cycle
+type BillingCycle = 'monthly' | 'quarterly' | 'half_yearly' | 'yearly' | 'custom';
+
+// Debounce hook for search
+function useDebounce(value: string, delay: number) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 export default function HealthcareProviders() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -79,8 +102,10 @@ export default function HealthcareProviders() {
   const [perPage, setPerPage] = useState(10);
   const [selectedProvider, setSelectedProvider] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [selectedBillingCycle, setSelectedBillingCycle] = useState<BillingCycle>('monthly');
   
   const { toast } = useToast();
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   // React Query to fetch providers
   const {
@@ -91,36 +116,39 @@ export default function HealthcareProviders() {
     refetch,
     isRefetching,
   } = useQuery({
-    queryKey: ['healthcare-providers', page, perPage, searchQuery, statusFilter],
+    queryKey: ['healthcare-providers', page, perPage, debouncedSearchQuery, statusFilter],
     queryFn: () => fetchHealthcareProviders({
       page,
       perPage,
-      search: searchQuery,
+      search: debouncedSearchQuery,
       status: statusFilter,
     }),
+  
+    // keepPreviousData: true,
   });
 
   const providers = providersData?.providers || [];
   const pagination = providersData?.meta;
 
-  console.log(providers)
   const queryClient = useQueryClient();
 
-  const handleAddProvider = () => {
+  const handleAddProvider = useCallback(() => {
     toast({
       title: "Provider Added",
       description: "Healthcare provider has been successfully registered.",
       variant: "success",
     });
     setIsDialogOpen(false);
-  };
+  }, [toast]);
 
-  const handleViewDetails = (provider: any) => {
+  const handleViewDetails = useCallback((provider: any) => {
     setSelectedProvider(provider);
     setIsDetailsOpen(true);
-  };
+    setSelectedBillingCycle('monthly');
+    console.log({provider})
+  }, []);
 
- // Activate Account Mutation
+  // Activate Account Mutation
   const activateAccountMutation = useMutation({
     mutationFn: activateProviderAccount,
     onSuccess: () => {
@@ -130,7 +158,6 @@ export default function HealthcareProviders() {
         variant: "success",
       });
       
-      // Invalidate and refetch providers data
       queryClient.invalidateQueries({ 
         queryKey: ['healthcare-providers'] 
       });
@@ -144,11 +171,11 @@ export default function HealthcareProviders() {
     },
   });
 
-    const handleActivateAccount = async (providerId: string) => {
+  const handleActivateAccount = useCallback(async (providerId: string) => {
     activateAccountMutation.mutate(providerId);
-  };
+  }, [activateAccountMutation]);
 
- // Assign Plan Mutation
+  // Assign Plan Mutation
   const assignPlanMutation = useMutation({
     mutationFn: assignSubscriptionPlan,
     onSuccess: () => {
@@ -158,7 +185,6 @@ export default function HealthcareProviders() {
         variant: "success",
       });
       
-      // Invalidate and refetch providers data
       queryClient.invalidateQueries({ 
         queryKey: ['healthcare-providers'] 
       });
@@ -173,11 +199,34 @@ export default function HealthcareProviders() {
     },
   });
 
-    const handleAssignPlan = async (providerId: string, planId: string) => {
-    assignPlanMutation.mutate({ providerId, planId });
-  };
+  const handleAssignPlan = useCallback(async (providerId: string, planId: string) => {
+    assignPlanMutation.mutate({ 
+      providerId: parseInt(providerId), 
+      planId, 
+      billingCycle: selectedBillingCycle 
+    });
+  }, [assignPlanMutation, selectedBillingCycle]);
 
-  const getStatusVariant = (status: string) => {
+  // Calculate price based on billing cycle
+  const calculatePrice = useCallback((basePrice: number, cycle: BillingCycle) => {
+    const cycleConfig = BILLING_CYCLES.find(bc => bc.value === cycle);
+    const multiplier = cycleConfig?.multiplier || 1;
+    return basePrice * multiplier;
+  }, []);
+
+  // Format price display
+  const formatPriceDisplay = useCallback((basePrice: number, cycle: BillingCycle) => {
+    const totalPrice = calculatePrice(basePrice, cycle);
+    const cycleConfig = BILLING_CYCLES.find(bc => bc.value === cycle);
+    
+    if (cycle === 'custom') {
+      return `Custom pricing`;
+    }
+    
+    return `$${totalPrice}/${cycleConfig?.label.toLowerCase().replace('ly', '')}`;
+  }, [calculatePrice]);
+
+  const getStatusVariant = useCallback((status: string) => {
     switch (status) {
       case "active":
         return "default";
@@ -188,9 +237,9 @@ export default function HealthcareProviders() {
       default:
         return "secondary";
     }
-  };
+  }, []);
 
-  const getPlanColor = (plan: string) => {
+  const getPlanColor = useCallback((plan: string) => {
     switch (plan) {
       case "Enterprise plan":
         return "bg-purple-100 text-purple-700 border-purple-200";
@@ -201,18 +250,19 @@ export default function HealthcareProviders() {
       default:
         return "bg-gray-100 text-gray-700 border-gray-200";
     }
-  };
+  }, []);
 
-    const { 
-      data: subscriptionPlans, 
-      isLoading: isLoadingPlans,
-      error: plansError 
-    } = useQuery({
-      queryKey: ["subscription-plans"],
-      queryFn: () => getSubscriptionPlans(),
-    });
+  const { 
+    data: subscriptionPlans, 
+    isLoading: isLoadingPlans,
+    error: plansError 
+  } = useQuery({
+    queryKey: ["subscription-plans"],
+    queryFn: () => getSubscriptionPlans(),
+  });
 
-  const stats = [
+  // Memoized stats
+  const stats = useMemo(() => [
     {
       title: "Total Providers",
       value: pagination?.total?.toString() || "0",
@@ -229,336 +279,407 @@ export default function HealthcareProviders() {
     },
     {
       title: "Total Users",
-      value: providers.reduce((acc, provider) => acc + provider.users, 0).toString(),
+      value: providers.reduce((acc, provider) => acc + (provider.healthcareUsers?.length || 0), 0).toString(),
       change: "Across all providers",
       icon: Users,
       color: "text-purple-600 bg-purple-100",
     },
-  ];
+  ], [pagination?.total, providers]);
 
-  // Handle search with debounce (optional)
-  const handleSearch = (value: string) => {
+  // Handle search
+  const handleSearch = useCallback((value: string) => {
     setSearchQuery(value);
-    setPage(1); // Reset to first page when searching
-  };
+    setPage(1);
+  }, []);
 
-  // Provider Details Dialog
-  const ProviderDetailsDialog = () => (
-    <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        {selectedProvider && (
-          <>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500">
-                  <Building2 className="h-6 w-6 text-white" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold">{selectedProvider?.healthcareProvider?.name}</span>
-                    <Badge variant={getStatusVariant(selectedProvider?.status)}>
-                      {selectedProvider?.status}
-                    </Badge>
+  // Handle billing cycle change
+  const handleBillingCycleChange = useCallback((value: BillingCycle) => {
+    setSelectedBillingCycle(value);
+  }, []);
+
+  // Handle status filter change
+  const handleStatusFilterChange = useCallback((value: string) => {
+    setStatusFilter(value);
+    setPage(1);
+  }, []);
+
+  // Provider Details Dialog Component
+  const ProviderDetailsDialog = useMemo(() => {
+    return (
+      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {selectedProvider && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500">
+                    <Building2 className="h-6 w-6 text-white" />
                   </div>
-                  <DialogDescription className="text-base mt-1">
-                    {selectedProvider?.address}, {selectedProvider?.country?.name}
-                  </DialogDescription>
-                </div>
-              </DialogTitle>
-            </DialogHeader>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl font-bold">{selectedProvider?.healthcareProvider?.name}</span>
+                      <Badge variant={getStatusVariant(selectedProvider?.status)}>
+                        {selectedProvider?.status}
+                      </Badge>
+                    </div>
+                    <DialogDescription className="text-base mt-1">
+                      {selectedProvider?.address}, {selectedProvider?.country?.name}
+                    </DialogDescription>
+                  </div>
+                </DialogTitle>
+              </DialogHeader>
 
-            <Tabs defaultValue="overview" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="overview" className="flex items-center gap-2">
-                  <BarChart3 className="h-4 w-4" />
-                  Overview
-                </TabsTrigger>
-                <TabsTrigger value="subscription" className="flex items-center gap-2">
-                  <Crown className="h-4 w-4" />
-                  Subscription
-                </TabsTrigger>
-                <TabsTrigger value="settings" className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  Settings
-                </TabsTrigger>
-                <TabsTrigger value="actions" className="flex items-center gap-2">
-                  <Zap className="h-4 w-4" />
-                  Quick Actions
-                </TabsTrigger>
-              </TabsList>
+              <Tabs defaultValue="overview" className="space-y-6">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="overview" className="flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    Overview
+                  </TabsTrigger>
+                  <TabsTrigger value="subscription" className="flex items-center gap-2">
+                    <Crown className="h-4 w-4" />
+                    Subscription
+                  </TabsTrigger>
+                  <TabsTrigger value="settings" className="flex items-center gap-2">
+                    <Settings className="h-4 w-4" />
+                    Settings
+                  </TabsTrigger>
+                  <TabsTrigger value="actions" className="flex items-center gap-2">
+                    <Zap className="h-4 w-4" />
+                    Quick Actions
+                  </TabsTrigger>
+                </TabsList>
 
-              {/* Overview Tab */}
-              <TabsContent value="overview" className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Contact Information */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <UserCheck className="h-5 w-5 text-blue-600" />
-                        Contact Information
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex items-center gap-3">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">Email</p>
-                          <p className="text-sm text-muted-foreground">{selectedProvider?.email}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">Phone</p>
-                          <p className="text-sm text-muted-foreground">{selectedProvider?.phoneNumber}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">Address</p>
-                          <p className="text-sm text-muted-foreground">{selectedProvider?.healthcareUsers[0]?.healthcareProvider?.address?.streetAddress}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Globe className="h-4 w-4 text-muted-foreground" />
-                        <div>
-                          <p className="font-medium">Country</p>
-                          <p className="text-sm text-muted-foreground">{selectedProvider?.country?.name}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Statistics */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Activity className="h-5 w-5 text-green-600" />
-                        Statistics
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">Total Users</span>
-                        <Badge variant="secondary" className="flex items-center gap-1">
-                          <Users className="h-3 w-3" />
-                          {selectedProvider?.healthcareUsers?.length}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">Member Since</span>
-                        <span className="text-sm text-muted-foreground">
-                          {new Date(selectedProvider?.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm font-medium">Last Active</span>
-                        <span className="text-sm text-muted-foreground">2 hours ago</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                {/* Current Subscription */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <CreditCard className="h-5 w-5 text-purple-600" />
-                      Current Subscription
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {selectedProvider?.healthcareUsers[0]?.healthcareProvider?.subscription ? (
-                      <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/50">
+                {/* Overview Tab */}
+                <TabsContent value="overview" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Contact Information */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <UserCheck className="h-5 w-5 text-blue-600" />
+                          Contact Information
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
                         <div className="flex items-center gap-3">
-                          <Crown className="h-8 w-8 text-purple-600" />
+                          <Mail className="h-4 w-4 text-muted-foreground" />
                           <div>
-                            <p className="font-semibold">
-                              {selectedProvider?.healthcareUsers[0]?.healthcareProvider?.subscription?.plan?.name}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              Active • Renews {new Date(selectedProvider?.healthcareUsers[0]?.healthcareProvider?.subscription.currentPeriodEndsAt).toLocaleDateString()}
-                            </p>
+                            <p className="font-medium">Email</p>
+                            <p className="text-sm text-muted-foreground">{selectedProvider?.email}</p>
                           </div>
                         </div>
-                        <Badge variant="default" className="bg-green-100 text-green-700 border-green-200">
-                          Active
-                        </Badge>
-                      </div>
-                    ) : (
-                      <div className="text-center py-6 space-y-3">
-                        <CreditCard className="h-12 w-12 text-muted-foreground mx-auto" />
-                        <div>
-                          <p className="font-semibold">No Active Subscription</p>
-                          <p className="text-sm text-muted-foreground">
-                            This provider doesn't have an active subscription plan.
-                          </p>
+                        <div className="flex items-center gap-3">
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <p className="font-medium">Phone</p>
+                            <p className="text-sm text-muted-foreground">{selectedProvider?.phoneNumber}</p>
+                          </div>
                         </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                        <div className="flex items-center gap-3">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <p className="font-medium">Address</p>
+                            <p className="text-sm text-muted-foreground">{selectedProvider?.healthcareUsers[0]?.healthcareProvider?.address?.streetAddress}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Globe className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <p className="font-medium">Country</p>
+                            <p className="text-sm text-muted-foreground">{selectedProvider?.country?.name}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-              {/* Subscription Tab */}
-              <TabsContent value="subscription" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Crown className="h-5 w-5 text-purple-600" />
-                      Assign Subscription Plan
-                    </CardTitle>
-                    <CardDescription>
-                      Select a subscription plan to assign to this healthcare provider
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {subscriptionPlans.map((plan) => (
-                      <div
-                        key={plan.id}
-                        className="flex items-center justify-between p-4 rounded-lg border hover:border-primary transition-colors"
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100">
-                            <Crown className="h-6 w-6 text-purple-600" />
-                          </div>
-                          <div>
-                            <p className="font-semibold">{plan.name}</p>
-                            <p className="text-sm text-muted-foreground">{plan.price}/month</p>
-                            <div className="flex gap-2 mt-1">
-                              {plan.features.slice(0, 2).map((feature, index) => (
-                                <Badge key={index} variant="secondary" className="text-xs">
-                                  {feature}
-                                </Badge>
-                              ))}
-                              {plan.features.length > 2 && (
-                                <Badge variant="secondary" className="text-xs">
-                                  +{plan.features.length - 2} more
-                                </Badge>
-                              )}
+                    {/* Statistics */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Activity className="h-5 w-5 text-green-600" />
+                          Statistics
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium">Total Users</span>
+                          <Badge variant="secondary" className="flex items-center gap-1">
+                            <Users className="h-3 w-3" />
+                            {selectedProvider?.healthcareUsers?.length || 0}
+                          </Badge>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium">Member Since</span>
+                          <span className="text-sm text-muted-foreground">
+                            {new Date(selectedProvider?.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm font-medium">Last Active</span>
+                          <span className="text-sm text-muted-foreground">2 hours ago</span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Current Subscription */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <CreditCard className="h-5 w-5 text-purple-600" />
+                        Current Subscription
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedProvider?.healthcareUsers[0]?.healthcareProvider?.subscription ? (
+                        <div className="flex items-center justify-between p-4 rounded-lg border bg-muted/50">
+                          <div className="flex items-center gap-3">
+                            <Crown className="h-8 w-8 text-purple-600" />
+                            <div>
+                              <p className="font-semibold">
+                                {selectedProvider?.healthcareUsers[0]?.healthcareProvider?.subscription?.plan?.name}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Active • Renews {new Date(selectedProvider?.healthcareUsers[0]?.healthcareProvider?.subscription.currentPeriodEndsAt).toLocaleDateString()}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                Billing: {selectedProvider?.healthcareUsers[0]?.healthcareProvider?.subscription?.billingCycle || 'Monthly'}
+                              </p>
                             </div>
                           </div>
+                          <Badge variant="default" className="bg-green-100 text-green-700 border-green-200">
+                            Active
+                          </Badge>
                         </div>
-                        <Button
-                          onClick={() => handleAssignPlan(selectedProvider.email, plan.id)}
-                          disabled={selectedProvider.healthcareProvider?.subscription?.plan?.name === plan.name}
+                      ) : (
+                        <div className="text-center py-6 space-y-3">
+                          <CreditCard className="h-12 w-12 text-muted-foreground mx-auto" />
+                          <div>
+                            <p className="font-semibold">No Active Subscription</p>
+                            <p className="text-sm text-muted-foreground">
+                              This provider doesn't have an active subscription plan.
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Subscription Tab */}
+                <TabsContent value="subscription" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Crown className="h-5 w-5 text-purple-600" />
+                        Assign Subscription Plan
+                      </CardTitle>
+                      <CardDescription>
+                        Select a subscription plan and billing cycle to assign to this healthcare provider
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      {/* Billing Cycle Selection */}
+                      <div className="space-y-3">
+                        <Label htmlFor="billing-cycle" className="text-sm font-medium">
+                          Billing Cycle
+                        </Label>
+                        <Select 
+                          value={selectedBillingCycle} 
+                          onValueChange={handleBillingCycleChange}
                         >
-                          {selectedProvider.healthcareProvider?.subscription?.plan?.name === plan.name ? (
-                            <>Current Plan</>
-                          ) : (
-                            <>Assign Plan</>
-                          )}
+                          <SelectTrigger className="w-full">
+                            <CalendarDays className="h-4 w-4 mr-2" />
+                            <SelectValue placeholder="Select billing cycle" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {BILLING_CYCLES.map((cycle) => (
+                              <SelectItem key={cycle.value} value={cycle.value}>
+                                {cycle.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Choose how often the provider will be billed for their subscription
+                        </p>
+                      </div>
+
+                      {/* Subscription Plans */}
+                      <div className="space-y-4">
+                        <Label className="text-sm font-medium">Available Plans</Label>
+                        {subscriptionPlans?.map((plan) => (
+                          <div
+                            key={plan.id}
+                            className="flex items-center justify-between p-4 rounded-lg border hover:border-primary transition-colors"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100">
+                                <Crown className="h-6 w-6 text-purple-600" />
+                              </div>
+                              <div>
+                                <p className="font-semibold">{plan.name}</p>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <p className="text-sm font-medium text-primary">
+                                    {formatPriceDisplay(plan.price, selectedBillingCycle)}
+                                  </p>
+                                  {selectedBillingCycle !== 'monthly' && selectedBillingCycle !== 'custom' && (
+                                    <p className="text-xs text-muted-foreground line-through">
+                                      ${plan.price}/month
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="flex gap-2 mt-1">
+                                  {plan.features?.slice(0, 2).map((feature, index) => (
+                                    <Badge key={index} variant="secondary" className="text-xs">
+                                      {feature}
+                                    </Badge>
+                                  ))}
+                                  {plan.features && plan.features.length > 2 && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      +{plan.features.length - 2} more
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            <Button
+                              onClick={() => handleAssignPlan(selectedProvider.healthcareProviderId, plan.id)}
+                              disabled={
+                                selectedProvider.healthcareProvider?.subscription?.plan?.name === plan.name &&
+                                selectedProvider.healthcareProvider?.subscription?.billingCycle === selectedBillingCycle ||
+                                assignPlanMutation.isPending
+                              }
+                            >
+                              {assignPlanMutation.isPending ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : selectedProvider.healthcareProvider?.subscription?.plan?.name === plan.name &&
+                                selectedProvider.healthcareProvider?.subscription?.billingCycle === selectedBillingCycle ? (
+                                <>Current Plan</>
+                              ) : (
+                                <>Assign Plan</>
+                              )}
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Settings Tab */}
+                <TabsContent value="settings" className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Account Settings</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label htmlFor="account-status" className="font-semibold">
+                            Account Status
+                          </Label>
+                          <p className="text-sm text-muted-foreground">
+                            Activate or deactivate this provider's account
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Badge variant={selectedProvider.status === "active" ? "default" : "secondary"}>
+                            {selectedProvider.status}
+                          </Badge>
+                          <Switch
+                            checked={selectedProvider.status === "active"}
+                            onCheckedChange={() => handleActivateAccount(selectedProvider.email)}
+                          />
+                        </div>
+                      </div>
+
+                      <Separator />
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label className="font-semibold">Email Notifications</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Send important updates and announcements
+                          </p>
+                        </div>
+                        <Switch defaultChecked />
+                      </div>
+
+                      <Separator />
+
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label className="font-semibold">API Access</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Enable API access for integrations
+                          </p>
+                        </div>
+                        <Switch />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Quick Actions Tab */}
+                <TabsContent value="actions" className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Button className="h-16 flex-col gap-2" variant="outline">
+                      <Send className="h-5 w-5" />
+                      Send Welcome Email
+                    </Button>
+                    <Button className="h-16 flex-col gap-2" variant="outline">
+                      <CreditCard className="h-5 w-5" />
+                      Generate Invoice
+                    </Button>
+                    <Button className="h-16 flex-col gap-2" variant="outline">
+                      <Settings className="h-5 w-5" />
+                      Reset Password
+                    </Button>
+                    <Button className="h-16 flex-col gap-2" variant="outline">
+                      <Users className="h-5 w-5" />
+                      Manage Users
+                    </Button>
+                  </div>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Danger Zone</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <Label className="font-semibold text-destructive">Delete Provider</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Permanently delete this provider and all associated data
+                          </p>
+                        </div>
+                        <Button variant="destructive">
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
                         </Button>
                       </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Settings Tab */}
-              <TabsContent value="settings" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Account Settings</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label htmlFor="account-status" className="font-semibold">
-                          Account Status
-                        </Label>
-                        <p className="text-sm text-muted-foreground">
-                          Activate or deactivate this provider's account
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <Badge variant={selectedProvider.status === "active" ? "default" : "secondary"}>
-                          {selectedProvider.status}
-                        </Badge>
-                        <Switch
-                          checked={selectedProvider.status === "active"}
-                          onCheckedChange={(checked) => 
-                            handleActivateAccount(selectedProvider.email)
-                          }
-                        />
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label className="font-semibold">Email Notifications</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Send important updates and announcements
-                        </p>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
-
-                    <Separator />
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label className="font-semibold">API Access</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Enable API access for integrations
-                        </p>
-                      </div>
-                      <Switch />
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              {/* Quick Actions Tab */}
-              <TabsContent value="actions" className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Button className="h-16 flex-col gap-2" variant="outline">
-                    <Send className="h-5 w-5" />
-                    Send Welcome Email
-                  </Button>
-                  <Button className="h-16 flex-col gap-2" variant="outline">
-                    <CreditCard className="h-5 w-5" />
-                    Generate Invoice
-                  </Button>
-                  <Button className="h-16 flex-col gap-2" variant="outline">
-                    <Settings className="h-5 w-5" />
-                    Reset Password
-                  </Button>
-                  <Button className="h-16 flex-col gap-2" variant="outline">
-                    <Users className="h-5 w-5" />
-                    Manage Users
-                  </Button>
-                </div>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Danger Zone</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <Label className="font-semibold text-destructive">Delete Provider</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Permanently delete this provider and all associated data
-                        </p>
-                      </div>
-                      <Button variant="destructive">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    );
+  }, [
+    isDetailsOpen, 
+    selectedProvider, 
+    selectedBillingCycle, 
+    subscriptionPlans, 
+    assignPlanMutation.isPending,
+    getStatusVariant,
+    formatPriceDisplay,
+    handleAssignPlan,
+    handleBillingCycleChange,
+    handleActivateAccount
+  ]);
 
   if (isError) {
     return (
@@ -702,7 +823,7 @@ export default function HealthcareProviders() {
                   />
                 </div>
                 <div className="flex gap-3">
-                  <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setPage(1); }}>
+                  <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
                     <SelectTrigger className="w-[140px] h-11">
                       <Filter className="h-4 w-4 mr-2" />
                       <SelectValue placeholder="Status" />
@@ -749,6 +870,7 @@ export default function HealthcareProviders() {
                           <TableHead className="font-semibold">Contact</TableHead>
                           <TableHead className="font-semibold">Users</TableHead>
                           <TableHead className="font-semibold">Plan</TableHead>
+                          <TableHead className="font-semibold">Billing Cycle</TableHead>
                           <TableHead className="font-semibold">Status</TableHead>
                           <TableHead className="font-semibold text-right">Actions</TableHead>
                         </TableRow>
@@ -799,13 +921,19 @@ export default function HealthcareProviders() {
                             <TableCell>
                               <div className="flex items-center gap-2">
                                 <Users className="h-4 w-4 text-purple-600" />
-                                <span className="font-semibold">{provider?.healthcareUsers.length}</span>
+                                <span className="font-semibold">{provider?.healthcareUsers?.length || 0}</span>
                                 <span className="text-sm text-muted-foreground">users</span>
                               </div>
                             </TableCell>
                             <TableCell>
                               <Badge variant="outline" className={getPlanColor(provider?.healthcareUsers[0]?.healthcareProvider?.subscription?.plan?.name)}>
-                                {provider?.healthcareUsers[0]?.healthcareProvider?.subscription?.plan?.name}
+                                {provider?.healthcareUsers[0]?.healthcareProvider?.subscription?.plan?.name || 'No Plan'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                <CalendarDays className="h-3 w-3 mr-1" />
+                                {provider?.healthcareUsers[0]?.healthcareProvider?.subscription?.billingCycle || 'Monthly'}
                               </Badge>
                             </TableCell>
                             <TableCell>
@@ -891,7 +1019,7 @@ export default function HealthcareProviders() {
       </div>
 
       {/* Provider Details Dialog */}
-      <ProviderDetailsDialog />
+      {ProviderDetailsDialog}
 
       {/* Mobile Sidebar Overlay */}
       {sidebarOpen && (

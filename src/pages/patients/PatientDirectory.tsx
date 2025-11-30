@@ -580,7 +580,7 @@ export default function PatientDirectory() {
                                     {patient.user.lastName}
                                   </div>
                                   <div className="text-sm text-muted-foreground">
-                                    ID: {patient.medicalRecordNumber}
+                                    ID: {patient?.patientProvider[0]?.medicalRecordNumber}
                                   </div>
                                 </div>
                               </div>

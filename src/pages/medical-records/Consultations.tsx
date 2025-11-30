@@ -755,7 +755,7 @@ export default function Consultations() {
                                   {selectedPatient.user?.fullName || selectedPatient.fullName || selectedPatient.name || "No name"}
                                 </p>
                                 <p className="text-sm text-green-600">
-                                  MRN: {selectedPatient.medicalRecordNumber || "N/A"}
+                                  MRN: {selectedPatient?.patientProvider[0]?.medicalRecordNumber || "N/A"}
                                 </p>
                               </div>
                               <Button
@@ -817,11 +817,11 @@ export default function Consultations() {
                                       {patient.user?.fullName || patient.fullName || patient.name || "Unnamed Patient"}
                                     </span>
                                     <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                      {patient.medicalRecordNumber || "No MRN"}
+                                      {patient?.patientProvider[0]?.medicalRecordNumber || "No MRN"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between items-center text-sm text-muted-foreground mt-1">
-                                    <span>ID: {patient.id}</span>
+                                    <span>ID: {patient?.user?.id}</span>
                                     <span>Click to select</span>
                                   </div>
                                 </div>

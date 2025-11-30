@@ -280,7 +280,7 @@ try {
                 </p>
               </div>
               
-              <Button onClick={() => setShowTopUpModal(true)}>
+              <Button disabled onClick={() => setShowTopUpModal(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Top Up Wallet
               </Button>
@@ -323,7 +323,7 @@ try {
                   </div>
                   
                   <div className="flex gap-3">
-                    <Button variant="outline" onClick={() => setShowTopUpModal(true)}>
+                    <Button disabled variant="outline" onClick={() => setShowTopUpModal(true)}>
                       <Upload className="h-4 w-4 mr-2" />
                       Top Up
                     </Button>
@@ -541,7 +541,7 @@ try {
                           <p className="text-muted-foreground mb-6">
                             Your transaction history will appear here once you start using your wallet.
                           </p>
-                          <Button onClick={() => setShowTopUpModal(true)}>
+                          <Button disabled onClick={() => setShowTopUpModal(true)}>
                             <Plus className="h-4 w-4 mr-2" />
                             Make Your First Top-up
                           </Button>

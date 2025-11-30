@@ -329,7 +329,7 @@ export default function CheckinQueue() {
                                 {item.patientName}
                               </span>
                               <span className="text-sm text-muted-foreground">
-                                ({item.patient.medicalRecordNumber})
+                                ({item.patient?.patientProvider[0]?.medicalRecordNumber})
                               </span>
                             </div>
                             <Badge className={getStatusColor(item.status)}>

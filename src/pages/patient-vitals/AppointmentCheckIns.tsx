@@ -102,7 +102,7 @@ export default function AppointmentCheckIns() {
     // Auto-populate patient data from the appointment
     setFormData((prev) => ({
       ...prev,
-      patientId: appointment.patient?.medicalRecordNumber || "",
+      patientId: appointment.patient?.patientProvider[0]?.medicalRecordNumber || "",
       name: appointment.patient?.user?.fullName || "",
       appointmentId: appointment?.id || "",
       doctor: appointment?.doctor?.fullName || "",
@@ -306,7 +306,7 @@ export default function AppointmentCheckIns() {
                                 {appointment?.patient?.user?.fullName}
                               </span>
                               <span className="text-sm text-muted-foreground">
-                                ({appointment?.patient?.medicalRecordNumber})
+                                ({appointment?.patient?.patientProvider[0]?.medicalRecordNumber})
                               </span>
                             </div>
                             <Badge
