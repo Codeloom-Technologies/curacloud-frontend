@@ -551,7 +551,7 @@ export default function Appointments() {
                                 {appointment?.patient?.user?.fullName}
                               </span>
                               <span className="text-sm text-muted-foreground">
-                                ({appointment?.patient?.medicalRecordNumber})
+                                ({appointment?.patient?.patientProvider[0]?.medicalRecordNumber})
                               </span>
                             </div>
                             <Badge
@@ -686,7 +686,7 @@ export default function Appointments() {
                                     {selectedPatient.user?.fullName}
                                   </p>
                                   <p className="text-sm text-muted-foreground">
-                                    MRN: {selectedPatient.medicalRecordNumber}
+                                    MRN: {selectedPatient?.patientProvider[0]?.medicalRecordNumber}
                                   </p>
                                 </div>
                                 <Button
@@ -745,7 +745,7 @@ export default function Appointments() {
                                       </span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm text-muted-foreground">
-                                      <span>MRN: {patient.medicalRecordNumber}</span>
+                                      <span>MRN: {patient?.patientProvider[0]?.medicalRecordNumber}</span>
                                     </div>
                                   </div>
                                 ))}

@@ -765,8 +765,9 @@ const RegisterStaff = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="city">City</Label>
+                        <Label htmlFor="city">City<span className="text-destructive">*</span></Label>
                         <Select
+                          required
                           value={formData.cityId}
                           onValueChange={(value) => {
                             const city = cities.find((c) => c.id === Number(value));

@@ -65,11 +65,15 @@ export const activateProviderAccount = async (providerId: string) => {
   return response
 };
 
-export const assignSubscriptionPlan = async (payload: { providerId: string; planId: string }) => {
+export const assignSubscriptionPlan = async (payload: {
+  providerId: number; planId: string,
+  billingCycle: 'monthly' | 'quarterly'
+  |'half_yearly'| 'yearly'| 'custom'
+}) => {
   // Replace with your actual API call
-  const response = await apiClient(`/admins/healthcares/${payload.providerId}/subscription`, {
+  const response = await apiClient(`/admins/healthcares/subscription/upgrade`, {
     method: 'POST',
-    body: JSON.stringify({ planId: payload.planId }),
+    body: JSON.stringify({ planId: payload.planId, hospitalId: payload.providerId, billingCycle:payload.billingCycle  }),
   });
   
   if (!response) {

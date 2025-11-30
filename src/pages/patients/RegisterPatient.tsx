@@ -187,8 +187,7 @@ export default function RegisterPatient() {
     switch (step) {
       case 0: // Personal Info
         return !!(formData.title && formData.firstName && formData.lastName && 
-                 formData.gender && formData.dateOfBirth && formData.maritalStatus &&
-                 formData.bloodGroup && formData.genotype);
+                 formData.gender && formData.dateOfBirth && formData.maritalStatus);
       case 1: // Contact Details
         return !!(formData.phone && formData.email);
       case 2: // Address
@@ -493,10 +492,9 @@ export default function RegisterPatient() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="bloodGroup" className="flex items-center gap-1">
-                          Blood Group <span className="text-destructive">*</span>
+                          Blood Group
                         </Label>
                         <Select
-                          required
                           value={formData.bloodGroup}
                           onValueChange={(value) => handleInputChange("bloodGroup", value)}
                         >
@@ -515,10 +513,9 @@ export default function RegisterPatient() {
                       
                       <div className="space-y-2">
                         <Label htmlFor="genotype" className="flex items-center gap-1">
-                          Genotype <span className="text-destructive">*</span>
+                          Genotype 
                         </Label>
                         <Select
-                          required
                           value={formData.genotype}
                           onValueChange={(value) => handleInputChange("genotype", value)}
                         >

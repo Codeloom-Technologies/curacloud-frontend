@@ -123,7 +123,7 @@ export default function PatientRecords() {
                         {patient.user.fullName}
                       </h2>
                       <p className="text-muted-foreground">
-                        Patient ID: {patient.medicalRecordNumber}
+                        Patient ID: {patient?.patientProvider[0]?.medicalRecordNumber}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
                         <Badge

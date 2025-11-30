@@ -648,7 +648,7 @@ export default function LabOrders() {
                                   {selectedPatient.user?.fullName}
                                 </p>
                                 <p className="text-sm text-muted-foreground">
-                                  MRN: {selectedPatient.medicalRecordNumber}
+                                  MRN: {selectedPatient?.patientProvider[0].medicalRecordNumber}
                                 </p>
                               </div>
                               <Button
@@ -705,7 +705,7 @@ export default function LabOrders() {
                                     </span>
                                   </div>
                                   <div className="flex justify-between items-center text-sm text-muted-foreground">
-                                    <span>MRN: {patient.medicalRecordNumber}</span>
+                                    <span>MRN: {patient?.patientProvider[0].medicalRecordNumber}</span>
                                   </div>
                                 </div>
                               ))}
