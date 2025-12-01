@@ -282,6 +282,12 @@ export default function Onboarding() {
   };
 
   const handleComplete = () => {
+     toast({
+        title: "Onboarding",
+        description: "Please book a demo with the team",
+        variant: "destructive",
+      });
+      return;
     const payload = mapFormToApiPayload(formData);
     mutation.mutate(payload);
   };
