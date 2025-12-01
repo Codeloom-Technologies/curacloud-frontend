@@ -282,7 +282,7 @@ export default function Onboarding() {
   };
 
   const handleComplete = () => {
-     toast({
+         toast({
         title: "Onboarding",
         description: "Please book a demo with the team",
         variant: "destructive",
