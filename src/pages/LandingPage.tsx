@@ -258,6 +258,7 @@ export default function LandingPage() {
                 Sign In
               </Button>
               <Button
+              disabled
                 size="sm"
                 className="bg-gradient-primary hover:shadow-glow transition-all shadow-md"
                 onClick={handleGetStarted}
@@ -315,6 +316,7 @@ export default function LandingPage() {
                       Sign In
                     </Button>
                     <Button
+                      disabled
                       className="w-full bg-gradient-primary hover:shadow-glow transition-all"
                       onClick={() => {
                         setMobileMenuOpen(false);
