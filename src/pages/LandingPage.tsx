@@ -5,18 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
-import {
   Users,
   Calendar,
   FileText,
@@ -59,8 +47,8 @@ import dashboardPreview from "@/assets/hms-dashboard-preview.jpg";
 import { getSubscriptionPlans } from "@/services/subscription";
 import { useQuery } from "@tanstack/react-query";
 import { formatNaira } from "@/lib/formatters";
-import { GradientLoader, LoadingSpinner, MinimalLoader } from "@/components/ui/Preloader";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LoadingSpinner } from "@/components/ui/Preloader";
+import { InlineWidget } from "react-calendly";
 
 const features = [
   {
@@ -103,7 +91,7 @@ const features = [
 
 const testimonials = [
   {
-    name: "D. Miracle",
+    name: "Miracle D.",
     role: "Chief Medical Officer",
     hospital: "Metro General Hospital",
     image: "/placeholder.svg",
@@ -114,7 +102,7 @@ const testimonials = [
   {
     name: "Michael Rodriguez",
     role: "Head Nurse",
-    hospital: "City Medical Center",
+    hospital: "Metro General Hospital",
     image: "/placeholder.svg",
     rating: 5,
     quote: "The scheduling system is a game-changer. We've reduced patient wait times significantly and our staff coordination has never been better.",
@@ -123,7 +111,7 @@ const testimonials = [
   {
     name: "Lisa Chen",
     role: "Hospital Administrator",
-    hospital: "St. Mary's Hospital",
+    hospital: "Metro General Hospital",
     image: "/placeholder.svg",
     rating: 5,
     quote: "The analytics dashboard gives us insights we never had before. Decision-making is now data-driven and our operational costs have decreased by 25%.",
@@ -161,10 +149,48 @@ const securityFeatures = [
   },
 ];
 
+
+
+// Calendly Popup Component
+const CalendlyPopup = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+  const CALENDLY_URL = "https://calendly.com/gaiyaobed94/30min?month=2025-12";
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
+      <div className="relative w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div className="flex justify-between items-center p-6 border-b">
+          <h2 className="text-2xl font-bold text-gray-900">Schedule a Demo</h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClose}
+            className="h-8 w-8 p-0 rounded-full hover:bg-gray-100"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="p-4">
+          <InlineWidget
+            url={CALENDLY_URL}
+            styles={{
+              height: '650px',
+              width: '100%'
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default function LandingPage() {
   const [activeRole, setActiveRole] = useState("doctors");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [demoDialogOpen, setDemoDialogOpen] = useState(false);
+    const [showCalendly, setShowCalendly] = useState(false);
+
   const [demoForm, setDemoForm] = useState({
     name: "",
     email: "",
@@ -177,28 +203,6 @@ export default function LandingPage() {
 
   const handleGetStarted = () => {
     navigate("/auth/onboarding");
-  };
-
-  const handleDemoSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!demoForm.name || !demoForm.email || !demoForm.facilityName) {
-      toast.error("Please fill in all required fields");
-      return;
-    }
-
-    // Here you would typically send the data to your backend
-    console.log("Demo request:", demoForm);
-    toast.success("Thank you! We'll contact you within 24 hours to schedule your personalized demo.");
-    setDemoDialogOpen(false);
-    setDemoForm({
-      name: "",
-      email: "",
-      phone: "",
-      facilityName: "",
-      facilitySize: "",
-      message: "",
-    });
   };
 
   const { 
@@ -217,6 +221,9 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background">
+       {/* Calendly Popup */}
+      <CalendlyPopup isOpen={showCalendly} onClose={() => setShowCalendly(false)} />
+
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-background/95 backdrop-blur-md z-50 border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -355,109 +362,15 @@ export default function LandingPage() {
                   Start Free Trial
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Dialog open={demoDialogOpen} onOpenChange={setDemoDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button
+                <Button
+                  onClick={() => setShowCalendly(true)}
                       variant="outline"
                       size="lg"
                       className="text-lg px-8 py-3 h-14 border-2"
                     >
                       <Play className="mr-2 h-5 w-5" />
                       Watch Demo
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[600px]">
-                    <DialogHeader>
-                      <DialogTitle className="text-2xl">Schedule a Personalized Demo</DialogTitle>
-                      <DialogDescription className="text-lg">
-                        See how Curacloud can transform your healthcare facility. Get a customized demo from our experts.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <form onSubmit={handleDemoSubmit} className="space-y-6 mt-6">
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="demo-name" className="text-sm font-medium">Full Name *</Label>
-                          <Input
-                            id="demo-name"
-                            placeholder="Dr. John Smith"
-                            value={demoForm.name}
-                            onChange={(e) => setDemoForm({ ...demoForm, name: e.target.value })}
-                            required
-                            className="h-12"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="demo-email" className="text-sm font-medium">Email Address *</Label>
-                          <Input
-                            id="demo-email"
-                            type="email"
-                            placeholder="john.smith@hospital.com"
-                            value={demoForm.email}
-                            onChange={(e) => setDemoForm({ ...demoForm, email: e.target.value })}
-                            required
-                            className="h-12"
-                          />
-                        </div>
-                      </div>
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="demo-phone" className="text-sm font-medium">Phone Number</Label>
-                          <Input
-                            id="demo-phone"
-                            type="tel"
-                            placeholder="+234 xxx xxx xxxx"
-                            value={demoForm.phone}
-                            onChange={(e) => setDemoForm({ ...demoForm, phone: e.target.value })}
-                            className="h-12"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="demo-facility" className="text-sm font-medium">Facility Name *</Label>
-                          <Input
-                            id="demo-facility"
-                            placeholder="Metro General Hospital"
-                            value={demoForm.facilityName}
-                            onChange={(e) => setDemoForm({ ...demoForm, facilityName: e.target.value })}
-                            required
-                            className="h-12"
-                          />
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="demo-size" className="text-sm font-medium">Facility Size</Label>
-                        <Select onValueChange={(value) => setDemoForm({ ...demoForm, facilitySize: value })}>
-                          <SelectTrigger className="h-12">
-                            <SelectValue placeholder="Select facility size" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="small">Small Clinic (1-10 staff)</SelectItem>
-                            <SelectItem value="medium">Medium Facility (11-50 staff)</SelectItem>
-                            <SelectItem value="large">Large Hospital (51-200 staff)</SelectItem>
-                            <SelectItem value="enterprise">Enterprise (200+ staff)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="demo-message" className="text-sm font-medium">Specific Requirements</Label>
-                        <Textarea
-                          id="demo-message"
-                          placeholder="Tell us about your current challenges and specific needs..."
-                          value={demoForm.message}
-                          onChange={(e) => setDemoForm({ ...demoForm, message: e.target.value })}
-                          rows={4}
-                        />
-                      </div>
-                      <div className="flex gap-3 justify-end pt-4">
-                        <Button type="button" variant="outline" onClick={() => setDemoDialogOpen(false)}>
-                          Cancel
-                        </Button>
-                        <Button type="submit" className="bg-gradient-primary px-8">
-                          Request Personalized Demo
-                        </Button>
-                      </div>
-                    </form>
-                  </DialogContent>
-                </Dialog>
+                </Button>
               </div>
 
               <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
@@ -495,7 +408,7 @@ export default function LandingPage() {
                 {/* Floating elements */}
                 <div className="absolute -top-4 -left-4 bg-green-500 text-white px-4 py-2 rounded-full shadow-lg">
                   <TrendingUp className="h-4 w-4 inline mr-1" />
-                  Live Demo
+                  Live
                 </div>
                 <div className="absolute -bottom-4 -right-4 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg">
                   <Award className="h-4 w-4 inline mr-1" />

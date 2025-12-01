@@ -822,16 +822,16 @@ export default function Onboarding() {
 
         {/* Footer */}
         <div className="text-center mt-8">
-<p className="text-sm text-muted-foreground">
-  Already have an account?{" "}
-  <Button
-      variant="link"
-    onClick={() => navigate('/auth/login')}
-    className="text-blue-600 hover:text-blue-700 font-semibold underline bg-transparent border-none cursor-pointer p-0 hover:underline-offset-2 transition-all"
-  >
-    Sign in here
-  </Button>
-</p>
+          <p className="text-sm text-muted-foreground" onClick={() => navigate('/auth/login')}>
+            Already have an account?{" "}
+            <Button
+                variant="link"
+              onClick={() => navigate('/auth/login')}
+              className="text-blue-600 hover:text-blue-700 font-semibold underline bg-transparent border-none cursor-pointer p-0 hover:underline-offset-2 transition-all"
+            >
+              Sign in here
+            </Button>
+          </p>
           <div className="flex items-center justify-center gap-6 mt-4 text-xs text-muted-foreground">
             <div className="flex items-center gap-1">
               <Shield className="h-3 w-3" />
