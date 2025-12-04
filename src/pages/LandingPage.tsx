@@ -93,25 +93,25 @@ const testimonials = [
   {
     name: "Miracle D.",
     role: "Chief Medical Officer",
-    hospital: "Metro General Hospital",
+    hospital: "Awason Ultramodern Hospital",
     image: "/placeholder.svg",
     rating: 5,
     quote: "Curacloud HMS has transformed how we manage patient care. The intuitive interface and comprehensive features have improved our efficiency by 40%.",
     metrics: "40% efficiency improvement"
   },
   {
-    name: "Michael Rodriguez",
+    name: "Michael R.",
     role: "Head Nurse",
-    hospital: "Metro General Hospital",
+    hospital: "Awason Ultramodern Hospital",
     image: "/placeholder.svg",
     rating: 5,
     quote: "The scheduling system is a game-changer. We've reduced patient wait times significantly and our staff coordination has never been better.",
     metrics: "Reduced wait times by 35%"
   },
   {
-    name: "Lisa Chen",
+    name: "Lisa C",
     role: "Hospital Administrator",
-    hospital: "Metro General Hospital",
+    hospital: "Awason Ultramodern Hospital",
     image: "/placeholder.svg",
     rating: 5,
     quote: "The analytics dashboard gives us insights we never had before. Decision-making is now data-driven and our operational costs have decreased by 25%.",
