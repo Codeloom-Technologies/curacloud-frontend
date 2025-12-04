@@ -82,3 +82,20 @@ export const assignSubscriptionPlan = async (payload: {
   
   return response
 };
+
+
+export const inviteHospital = async (payload: {
+  email: string;
+}) => {
+  // Replace with your actual API call
+  const response = await apiClient(`/admins/healthcares/invite`, {
+    method: 'POST',
+    body: JSON.stringify({ email:payload.email  }),
+  });
+  
+  if (!response) {
+    throw new Error('Failed to assign subscription plan');
+  }
+  
+  return response
+};

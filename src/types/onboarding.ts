@@ -18,6 +18,7 @@ export interface OnboardingFormData {
   password: string;
   position: string;
   gender: string;
+  mode: 'invite' | 'self'
 }
 
 export interface OnboardingApiPayload {
@@ -40,4 +41,5 @@ export interface OnboardingApiPayload {
     postalCode: string;
     streetAddress: string;
   };
+  mode: 'self' | 'invite'
 }
