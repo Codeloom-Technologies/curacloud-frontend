@@ -58,7 +58,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { activateProviderAccount, assignSubscriptionPlan, fetchHealthcareProviders } from "@/services/admin";
+import { activateProviderAccount, assignSubscriptionPlan, fetchHealthcareProviders, inviteHospital } from "@/services/admin";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
@@ -103,7 +103,9 @@ export default function HealthcareProviders() {
   const [selectedProvider, setSelectedProvider] = useState<any>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [selectedBillingCycle, setSelectedBillingCycle] = useState<BillingCycle>('monthly');
-  
+    const [inviteEmail, setInviteEmail] = useState(""); // ADD THIS STATE
+  const [isInviting, setIsInviting] = useState(false); // ADD THIS STATE
+
   const { toast } = useToast();
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
@@ -132,14 +134,6 @@ export default function HealthcareProviders() {
 
   const queryClient = useQueryClient();
 
-  const handleAddProvider = useCallback(() => {
-    toast({
-      title: "Provider Added",
-      description: "Healthcare provider has been successfully registered.",
-      variant: "success",
-    });
-    setIsDialogOpen(false);
-  }, [toast]);
 
   const handleViewDetails = useCallback((provider: any) => {
     setSelectedProvider(provider);
@@ -199,6 +193,12 @@ export default function HealthcareProviders() {
     },
   });
 
+   useEffect(() => {
+    if (!isDialogOpen) {
+      setInviteEmail("");
+    }
+  }, [isDialogOpen]);
+
   const handleAssignPlan = useCallback(async (providerId: string, planId: string) => {
     assignPlanMutation.mutate({ 
       providerId: parseInt(providerId), 
@@ -225,6 +225,67 @@ export default function HealthcareProviders() {
     
     return `$${totalPrice}/${cycleConfig?.label.toLowerCase().replace('ly', '')}`;
   }, [calculatePrice]);
+
+
+   // Add Invite Mutation
+  const inviteMutation = useMutation({
+    mutationFn: inviteHospital,
+    onSuccess: () => {
+      toast({
+        title: "Invitation Sent",
+        description: "An invitation has been sent to the healthcare provider.",
+        variant: "success",
+      });
+      setInviteEmail("");
+      setIsDialogOpen(false);
+      queryClient.invalidateQueries({ 
+        queryKey: ['healthcare-providers'] 
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Invitation Failed",
+        description: error.message || "Failed to send invitation.",
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      setIsInviting(false);
+    },
+  });
+
+  const handleAddProvider = useCallback(async () => {
+    if (!inviteEmail.trim()) {
+      toast({
+        title: "Email Required",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(inviteEmail)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsInviting(true);
+    inviteMutation.mutate({ email: inviteEmail });
+  }, [inviteEmail, inviteMutation, toast]);
+
+  // Clear email when dialog closes
+  useEffect(() => {
+    if (!isDialogOpen) {
+      setInviteEmail("");
+    }
+  }, [isDialogOpen]);
+
 
   const getStatusVariant = useCallback((status: string) => {
     switch (status) {
@@ -749,43 +810,111 @@ export default function HealthcareProviders() {
                 <Download className="h-4 w-4" />
                 Export
               </Button>
-              <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg">
-                    <Plus className="h-4 w-4" />
-                    Add Provider
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                      <Building2 className="h-5 w-5" />
-                      Add Healthcare Provider
-                    </DialogTitle>
-                    <DialogDescription>
-                      Register a new healthcare provider organization to the platform
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-6 py-4">
-                    {/* Form content remains the same */}
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 shadow-lg">
+              <Plus className="h-4 w-4" />
+              Add Provider
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Send className="h-5 w-5" />
+                Invite Healthcare Provider
+              </DialogTitle>
+              <DialogDescription>
+                Send an invitation to a healthcare provider to join the platform
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6 py-4">
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                  <Mail className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <p className="text-sm font-medium">Simple Invitation Process</p>
+                    <p className="text-xs text-blue-700">
+                      Just enter the email address - we'll handle the rest
+                    </p>
                   </div>
-                  <div className="flex justify-end gap-3">
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsDialogOpen(false)}
-                      className="h-11"
-                    >
-                      Cancel
-                    </Button>
-                    <Button 
-                      onClick={handleAddProvider}
-                      className="h-11 bg-gradient-to-r from-blue-600 to-cyan-600"
-                    >
-                      Add Provider
-                    </Button>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="invite-email" className="text-sm font-medium">
+                    Provider Email Address
+                  </Label>
+                  <Input
+                    id="invite-email"
+                    type="email"
+                    placeholder="provider@hospital.com"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    className="h-11"
+                    disabled={isInviting}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Enter the email address of the healthcare provider you want to invite
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3 p-4 bg-slate-50 rounded-lg border">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
+                    <UserCheck className="h-4 w-4 text-green-600" />
                   </div>
-                </DialogContent>
-              </Dialog>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">What happens next?</p>
+                    <ul className="text-xs text-muted-foreground space-y-1">
+                      <li className="flex items-center gap-1">
+                        <span className="h-1 w-1 rounded-full bg-slate-400" />
+                        Provider receives an invitation email
+                      </li>
+                      <li className="flex items-center gap-1">
+                        <span className="h-1 w-1 rounded-full bg-slate-400" />
+                        They complete registration and setup
+                      </li>
+                      <li className="flex items-center gap-1">
+                        <span className="h-1 w-1 rounded-full bg-slate-400" />
+                        You can assign subscription plans later
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsDialogOpen(false);
+                  setInviteEmail("");
+                }}
+                className="h-11"
+                disabled={isInviting}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleAddProvider}
+                className="h-11 bg-gradient-to-r from-blue-600 to-cyan-600"
+                disabled={isInviting || !inviteEmail.trim()}
+              >
+                {isInviting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="h-4 w-4 mr-2" />
+                    Send Invitation
+                  </>
+                )}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
             </div>
           </div>
 
