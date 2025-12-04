@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   ArrowRight,
   ArrowLeft,
@@ -54,6 +54,7 @@ import {
   HEALTHCARE_PROVIDER_TYPES,
 } from "@/constants";
 import { z } from "zod";
+import { verifyHealthcareInvite } from "@/services/auth";
 
 const passwordSchema = z.object({
   password: z
@@ -116,7 +117,28 @@ export default function Onboarding() {
   const [step, setStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [phoneCode, setPhoneCode] = useState("+--");
+  const [searchParams] = useSearchParams();
+  const token = searchParams.get("token");
   const { toast } = useToast();
+
+  const { 
+    data: inviteData, 
+    isLoading: isVerifyingInvite, 
+    isError: isInviteError, 
+    error: inviteError,
+    isSuccess: isInviteSuccess 
+  } = useQuery({
+    queryKey: ["verify-healthcare-invite", token],
+    queryFn: async () => {
+      if (!token) return null; // Allow self-registration
+      return await verifyHealthcareInvite(token);
+    },
+    retry: false,
+    enabled: !!token, // Only run if there's a token
+  });
+
+  
+  console.log(inviteData)
 
   const [formData, setFormData] = useState<OnboardingFormData>({
     role: "",
@@ -132,14 +154,15 @@ export default function Onboarding() {
     stateId: "",
     cityId: "",
     fullName: "",
-    email: "",
+    email:  "",
     phone: "",
     phoneCode: "",
     password: "",
     gender: "",
     position: "",
+    mode: token ? 'invite' : 'self'
   });
-
+console.log(token ? 'invite' : 'self')
   const { data: countries = [], isLoading: loadingCountries } = useQuery({
     queryKey: ["countries"],
     queryFn: fetchCountries,
@@ -188,6 +211,30 @@ export default function Onboarding() {
       setFormData((prev) => ({ ...prev, phoneCode: "+--" }));
     }
   }, [formData.countryId, countries]);
+
+  // Update form data when invite verification succeeds
+  useEffect(() => {
+    if (isInviteSuccess && inviteData?.email) {
+      setFormData(prev => ({
+        ...prev,
+        email: inviteData.email,
+        // You might also want to pre-fill name if available
+        // fullName: inviteData.name || "",
+      }));
+    }
+  }, [isInviteSuccess, inviteData]);
+
+  // Show invitation error if token is invalid
+  useEffect(() => {
+    if (isInviteError && token) {
+      toast({
+        title: "Invalid Invitation",
+        description: inviteError?.message || "This invitation link is invalid or has expired.",
+        variant: "destructive",
+      });
+      navigate('/auth/onboarding'); // Redirect to regular registration
+    }
+  }, [isInviteError, inviteError, token, toast, navigate]);
 
   const mutation = useMutation({
     mutationFn: submitOnboarding,
@@ -275,6 +322,8 @@ export default function Onboarding() {
     }
   };
 
+  
+
   const handleBack = () => {
     if (step > 1) {
       setStep(step - 1);
@@ -282,12 +331,6 @@ export default function Onboarding() {
   };
 
   const handleComplete = () => {
-      // toast({
-      //   title: "Onboarding",
-      //   description: "Please book a demo with the team",
-      //   variant: "destructive",
-      // });
-      // return;
     const payload = mapFormToApiPayload(formData);
     mutation.mutate(payload);
   };

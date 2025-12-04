@@ -90,5 +90,6 @@ export const mapFormToApiPayload = (formData: any): OnboardingApiPayload => {
       postalCode: formData.postalCode,
       streetAddress: formData.address,
     },
+    mode: formData.mode
   };
 };

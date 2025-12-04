@@ -93,3 +93,15 @@ export const forgotPasswordMutation = async (email: string) => {
     body: JSON.stringify(data),
   });
 };
+
+
+export const verifyHealthcareInvite = async (token: string) => {
+  const response = await apiClient(`/healthcares/invite-verify?token=${token}`, {
+    method: "GET",
+  });
+
+  if (!response) {
+    throw new Error("Failed to verify healthcares invite");
+  }
+  return response;
+};
