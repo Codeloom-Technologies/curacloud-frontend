@@ -333,7 +333,7 @@ export default function WardsManagement() {
 
   // Calculate stats
   const totalBeds = wards.reduce((acc, ward) => acc + ward.capacity, 0);
-  const occupiedBeds = wards.reduce((acc, ward) => acc + ward.current_occupancy, 0);
+  const occupiedBeds = wards.reduce((acc, ward) => acc + ward.currentOccupancy, 0);
   const occupancyRate = totalBeds > 0 ? Math.round((occupiedBeds / totalBeds) * 100) : 0;
 
   const handleDeleteWard = (wardId: string) => {

@@ -745,7 +745,7 @@ console.log(bed)
                           This bed is currently available for new patient assignment.
                         </p>
                         <Button
-                          onClick={() => navigate("/dashboard/admissions/create")}
+                          onClick={() => navigate("/dashboard/admissions")}
                         >
                           <UserCheck className="h-4 w-4 mr-2" />
                           Assign Patient to Bed

@@ -15,7 +15,8 @@ import {
   Shield,
   TestTube2,
   TestTubeIcon,
-  Bed
+  Bed,
+  Space
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -311,7 +312,8 @@ const navigationItems: NavigationItem[] = [
       },
     ],
   },
-    {
+    
+  {
     title: "Wards & beds",
     icon: Bed,
     href: "/dashboard/ward",
@@ -326,6 +328,20 @@ const navigationItems: NavigationItem[] = [
         title: "Bed Directory",
         href: "/dashboard/beds",
         permission: "bed" as Permission,
+      },
+    ],
+  },
+
+  {
+    title: "Admissions",
+    icon: Space,
+    href: "/dashboard/admissions",
+    permission: "admission" as Permission,
+    children: [
+      {
+        title: "Admission Directory",
+        href: "/dashboard/admissions",
+        permission: "admission" as Permission,
       },
     ],
   },
