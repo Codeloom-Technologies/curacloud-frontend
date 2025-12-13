@@ -55,6 +55,7 @@ import ContactPage from "./pages/ContactUs";
 import ResetPassword from "./pages/PasswordRecovery";
 import SubscriptionManagementMvp from "./pages/Subscription/SubscriptionManagemenTMvp";
 import IdleTimerContainer from "./components/IdleTimerContainer";
+import WardsManagement from "./pages/ward/WardsManagement";
 
 const queryClient = new QueryClient();
 
@@ -200,6 +201,13 @@ const App = () => (
             <Route
             path="/dashboard/admin/reports"
             element={<SuperAdminReports />}
+          />
+
+
+          {/* BED AND WARD */}
+           <Route
+            path="/dashboard/wards"
+            element={<WardsManagement />}
           />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

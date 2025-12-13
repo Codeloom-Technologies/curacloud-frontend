@@ -42,6 +42,7 @@ export type Permission =
   | "subscription" |
   'wallet' 
   | 'admins'
+  | 'ward' | 'ward.create' | 'ward.delete' | 'ward.update'
   ;
 
 // ACL Configuration: Maps roles to their allowed permissions
@@ -166,6 +167,10 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "reports",
     "subscription",
     'wallet',
+    'ward',
+    'ward.create',
+    'ward.delete',
+    'ward.update'
   ],
 
   // HR Manager - Staff and HR management
@@ -228,6 +233,10 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "laboratory.orders",
     "radiology",
     "settings",
+    'ward',
+    // 'ward.create',
+    // 'ward.delete',
+    // 'ward.update'
   ],
 
   // Nurse - Patient care and vitals
@@ -247,6 +256,10 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "laboratory",
     "laboratory.reports",
     "settings",
+    'ward',
+    // 'ward.create',
+    // 'ward.delete',
+    // 'ward.update'
   ],
 
   // Pharmacist - Medication and prescriptions
@@ -296,6 +309,10 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "appointments.calendar",
     "appointments.checkin",
     "settings",
+    'ward',
+    'ward.create',
+    'ward.delete',
+    'ward.update'
   ],
 
   // Cashier - Payment processing

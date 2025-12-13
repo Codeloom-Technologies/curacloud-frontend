@@ -14,7 +14,8 @@ import {
   TrendingUp,
   Shield,
   TestTube2,
-  TestTubeIcon
+  TestTubeIcon,
+  Bed
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -310,7 +311,25 @@ const navigationItems: NavigationItem[] = [
       },
     ],
   },
-  // dashboard
+    {
+    title: "Wards & beds",
+    icon: Bed,
+    href: "/dashboard/ward",
+    permission: "ward" as Permission,
+    children: [
+      {
+        title: "Ward Directory",
+        href: "/dashboard/wards",
+        permission: "ward" as Permission,
+      },
+      // {
+      //   title: "Bed Directory",
+      //   href: "/dashboard/bed",
+      //   permission: "staff.register" as Permission,
+      // },
+    ],
+  },
+  // admin dashboard
     {
     title: "Dashboard",
     icon: LayoutDashboard,
