@@ -56,6 +56,9 @@ import ResetPassword from "./pages/PasswordRecovery";
 import SubscriptionManagementMvp from "./pages/Subscription/SubscriptionManagemenTMvp";
 import IdleTimerContainer from "./components/IdleTimerContainer";
 import WardsManagement from "./pages/ward/WardsManagement";
+import BedsManagement from "./pages/ward/BedsManagement";
+import WardDetail from "./pages/ward/WardDetails";
+import BedDetails from "./pages/ward/BedDetails";
 
 const queryClient = new QueryClient();
 
@@ -208,6 +211,18 @@ const App = () => (
            <Route
             path="/dashboard/wards"
             element={<WardsManagement />}
+          />
+   <Route
+            path="/dashboard/wards/:id/details"
+            element={<WardDetail />}
+          />
+           <Route
+            path="/dashboard/beds"
+            element={<BedsManagement />}
+          />
+           <Route
+            path="/dashboard/beds/:id/details"
+            element={<BedDetails />}
           />
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

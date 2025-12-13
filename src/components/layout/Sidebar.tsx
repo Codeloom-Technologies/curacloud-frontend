@@ -322,11 +322,11 @@ const navigationItems: NavigationItem[] = [
         href: "/dashboard/wards",
         permission: "ward" as Permission,
       },
-      // {
-      //   title: "Bed Directory",
-      //   href: "/dashboard/bed",
-      //   permission: "staff.register" as Permission,
-      // },
+      {
+        title: "Bed Directory",
+        href: "/dashboard/beds",
+        permission: "bed" as Permission,
+      },
     ],
   },
   // admin dashboard

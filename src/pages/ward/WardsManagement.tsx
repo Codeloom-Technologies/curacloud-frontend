@@ -502,7 +502,7 @@ export default function WardsManagement() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="chargePerDay">Charge Per Day ($)</Label>
+                      <Label htmlFor="chargePerDay">Charge Per Day (₦)</Label>
                       <Input
                         id="chargePerDay"
                         value={formData.chargePerDay}
@@ -879,7 +879,7 @@ export default function WardsManagement() {
                                 </div>
                               </TableCell>
                               <TableCell>
-                                <Badge variant="outline">{ward.code}</Badge>
+                                <Badge variant="outline">{ward.code.toUpperCase()}</Badge>
                               </TableCell>
                               <TableCell>
                                 <div className="text-sm">
@@ -935,7 +935,7 @@ export default function WardsManagement() {
                                     size="sm"
                                     variant="ghost"
                                     onClick={() =>
-                                      navigate(`/dashboard/wards/${ward.id}`)
+                                      navigate(`/dashboard/wards/${ward.reference}/details`)
                                     }
                                   >
                                     <Eye className="h-4 w-4" />

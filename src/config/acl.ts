@@ -42,7 +42,7 @@ export type Permission =
   | "subscription" |
   'wallet' 
   | 'admins'
-  | 'ward' | 'ward.create' | 'ward.delete' | 'ward.update'
+  | 'ward' | 'ward.create' | 'ward.delete' | 'ward.update' | 'bed'| 'bed.create' | 'bed.update'
   ;
 
 // ACL Configuration: Maps roles to their allowed permissions
@@ -170,7 +170,10 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     'ward',
     'ward.create',
     'ward.delete',
-    'ward.update'
+    'ward.update',
+    'bed',
+    'bed.create',
+    'bed.update'
   ],
 
   // HR Manager - Staff and HR management

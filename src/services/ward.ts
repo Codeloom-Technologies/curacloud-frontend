@@ -49,6 +49,15 @@ export const deleteWard = async (id: string) => {
   return response;
 };
 
+export const fetchWardById = async (id: string) => {
+  const response = await apiClient(`/wards/${id}/reference`, {
+    method: "GET",
+  });
+  return response;
+};
+
+
+
 // Beds
 export const fetchBeds = async (filters?: { wardId?: number; status?: string }) => {
   const query = new URLSearchParams();
