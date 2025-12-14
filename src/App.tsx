@@ -60,6 +60,7 @@ import BedsManagement from "./pages/ward/BedsManagement";
 import WardDetail from "./pages/ward/WardDetails";
 import BedDetails from "./pages/ward/BedDetails";
 import AdmissionManagement from "./pages/admission/AdmissionManagement";
+import AdmissionDetails from "./pages/admission/AdmissionDetails";
 
 const queryClient = new QueryClient();
 
@@ -226,11 +227,16 @@ const App = () => (
             element={<BedDetails />}
           />
 
-          
+          {/* ADM */}
               <Route
             path="/dashboard/admissions"
             element={<AdmissionManagement />}
           />
+           <Route
+            path="/dashboard/admissions/:id/details"
+            element={<AdmissionDetails />}
+          />
+
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

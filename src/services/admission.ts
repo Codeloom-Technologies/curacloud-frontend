@@ -37,6 +37,14 @@ export const fetchAvailableBeds = async (wardId: number) => {
     return { beds: data, meta }
 };
 
+
+export const fetchAdmissionById = async (id: string) => {
+  const response = await apiClient(`/bed-assignments/${id}`);
+  return response
+
+};
+
+
 // Fetch patients for admission
 export const fetchPatientsForAdmission = async () => {
   const response = await apiClient("/patients/for-admission");
@@ -80,3 +88,7 @@ export const transferPatient = async (transferData: {
   });
   return response;
 };
+
+export const updateAdmission = () => {
+    return
+}

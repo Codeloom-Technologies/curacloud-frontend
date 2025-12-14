@@ -1,4 +1,3 @@
-// components/hospital/AdmissionManagement.tsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -165,6 +164,8 @@ export default function AdmissionManagement() {
   });
 
     const admissions = admissionsData?.admissions || [];
+
+    console.log(admissions)
     const pagination = admissionsData?.meta;
 
   // Fetch admission statistics
@@ -242,7 +243,7 @@ export default function AdmissionManagement() {
   };
 
   const handleViewAdmission = (admissionId: number) => {
-    navigate(`/dashboard/hospital/admissions/${admissionId}`);
+    navigate(`/dashboard/admissions/${admissionId}/details`);
   };
 
   // Quick Stats Component
@@ -367,7 +368,7 @@ export default function AdmissionManagement() {
       <Button
         className="h-20 flex-col gap-2"
         variant="outline"
-        onClick={() => navigate("/dashboard/hospital/beds")}
+        onClick={() => navigate("/dashboard/beds")}
       >
         <Bed className="h-6 w-6" />
         <span>View Available Beds</span>
@@ -707,7 +708,7 @@ function AdmissionRow({ admission, onViewAdmission, onViewPatient, onDischarge }
           <div>
             <div className="font-medium">{admission.patient?.user?.fullName}</div>
             <div className="text-sm text-muted-foreground">
-              {admission.patient?.medicalRecordNumber}
+              {admission.patient?.patientProvider[0]?.medicalRecordNumber}
             </div>
           </div>
         </div>
@@ -719,7 +720,7 @@ function AdmissionRow({ admission, onViewAdmission, onViewPatient, onDischarge }
             <span className="font-medium">{admission.bed?.bedNumber}</span>
           </div>
           <div className="text-sm text-muted-foreground">
-            {admission.bed?.ward?.name}
+            {admission?.ward?.name}
           </div>
         </div>
       </TableCell>
@@ -750,7 +751,7 @@ function AdmissionRow({ admission, onViewAdmission, onViewPatient, onDischarge }
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="ghost" onClick={() => onViewAdmission(admission.id)}>
+          <Button size="sm" variant="ghost" onClick={() => onViewAdmission(admission?.admission?.patientId)}>
             <Eye className="h-4 w-4" />
           </Button>
           <Button size="sm" variant="ghost" onClick={() => onViewPatient(admission.patient?.user?.reference)}>
@@ -1017,14 +1018,14 @@ function EmergencyCases({ onAdmitPatient }: any) {
                           <AlertCircle className="h-5 w-5 text-red-600" />
                         </div>
                         <div>
-                          <div className="font-semibold">{emergency.patient?.full_name}</div>
+                          <div className="font-semibold">{emergency.patient?.user?.fulName}</div>
                           <Badge className="bg-red-100 text-red-700">
                             Critical
                           </Badge>
                         </div>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {emergency.bed?.bed_number}
+                        {emergency.bed?.bedNumber}
                       </div>
                     </div>
                     
@@ -1574,7 +1575,7 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
             Discharge Patient
           </DialogTitle>
           <DialogDescription>
-            Complete the discharge process for {admission.patient?.full_name}
+            Complete the discharge process for {admission.patient?.user?.fullName}
           </DialogDescription>
         </DialogHeader>
 
@@ -1589,9 +1590,9 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
                       <User className="h-6 w-6 text-green-600" />
                     </div>
                     <div>
-                      <div className="font-semibold">{admission.patient?.full_name}</div>
+                      <div className="font-semibold">{admission.patient?.user?.fullName}</div>
                       <div className="text-sm text-muted-foreground">
-                        MRN: {admission.patient?.medical_record_number}
+                        MRN: {admission.patient?.patientProvider[0].medicalRecordNumber}
                       </div>
                     </div>
                   </div>
@@ -1609,7 +1610,7 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Bed</Label>
-                    <p className="font-medium">{admission.bed?.bed_number}</p>
+                    <p className="font-medium">{admission.bed?.bedNumber}</p>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Diagnosis</Label>
@@ -1617,7 +1618,7 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">Attending Doctor</Label>
-                    <p className="font-medium">{admission.admitting_doctor}</p>
+                    <p className="font-medium">{admission?.admittingDoctor}</p>
                   </div>
                 </div>
               </div>
