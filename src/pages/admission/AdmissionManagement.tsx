@@ -1,3 +1,4 @@
+// components/hospital/AdmissionManagement.tsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -101,6 +102,8 @@ import {
   fetchAdmissionStats,
   fetchPatientsForAdmission,
 } from "@/services/admission";
+import { fetchWards } from "@/services/ward";
+import { fetchPatients } from "@/services/patient";
 
 // Admission Status Colors
 const ADMISSION_STATUS_COLORS = {
@@ -136,7 +139,7 @@ export default function AdmissionManagement() {
   const [isDischargeDialogOpen, setIsDischargeDialogOpen] = useState(false);
   const [selectedAdmission, setSelectedAdmission] = useState<any>(null);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
-
+  
   // Debounce search term
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(searchQuery), 400);
@@ -161,25 +164,13 @@ export default function AdmissionManagement() {
       }),
   });
 
-  const admissions = admissionsData?.data || [];
-  const pagination = admissionsData?.meta;
+    const admissions = admissionsData?.admissions || [];
+    const pagination = admissionsData?.meta;
 
   // Fetch admission statistics
   const { data: stats } = useQuery({
     queryKey: ["admission-stats"],
     queryFn: fetchAdmissionStats,
-  });
-
-  // Fetch patients for admission
-  const { data: patients } = useQuery({
-    queryKey: ["patients-for-admission"],
-    queryFn: fetchPatientsForAdmission,
-  });
-
-  // Fetch available beds
-  const { data: availableBeds } = useQuery({
-    queryKey: ["available-beds"],
-    queryFn: fetchAvailableBeds,
   });
 
   // Mutations
@@ -247,11 +238,11 @@ export default function AdmissionManagement() {
   };
 
   const handleViewPatient = (patientId: number) => {
-    navigate(`/patients/${patientId}`);
+    navigate(`/dashboard/patients/records/${patientId}`);
   };
 
   const handleViewAdmission = (admissionId: number) => {
-    navigate(`/hospital/admissions/${admissionId}`);
+    navigate(`/dashboard/hospital/admissions/${admissionId}`);
   };
 
   // Quick Stats Component
@@ -263,14 +254,14 @@ export default function AdmissionManagement() {
             {isFetching ? (
               <Skeleton className="h-8 w-16" />
             ) : (
-              stats?.total_admissions || 0
+              stats?.totalAdmissions || 0
             )}
           </div>
           <div className="text-sm text-muted-foreground">
             Total Admissions
           </div>
           <div className="text-xs text-muted-foreground mt-1">
-            Today: {stats?.today_admissions || 0}
+            Today: {stats?.todayAdmissions || 0}
           </div>
         </CardContent>
       </Card>
@@ -281,7 +272,7 @@ export default function AdmissionManagement() {
             {isFetching ? (
               <Skeleton className="h-8 w-16" />
             ) : (
-              stats?.current_admissions || 0
+              stats?.currentAdmissions || 0
             )}
           </div>
           <div className="text-sm text-muted-foreground">
@@ -376,7 +367,7 @@ export default function AdmissionManagement() {
       <Button
         className="h-20 flex-col gap-2"
         variant="outline"
-        onClick={() => navigate("/dashboard/beds")}
+        onClick={() => navigate("/dashboard/hospital/beds")}
       >
         <Bed className="h-6 w-6" />
         <span>View Available Beds</span>
@@ -494,11 +485,11 @@ export default function AdmissionManagement() {
               <TabsList className="grid w-full md:w-auto grid-cols-4">
                 <TabsTrigger value="admissions" className="flex items-center gap-2">
                   <Users className="h-4 w-4" />
-                  Admissions ({stats?.current_admissions || 0})
+                  Admissions ({stats?.currentAdmissions || 0})
                 </TabsTrigger>
                 <TabsTrigger value="pending" className="flex items-center gap-2">
                   <Clock className="h-4 w-4" />
-                  Pending ({stats?.pending_admissions || 0})
+                  Pending ({stats?.pendingAdmissions || 0})
                 </TabsTrigger>
                 <TabsTrigger value="discharges" className="flex items-center gap-2">
                   <CheckCircle className="h-4 w-4" />
@@ -506,7 +497,7 @@ export default function AdmissionManagement() {
                 </TabsTrigger>
                 <TabsTrigger value="emergency" className="flex items-center gap-2">
                   <AlertCircle className="h-4 w-4" />
-                  Emergency ({stats?.emergency_cases || 0})
+                  Emergency ({stats?.emergencyCases || 0})
                 </TabsTrigger>
               </TabsList>
 
@@ -681,7 +672,6 @@ export default function AdmissionManagement() {
           setSelectedPatient(null);
         }}
         patient={selectedPatient}
-        availableBeds={availableBeds || []}
         onAdmit={handleAdmitPatient}
         isLoading={admitMutation.isPending}
       />
@@ -704,7 +694,7 @@ export default function AdmissionManagement() {
 // Admission Row Component
 function AdmissionRow({ admission, onViewAdmission, onViewPatient, onDischarge }: any) {
   const daysAdmitted = Math.floor(
-    (new Date().getTime() - new Date(admission.admission_date).getTime()) / (1000 * 3600 * 24)
+    (new Date().getTime() - new Date(admission?.admission?.admissionDate).getTime()) / (1000 * 3600 * 24)
   );
 
   return (
@@ -736,10 +726,10 @@ function AdmissionRow({ admission, onViewAdmission, onViewPatient, onDischarge }
       <TableCell>
         <div className="space-y-1">
           <div className="font-medium">
-            {new Date(admission.admissionDate).toLocaleDateString()}
+            {new Date(admission?.admission?.admissionDate).toLocaleDateString()}
           </div>
           <div className="text-sm text-muted-foreground">
-            {new Date(admission.admissionDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            {new Date(admission?.admission?.admissionDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
           </div>
         </div>
       </TableCell>
@@ -749,13 +739,13 @@ function AdmissionRow({ admission, onViewAdmission, onViewPatient, onDischarge }
         </Badge>
       </TableCell>
       <TableCell>
-        <Badge className={PRIORITY_COLORS[admission.priority as keyof typeof PRIORITY_COLORS]}>
-          {admission.priority}
+        <Badge className={PRIORITY_COLORS[admission?.admission?.priority as keyof typeof PRIORITY_COLORS]}>
+          {admission?.admission?.priority}
         </Badge>
       </TableCell>
       <TableCell>
-        <Badge className={ADMISSION_STATUS_COLORS[admission.status as keyof typeof ADMISSION_STATUS_COLORS]}>
-          {admission.status}
+        <Badge className={ADMISSION_STATUS_COLORS[admission?.admission?.status as keyof typeof ADMISSION_STATUS_COLORS]}>
+          {admission?.admission?.status}
         </Badge>
       </TableCell>
       <TableCell>
@@ -763,7 +753,7 @@ function AdmissionRow({ admission, onViewAdmission, onViewPatient, onDischarge }
           <Button size="sm" variant="ghost" onClick={() => onViewAdmission(admission.id)}>
             <Eye className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => onViewPatient(admission.patient_id)}>
+          <Button size="sm" variant="ghost" onClick={() => onViewPatient(admission.patient?.user?.reference)}>
             <User className="h-4 w-4" />
           </Button>
           {admission.status === 'admitted' && (
@@ -779,10 +769,14 @@ function AdmissionRow({ admission, onViewAdmission, onViewPatient, onDischarge }
 
 // Pending Admissions Component
 function PendingAdmissions({ onAdmitPatient }: any) {
-  const { data: pendingAdmissions, isLoading, isFetching } = useQuery({
+  const { data: pendingAdmissionsData, isLoading, isFetching } = useQuery({
     queryKey: ["pending-admissions"],
     queryFn: () => fetchAdmissions({ status: "pending" }),
   });
+
+        const pendingAdmissions = pendingAdmissionsData?.admissions || [];
+    const pagination = pendingAdmissionsData?.meta;
+
 
   if (isLoading) {
     return (
@@ -877,10 +871,13 @@ function PendingAdmissions({ onAdmitPatient }: any) {
 
 // Discharge History Component
 function DischargeHistory() {
-  const { data: discharges, isLoading, isFetching } = useQuery({
+  const { data: dischargesData, isLoading, isFetching } = useQuery({
     queryKey: ["discharge-history"],
     queryFn: () => fetchAdmissions({ status: "discharged", perPage: 20 }),
   });
+
+     const discharges = dischargesData?.admissions || [];
+    const pagination = dischargesData?.meta;
 
   if (isLoading) {
     return (
@@ -918,8 +915,8 @@ function DischargeHistory() {
             </TableHeader>
             <TableBody className="transition-all duration-300 ease-in-out">
               {discharges?.data?.map((discharge: any) => {
-                const admissionDate = new Date(discharge.admissionDate);
-                const dischargeDate = new Date(discharge.dischargeDate);
+                const admissionDate = new Date(discharge.admission_date);
+                const dischargeDate = new Date(discharge.discharge_date);
                 const lengthOfStay = Math.floor(
                   (dischargeDate.getTime() - admissionDate.getTime()) / (1000 * 3600 * 24)
                 );
@@ -927,9 +924,9 @@ function DischargeHistory() {
                 return (
                   <TableRow key={discharge.id} className="hover:bg-muted/50">
                     <TableCell>
-                      <div className="font-medium">{discharge.patient?.user?.fullName}</div>
+                      <div className="font-medium">{discharge.patient?.full_name}</div>
                       <div className="text-sm text-muted-foreground">
-                        Bed: {discharge.bed?.bedNumber}
+                        Bed: {discharge.bed?.bed_number}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -945,7 +942,7 @@ function DischargeHistory() {
                     </TableCell>
                     <TableCell>
                       <div className="max-w-xs truncate">
-                        {discharge.dischargeRreason || "Regular discharge"}
+                        {discharge.discharge_reason || "Regular discharge"}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -966,10 +963,14 @@ function DischargeHistory() {
 
 // Emergency Cases Component
 function EmergencyCases({ onAdmitPatient }: any) {
-  const { data: emergencies, isLoading, isFetching } = useQuery({
+  const { data: emergenciesData, isLoading, isFetching } = useQuery({
     queryKey: ["emergency-cases"],
     queryFn: () => fetchAdmissions({ priority: "critical", status: "admitted" }),
   });
+    
+       const emergencies = emergenciesData?.admissions || [];
+    const pagination = emergenciesData?.meta;
+
 
   if (isLoading) {
     return (
@@ -1016,14 +1017,14 @@ function EmergencyCases({ onAdmitPatient }: any) {
                           <AlertCircle className="h-5 w-5 text-red-600" />
                         </div>
                         <div>
-                          <div className="font-semibold">{emergency.patient?.user?.fullName}</div>
+                          <div className="font-semibold">{emergency.patient?.full_name}</div>
                           <Badge className="bg-red-100 text-red-700">
                             Critical
                           </Badge>
                         </div>
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {emergency.bed?.bedNumber}
+                        {emergency.bed?.bed_number}
                       </div>
                     </div>
                     
@@ -1034,7 +1035,7 @@ function EmergencyCases({ onAdmitPatient }: any) {
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <Clock className="h-4 w-4 text-red-500" />
-                        <span>Admitted: {new Date(emergency.admissionDate).toLocaleDateString()}</span>
+                        <span>Admitted: {new Date(emergency.admission_date).toLocaleDateString()}</span>
                       </div>
                     </div>
 
@@ -1065,7 +1066,16 @@ function EmergencyCases({ onAdmitPatient }: any) {
 }
 
 // Admission Dialog Component
-function AdmissionDialog({ isOpen, onClose, patient, availableBeds, onAdmit, isLoading }: any) {
+function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  
+  // State
+  const [selectedPatient, setSelectedPatient] = useState<any>(patient || null);
+  const [patientSearchQuery, setPatientSearchQuery] = useState("");
+  const [debouncedPatientSearch, setDebouncedPatientSearch] = useState("");
+  const [selectedWard, setSelectedWard] = useState<string>("");
   const [formData, setFormData] = useState({
     patientId: patient?.id || "",
     bedId: "",
@@ -1073,48 +1083,101 @@ function AdmissionDialog({ isOpen, onClose, patient, availableBeds, onAdmit, isL
     priority: "medium",
     diagnosis: "",
     symptoms: "",
-    admitting_doctor: "",
-    expected_stay_days: "3",
-    notes: "",
-    emergency_contact: patient?.phone || "",
-    insurance_provider: "",
-    insurance_policy_number: "",
+    notes: ""
   });
 
-  const { toast } = useToast();
-  const navigate = useNavigate();
-
+  // Debounce patient search
   useEffect(() => {
-    if (patient) {
+    const handler = setTimeout(() => {
+      setDebouncedPatientSearch(patientSearchQuery.trim());
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [patientSearchQuery]);
+
+  // Update form when patient is selected or changed
+  useEffect(() => {
+    if (selectedPatient) {
       setFormData(prev => ({
         ...prev,
-        patient_id: patient.id,
-        emergency_contact: patient.phone || "",
+        patientId: selectedPatient.id.toString(),
+        emergency_contact: selectedPatient.user?.phoneNumber || "",
       }));
     }
-  }, [patient]);
+  }, [selectedPatient]);
+
+  // Fetch patients for search
+  const { 
+    data: patientData, 
+    isLoading: isLoadingPatient, 
+    isFetching: isFetchingPatient 
+  } = useQuery({
+    queryKey: ["patients-search", debouncedPatientSearch],
+    queryFn: () => fetchPatients(1, 50, debouncedPatientSearch, {}),
+    enabled: isOpen && !selectedPatient,
+  });
+
+    console.log({patientData})
+  // Fetch wards for selection
+  const { data: wardsData, isLoading: isLoadingWards } = useQuery({
+    queryKey: ["wards-for-admission"],
+    queryFn: () => fetchWards(1, 100, "", {}),
+    enabled: isOpen,
+  });
+
+  // Fetch available beds for selected ward
+  const { data: availableBedsData, isLoading: isLoadingBeds } = useQuery({
+    queryKey: ["available-beds", selectedWard],
+    queryFn: () => fetchAvailableBeds(parseInt(selectedWard)),
+    enabled: !!selectedWard && isOpen,
+  });
+
+    const availableBeds = availableBedsData?.beds || []
+
+  const wards = wardsData?.wards || [];
+
+  const handlePatientSelect = (patient: any) => {
+    setSelectedPatient(patient);
+    setPatientSearchQuery("");
+  };
+
+  const handleClearPatient = () => {
+    setSelectedPatient(null);
+    setFormData(prev => ({ ...prev, patientId: "" }));
+  };
 
   const handleSubmit = () => {
-    if (!formData.patientId || !formData.bedId) {
+    if (!selectedPatient) {
       toast({
         title: "Missing Information",
-        description: "Please select a patient and bed.",
+        description: "Please select a patient.",
         variant: "destructive",
       });
       return;
     }
 
-    onAdmit({
+    if (!formData.bedId) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a bed.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const admissionData = {
       ...formData,
-      patient_id: parseInt(formData.patientId),
-      bed_id: parseInt(formData.bedId),
-      expected_stay_days: parseInt(formData.expected_stay_days),
-    });
+      patientId: parseInt(selectedPatient.id),
+      bedId: parseInt(formData.bedId),
+      wardId: parseInt(selectedWard),
+      symptoms: formData.symptoms.split(',').map(s => s.trim()).filter(s => s),
+    };
+
+    onAdmit(admissionData);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <UserPlus className="h-5 w-5" />
@@ -1126,32 +1189,104 @@ function AdmissionDialog({ isOpen, onClose, patient, availableBeds, onAdmit, isL
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Patient Information */}
-          {patient && (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                      <User className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <div>
-                      <div className="font-semibold">{patient?.user?.fullName}</div>
-                      <div className="text-sm text-muted-foreground">
-                        MRN: {patient.medicalRecordNumber} • Age: {patient.age}
+          {/* Patient Selection Section */}
+          <div className="space-y-4">
+            <Label>Patient Selection *</Label>
+            
+            {/* Selected Patient Display */}
+            {selectedPatient && (
+              <Card className="border-green-200 bg-green-50">
+                <CardContent className="pt-6">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center">
+                        <User className="h-6 w-6 text-green-600" />
+                      </div>
+                      <div>
+                        <div className="font-semibold">
+                          {selectedPatient.user?.fullName || selectedPatient.fullName}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          MRN: {selectedPatient.patientProvider?.[0]?.medicalRecordNumber || "N/A"} • 
+                          Age: {selectedPatient.user?.age || "N/A"} • 
+                          Gender: {selectedPatient.user?.gender || "N/A"}
+                        </div>
                       </div>
                     </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleClearPatient}
+                    >
+                      Change Patient
+                    </Button>
                   </div>
-                  <Badge variant="outline">
-                    Selected Patient
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                </CardContent>
+              </Card>
+            )}
 
+            {/* Patient Search */}
+            {!selectedPatient && (
+              <div className="space-y-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search patients by name, MRN, or phone..."
+                    className="pl-10"
+                    value={patientSearchQuery}
+                    onChange={(e) => setPatientSearchQuery(e.target.value)}
+                  />
+                </div>
+
+                {/* Patient List */}
+                <div className="max-h-60 overflow-y-auto border rounded-md">
+                  {(isLoadingPatient || isFetchingPatient) && (
+                    <div className="p-4 text-center text-sm text-muted-foreground">
+                      <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+                      Loading patients...
+                    </div>
+                  )}
+
+                  {!isLoadingPatient && 
+                   !isFetchingPatient && 
+                   patientData?.patients?.length === 0 && (
+                    <div className="p-4 text-center text-sm text-muted-foreground">
+                      No patients found. Try a different search term.
+                    </div>
+                  )}
+
+                  {patientData?.patients?.map((patient: any) => (
+                    <div
+                      key={patient.id}
+                      className="p-3 border-b last:border-b-0 hover:bg-muted cursor-pointer transition-colors"
+                      onClick={() => handlePatientSelect(patient)}
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-medium">
+                            {patient.user?.full_name || patient.full_name}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            MRN: {patient.patientProvider?.[0]?.medicalRecordNumber || "No MRN"} • 
+                            Age: {patient.user?.age || "N/A"} • 
+                            Phone: {patient.user?.phone_number || "N/A"}
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          Click to select
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Admission Details */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Admission Details */}
+            {/* Admission Details Column */}
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Admission Type *</Label>
@@ -1173,7 +1308,8 @@ function AdmissionDialog({ isOpen, onClose, patient, availableBeds, onAdmit, isL
 
               <div className="space-y-2">
                 <Label>Priority Level *</Label>
-                <Select
+                              <Select
+                                  required
                   value={formData.priority}
                   onValueChange={(value) => setFormData({ ...formData, priority: value })}
                 >
@@ -1189,32 +1325,15 @@ function AdmissionDialog({ isOpen, onClose, patient, availableBeds, onAdmit, isL
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label>Expected Stay (Days) *</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="365"
-                  value={formData.expected_stay_days}
-                  onChange={(e) => setFormData({ ...formData, expected_stay_days: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Admitting Doctor *</Label>
-                <Input
-                  placeholder="Dr. Name"
-                  value={formData.admitting_doctor}
-                  onChange={(e) => setFormData({ ...formData, admitting_doctor: e.target.value })}
-                />
-              </div>
+    
             </div>
 
-            {/* Medical Information */}
+            {/* Medical Information Column */}
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Primary Diagnosis *</Label>
-                <Input
+                              <Input
+                                  required
                   placeholder="e.g., Pneumonia, Fracture, etc."
                   value={formData.diagnosis}
                   onChange={(e) => setFormData({ ...formData, diagnosis: e.target.value })}
@@ -1222,7 +1341,7 @@ function AdmissionDialog({ isOpen, onClose, patient, availableBeds, onAdmit, isL
               </div>
 
               <div className="space-y-2">
-                <Label>Symptoms</Label>
+                <Label>Symptoms (comma separated)</Label>
                 <Input
                   placeholder="e.g., Fever, Cough, Pain"
                   value={formData.symptoms}
@@ -1230,79 +1349,129 @@ function AdmissionDialog({ isOpen, onClose, patient, availableBeds, onAdmit, isL
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>Emergency Contact</Label>
-                <Input
-                  placeholder="Phone number"
-                  value={formData.emergency_contact}
-                  onChange={(e) => setFormData({ ...formData, emergency_contact: e.target.value })}
-                />
-              </div>
+       
             </div>
           </div>
 
-          {/* Bed Selection */}
+          {/* Ward and Bed Selection */}
           <div className="space-y-4">
-            <Label>Select Bed *</Label>
-            {availableBeds.length === 0 ? (
-              <div className="text-center p-6 border rounded-lg">
-                <Bed className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  No Available Beds
-                </h3>
-                <p className="text-muted-foreground mb-4">
-                  All beds are currently occupied or under maintenance.
-                </p>
-                <Button variant="outline" onClick={() => navigate("/dashboard/beds")}>
-                  View All Beds
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {availableBeds.map((bed: any) => (
-                  <Card
-                    key={bed.id}
-                    className={`cursor-pointer border-2 ${
-                      formData.bedId === bed.id.toString()
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 hover:border-blue-300"
-                    }`}
-                    onClick={() => setFormData({ ...formData, bedId: bed.id.toString() })}
-                  >
-                    <CardContent className="pt-6">
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="font-semibold">{bed.bed_number}</div>
-                            <div className="text-sm text-muted-foreground">{bed.ward?.name}</div>
-                          </div>
-                          <Badge className="bg-green-100 text-green-700">
-                            Available
+            <Label>Ward and Bed Selection *</Label>
+            
+            {/* Ward Selection */}
+            <div className="space-y-2">
+              <Label>Select Ward</Label>
+              {isLoadingWards ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Select
+                  value={selectedWard}
+                  onValueChange={setSelectedWard}
+                  disabled={!selectedPatient}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={selectedPatient ? "Select a ward" : "Select patient first"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {wards.map((ward: any) => (
+                      <SelectItem key={ward.id} value={ward.id.toString()}>
+                        <div className="flex items-center gap-2">
+                          <div 
+                            className="w-3 h-3 rounded" 
+                            style={{ backgroundColor: ward.colorCode }}
+                          />
+                          <span>{ward.name} ({ward.code})</span>
+                          <Badge variant="outline" className="ml-2">
+                            {ward.current_occupancy}/{ward.capacity} beds
                           </Badge>
                         </div>
-                        <div className="text-sm">
-                          <div className="flex items-center gap-1">
-                            <Building2 className="h-3 w-3" />
-                            Floor {bed.ward?.floor_number}, {bed.ward?.wing}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            {/* Bed Selection */}
+            {selectedWard && (
+              <div className="space-y-2">
+                <Label>Select Available Bed</Label>
+                {isLoadingBeds ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <Skeleton className="h-32 rounded-lg" />
+                    <Skeleton className="h-32 rounded-lg" />
+                  </div>
+                ) : availableBeds?.length === 0 ? (
+                  <div className="text-center p-6 border rounded-lg">
+                    <Bed className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      No Available Beds
+                    </h3>
+                    <p className="text-muted-foreground mb-4">
+                      All beds in this ward are currently occupied or under maintenance.
+                    </p>
+                    <Button variant="outline" onClick={() => navigate("/dashboard/beds")}>
+                      View All Beds
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {availableBeds?.map((bed: any) => (
+                      <Card
+                        key={bed.id}
+                        className={`cursor-pointer border-2 transition-all ${
+                          formData.bedId === bed.id.toString()
+                            ? "border-blue-500 bg-blue-50"
+                            : "border-gray-200 hover:border-blue-300"
+                        }`}
+                        onClick={() => setFormData({ ...formData, bedId: bed.id.toString() })}
+                      >
+                        <CardContent className="pt-6">
+                          <div className="space-y-3">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <div className="font-semibold">{bed.bedNumber}</div>
+                                <div className="text-sm text-muted-foreground">{bed.ward?.name}</div>
+                              </div>
+                              {formData.bedId === bed.id.toString() ? (
+                                <Badge className="bg-blue-100 text-blue-700">
+                                  Selected
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-green-100 text-green-700">
+                                  Available
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-sm">
+                              <div className="flex items-center gap-1">
+                                <Building2 className="h-3 w-3" />
+                                Floor {bed.ward?.floorNumber}, {bed.ward?.wing}
+                              </div>
+                              <div className="flex items-center gap-1 mt-1">
+                                <Bed className="h-3 w-3" />
+                                {bed.bed_type} bed
+                              </div>
+                            </div>
+                            {bed.equipment?.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {bed.equipment.slice(0, 2).map((eq: string, idx: number) => (
+                                  <Badge key={idx} variant="outline" className="text-xs">
+                                    {eq}
+                                  </Badge>
+                                ))}
+                                {bed.equipment.length > 2 && (
+                                  <Badge variant="outline" className="text-xs">
+                                    +{bed.equipment.length - 2} more
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
                           </div>
-                          <div className="flex items-center gap-1 mt-1">
-                            <Bed className="h-3 w-3" />
-                            {bed.bed_type} bed
-                          </div>
-                        </div>
-                        {bed.equipment?.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {bed.equipment.slice(0, 2).map((eq: string, idx: number) => (
-                              <Badge key={idx} variant="outline" className="text-xs">
-                                {eq}
-                              </Badge>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -1310,22 +1479,8 @@ function AdmissionDialog({ isOpen, onClose, patient, availableBeds, onAdmit, isL
           {/* Additional Information */}
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label>Insurance Provider</Label>
-                <Input
-                  placeholder="Insurance company name"
-                  value={formData.insurance_provider}
-                  onChange={(e) => setFormData({ ...formData, insurance_provider: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Policy Number</Label>
-                <Input
-                  placeholder="Insurance policy number"
-                  value={formData.insurance_policy_number}
-                  onChange={(e) => setFormData({ ...formData, insurance_policy_number: e.target.value })}
-                />
-              </div>
+         
+            
             </div>
 
             <div className="space-y-2">
@@ -1346,7 +1501,7 @@ function AdmissionDialog({ isOpen, onClose, patient, availableBeds, onAdmit, isL
           </Button>
           <Button 
             onClick={handleSubmit} 
-            disabled={isLoading}
+            disabled={isLoading || !selectedPatient || !formData.bedId}
             className="bg-gradient-primary hover:shadow-glow transition-all"
           >
             {isLoading ? (
@@ -1367,7 +1522,7 @@ function AdmissionDialog({ isOpen, onClose, patient, availableBeds, onAdmit, isL
   );
 }
 
-// Discharge Dialog Component
+// Discharge Dialog Component (unchanged from previous version)
 function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }: any) {
   const [formData, setFormData] = useState({
     discharge_reason: "",

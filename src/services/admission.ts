@@ -16,20 +16,25 @@ export const fetchAdmissions = async (params?: {
   if (params?.status) query.append("status", params.status);
   if (params?.priority) query.append("priority", params.priority);
 
-  const response = await apiClient(`/admissions?${query.toString()}`);
-  return response;
+  const response = await apiClient(`/bed-assignments?${query.toString()}`);
+ const { data, meta } = response;
+
+    return { admissions: data, meta }
 };
 
 // Fetch admission statistics
 export const fetchAdmissionStats = async () => {
   const response = await apiClient("/admissions/stats");
-  return response;
+    
+return response
 };
 
 // Fetch available beds
-export const fetchAvailableBeds = async () => {
-  const response = await apiClient("/beds/available");
-  return response;
+export const fetchAvailableBeds = async (wardId: number) => {
+  const response = await apiClient(`/beds/${wardId}/available`);
+    const { data, meta } = response;
+    
+    return { beds: data, meta }
 };
 
 // Fetch patients for admission
@@ -40,7 +45,7 @@ export const fetchPatientsForAdmission = async () => {
 
 // Admit a patient
 export const admitPatient = async (admissionData: any) => {
-  const response = await apiClient("/admissions", {
+  const response = await apiClient("/bed-assignments", {
     method: "POST",
     body: JSON.stringify(admissionData),
   });
