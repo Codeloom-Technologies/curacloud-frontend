@@ -62,6 +62,7 @@ import {
   Eye,
   Users,
   Brain,
+  Pi,
 } from "lucide-react";
 import {
   fetchAdmissionById,
@@ -845,32 +846,44 @@ function MedicalInfoTab({ admission }: any) {
 function ActionsTab({ admission, onDischarge, daysAdmitted }: any) {
   const navigate = useNavigate();
 
-  const actions = [
+    const actions = [
+   {
+      title: "Medications",
+      description: "Add patient medications",
+      icon: Pill,
+     color: "text-purple-600",
+      bgColor: "bg-purple-100",
+      onClick: () => navigate(`/dashboard/admissions/${admission?.reference}/medications`),
+      disabled: admission?.status !== "admitted",
+    },
     {
       title: "Transfer Patient",
       description: "Transfer patient to another bed or ward",
       icon: Users,
       color: "text-blue-600",
-      bgColor: "bg-blue-100",
+        bgColor: "bg-blue-100",
+                  disabled: true,
     //   onClick: () => navigate(`/dashboard/transfers/new?admission=${admission.reference}`),
-      disabled: admission?.status !== "admitted",
+    //   disabled: admission?.status !== "admitted",
     },
     {
       title: "Update Medical Records",
       description: "Add diagnosis, medications, or procedures",
       icon: FileText,
       color: "text-green-600",
-      bgColor: "bg-green-100",
+        bgColor: "bg-green-100",
+            disabled: true,
+
       onClick: () => navigate(`/dashboard/medical-records/${admission.patient?.id}/edit`),
     },
-    {
-      title: "Schedule Procedure",
-      description: "Schedule a medical procedure or surgery",
-      icon: Calendar,
-      color: "text-purple-600",
-      bgColor: "bg-purple-100",
+    // {
+    //   title: "Schedule Procedure",
+    //   description: "Schedule a medical procedure or surgery",
+    //   icon: Calendar,
+    //   color: "text-purple-600",
+    //   bgColor: "bg-purple-100",
     //   onClick: () => navigate(`/dashboard/procedures/new?patient=${admission?.patient?.user?.reference}`),
-    },
+    // },
     {
       title: "View Patient History",
       description: "View complete medical history",
@@ -878,7 +891,7 @@ function ActionsTab({ admission, onDischarge, daysAdmitted }: any) {
       color: "text-orange-600",
       bgColor: "bg-orange-100",
       onClick: () => navigate(`/dashboard/patients/records/${admission.patient?.user?.reference}`),
-    },
+      },
   ];
 
   return (
