@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UserPlus, Calendar, FileText, CreditCard } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useUserRole } from "@/hooks/useUserRole";
 
 const quickActions = [
   {
@@ -36,7 +37,9 @@ const quickActions = [
 
 export function QuickActions() {
   const navigate = useNavigate();
-
+const { isHealthcare, isAdmin, isReceptionist} = useUserRole();
+      
+    const showActionButton = isAdmin || isHealthcare || isReceptionist;
   return (
     <Card>
       <CardHeader>
@@ -46,6 +49,7 @@ export function QuickActions() {
         <div className="grid grid-cols-2 md:grid-cols-2 gap-3">
           {quickActions.map((action) => (
             <Button
+              disabled={!showActionButton}
               onClick={() => navigate(`${action.href}`)}
               key={action.title}
               variant="ghost"

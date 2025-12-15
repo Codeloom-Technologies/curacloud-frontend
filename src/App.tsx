@@ -55,6 +55,13 @@ import ContactPage from "./pages/ContactUs";
 import ResetPassword from "./pages/PasswordRecovery";
 import SubscriptionManagementMvp from "./pages/Subscription/SubscriptionManagemenTMvp";
 import IdleTimerContainer from "./components/IdleTimerContainer";
+import WardsManagement from "./pages/ward/WardsManagement";
+import BedsManagement from "./pages/ward/BedsManagement";
+import WardDetail from "./pages/ward/WardDetails";
+import BedDetails from "./pages/ward/BedDetails";
+import AdmissionManagement from "./pages/admission/AdmissionManagement";
+import AdmissionDetails from "./pages/admission/AdmissionDetails";
+import AdmissionMedications from "./pages/admission/AdmissionMedications";
 
 const queryClient = new QueryClient();
 
@@ -202,7 +209,40 @@ const App = () => (
             element={<SuperAdminReports />}
           />
 
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+
+          {/* BED AND WARD */}
+           <Route
+            path="/dashboard/wards"
+            element={<WardsManagement />}
+          />
+   <Route
+            path="/dashboard/wards/:id/details"
+            element={<WardDetail />}
+          />
+           <Route
+            path="/dashboard/beds"
+            element={<BedsManagement />}
+          />
+           <Route
+            path="/dashboard/beds/:id/details"
+            element={<BedDetails />}
+          />
+
+          {/* ADM */}
+              <Route
+            path="/dashboard/admissions"
+            element={<AdmissionManagement />}
+          />
+           <Route
+            path="/dashboard/admissions/:id/details"
+            element={<AdmissionDetails />}
+          />
+
+              <Route
+            path="/dashboard/admissions/:id/medications"
+            element={<AdmissionMedications />}
+          />
+      {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

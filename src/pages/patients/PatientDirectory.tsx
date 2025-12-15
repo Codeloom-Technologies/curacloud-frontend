@@ -63,6 +63,7 @@ import {
   MARITAL_STATUSES,
   PATIENT_STATUS,
 } from "@/constants";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export default function PatientDirectory() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -82,6 +83,10 @@ export default function PatientDirectory() {
     hasInsurance: false,
     hasAllergies: false,
   });
+  const { isHealthcare, isAdmin,isReceptionist } = useUserRole();
+// Simple logic to show/hide buttons
+  const showRegisterButton = isAdmin || isHealthcare || isReceptionist;
+ 
 
   const perPage = 10;
 
@@ -194,13 +199,18 @@ export default function PatientDirectory() {
                 </p>
               </div>
 
-              <Button
+              {
+                showRegisterButton && (
+<Button
                 className="bg-gradient-primary hover:shadow-glow transition-all"
                 onClick={() => navigate("/dashboard/patients/register")}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Register New Patient
               </Button>
+                )
+              }
+              
             </div>
 
             {/* Search and Filters */}

@@ -26,12 +26,16 @@ import { useNavigate, useParams } from "react-router-dom";
 import { fetchPatientById } from "@/services/patient";
 import EmptyState from "@/components/dashboard/EmptyState";
 import PatientDetailsSkeleton from "@/components/dashboard/PatientDetailsSkeleton";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export default function PatientRecords() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
   const { patientId } = useParams();
-
+const { isHealthcare, isAdmin, isReceptionist} = useUserRole();
+      
+  const showEditButton = isAdmin || isHealthcare || isReceptionist;
+  
   const { data, isLoading, isFetching } = useQuery({
     queryKey: ["fetchPatientById", patientId],
     queryFn: () => fetchPatientById(patientId),
@@ -92,7 +96,9 @@ export default function PatientRecords() {
                   Complete medical record for {patient.user.fullName}
                 </p>
               </div>
-              <Button
+              {
+                showEditButton && (
+  <Button
                 onClick={() =>
                   navigate(
                     `/dashboard/patients/records/${patient.user.reference}/edit`
@@ -103,6 +109,9 @@ export default function PatientRecords() {
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Patient
               </Button>
+                )
+              }
+            
             </div>
 
             {/* Patient Summary Card */}
