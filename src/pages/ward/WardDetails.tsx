@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Header } from "@/components/layout/Header";
@@ -52,7 +52,6 @@ import {
   Filter,
   Activity,
   AlertCircle,
-  Calendar,
   Clock,
   Eye,
   BarChart3,
@@ -64,8 +63,6 @@ import {
   Users2,
   Thermometer,
   HeartPulse,
-  Brain,
-  Pill,
   ClipboardList,
 } from "lucide-react";
 import { fetchWardById } from "@/services/ward";
@@ -143,7 +140,6 @@ export default function WardDetail() {
 
   const beds = bedsData?.beds || [];
   const pagination = bedsData?.meta;
-    console.log({beds})
 
   // Calculate statistics from ward data
   const calculateStatistics = () => {

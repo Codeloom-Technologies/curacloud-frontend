@@ -11,7 +11,7 @@ export const fetchAdmissions = async (params?: {
 }) => {
   const query = new URLSearchParams();
   if (params?.page) query.append("page", params.page.toString());
-  if (params?.perPage) query.append("per_page", params.perPage.toString());
+  if (params?.perPage) query.append("perPage", params.perPage.toString());
   if (params?.search) query.append("search", params.search);
   if (params?.status) query.append("status", params.status);
   if (params?.priority) query.append("priority", params.priority);
@@ -24,7 +24,7 @@ export const fetchAdmissions = async (params?: {
 
 // Fetch admission statistics
 export const fetchAdmissionStats = async () => {
-  const response = await apiClient("/admissions/stats");
+  const response = await apiClient("/bed-assignments/stats");
     
 return response
 };
@@ -63,12 +63,12 @@ export const admitPatient = async (admissionData: any) => {
 // Discharge a patient
 export const dischargePatient = async (dischargeData: {
   admissionId: number;
-  discharge_reason: string;
-  discharge_notes?: string;
-  follow_up_date?: string;
-  medication_prescribed?: string;
+  reason: string;
+  notes?: string;
+//   follow_up_date?: string;
+//   medication_prescribed?: string;
 }) => {
-  const response = await apiClient(`/admissions/${dischargeData.admissionId}/discharge`, {
+  const response = await apiClient(`/bed-assignments/${dischargeData.admissionId}/discharge`, {
     method: "POST",
     body: JSON.stringify(dischargeData),
   });

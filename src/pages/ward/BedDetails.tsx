@@ -126,12 +126,8 @@ export default function BedDetails() {
     queryKey: ["bed", id],
     queryFn: () => fetchBedById(id),
     enabled: !!id,
-    // onSuccess: (data) => {
-    //   setBedData(data);
-    //   setEditedData(data);
-    // },
   });
-console.log(bed)
+console.log({bed})
   // Fetch ward details if bed has ward
  const  ward = bed?.ward
 
@@ -342,7 +338,7 @@ console.log(bed)
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => navigate("/dashboard/hospital/beds")}
+                  onClick={() => navigate("/dashboard/beds")}
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
@@ -376,72 +372,7 @@ console.log(bed)
                   </div>
                 </div>
               </div>
-              <div className="flex gap-2">
-                {isEditing ? (
-                  <>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setIsEditing(false);
-                        setEditedData(bedData);
-                      }}
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={handleSaveEdits}
-                      disabled={updateBedMutation.isPending}
-                    >
-                      {updateBedMutation.isPending ? (
-                        <>
-                          <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          Saving...
-                        </>
-                      ) : (
-                        <>
-                          <Save className="h-4 w-4 mr-2" />
-                          Save Changes
-                        </>
-                      )}
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Select
-                      value={bed.status}
-                      onValueChange={handleStatusChange}
-                      disabled={updateStatusMutation.isPending}
-                    >
-                      <SelectTrigger className="w-[160px]">
-                        <div className="flex items-center gap-2">
-                          <div className={`h-2 w-2 rounded-full ${
-                            bed.status === 'available' ? 'bg-green-500' :
-                            bed.status === 'occupied' ? 'bg-red-500' :
-                            bed.status === 'reserved' ? 'bg-yellow-500' :
-                            bed.status === 'maintenance' ? 'bg-gray-500' : 'bg-blue-500'
-                          }`} />
-                          <span>{bed.status}</span>
-                        </div>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="available">Available</SelectItem>
-                        <SelectItem value="occupied">Occupied</SelectItem>
-                        <SelectItem value="reserved">Reserved</SelectItem>
-                        <SelectItem value="maintenance">Maintenance</SelectItem>
-                        <SelectItem value="cleaning">Cleaning</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsEditing(true)}
-                    >
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </Button>
-                  </>
-                )}
-              </div>
+          
             </div>
 
             {/* Main Content Tabs */}
@@ -674,33 +605,33 @@ console.log(bed)
                   <CardHeader>
                     <CardTitle>Current Patient Information</CardTitle>
                     <CardDescription>
-                      {bed.current_patient 
+                      {bed.currentPatient 
                         ? "Patient currently assigned to this bed"
                         : "No patient currently assigned to this bed"}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {bed.current_patient ? (
+                    {bed.currentPatient ? (
                       <div className="space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <div>
                             <Label className="text-sm font-medium text-gray-500">Patient Name</Label>
                             <p className="font-medium text-lg">
-                              {bed.current_patient.patient?.full_name || "Unknown"}
+                              {bed.currentPatient?.admission?.patient?.user?.fullName || "Unknown"}
                             </p>
                             <div className="mt-2 text-sm text-gray-500">
-                              Medical Record #: {bed.currentPatient.patient?.medicalRecordNumber || "N/A"}
+                              Medical Record #: {bed.currentPatient?.admission?.patient?.patientProvider?.[0]?.medicalRecordNumber || "N/A"}
                             </div>
                           </div>
                           <div>
                             <Label className="text-sm font-medium text-gray-500">Assigned Since</Label>
                             <p className="font-medium">
-                              {new Date(bed.current_patient.assignedAt).toLocaleDateString()}
+                              {new Date(bed.currentPatient?.assignedAt).toLocaleDateString()}
                             </p>
                             <div className="mt-2 flex items-center gap-2">
                               <Clock className="h-4 w-4 text-gray-400" />
                               <span className="text-sm text-gray-500">
-                                {Math.floor((new Date().getTime() - new Date(bed.currentPatient.assignedAt).getTime()) / (1000 * 3600 * 24))} days
+                                {Math.floor((new Date().getTime() - new Date(bed.currentPatient?.assignedAt).getTime()) / (1000 * 3600 * 24))} days
                               </span>
                             </div>
                           </div>
@@ -711,25 +642,25 @@ console.log(bed)
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
                               <div className="text-xs text-gray-500">Age</div>
-                              <div className="font-medium">{bed.current_patient.patient?.age || "N/A"}</div>
+                              <div className="font-medium">{bed.currentPatient?.admission?.patient?.user.age || "N/A"}</div>
                             </div>
                             <div>
                               <div className="text-xs text-gray-500">Gender</div>
-                              <div className="font-medium">{bed.currentPatient.patient?.user?.gender || "N/A"}</div>
+                              <div className="font-medium">{bed.currentPatient?.admission?.patient?.user?.gender || "N/A"}</div>
                             </div>
                             <div>
                               <div className="text-xs text-gray-500">Blood Group</div>
-                              <div className="font-medium">{bed.currentPatient.patient?.bloodGroup || "N/A"}</div>
+                              <div className="font-medium">{bed.currentPatient?.admission?.patient?.bloodGroup || "N/A"}</div>
                             </div>
                             <div>
                               <div className="text-xs text-gray-500">Condition</div>
-                              <div className="font-medium">{bed.currentPatient.patient?.condition || "N/A"}</div>
+                              <div className="font-medium">{bed.currentPatient?.admission?.patient?.condition || "N/A"}</div>
                             </div>
                           </div>
                         </div>
                         <Button
                           variant="outline"
-                          onClick={() => navigate(`/dashboard/patients/records/${bed.currentPatient.patient?.id}`)}
+                          onClick={() => navigate(`/dashboard/patients/records/${bed.currentPatient?.admission?.patient?.user?.reference}`)}
                         >
                           <Eye className="h-4 w-4 mr-2" />
                           View Complete Patient Profile

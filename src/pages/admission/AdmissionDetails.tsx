@@ -94,9 +94,7 @@ export default function AdmissionDetails() {
   
   // State
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDischargeDialogOpen, setIsDischargeDialogOpen] = useState(false);
-  const [editFormData, setEditFormData] = useState<any>(null);
 
   // Fetch admission details
   const {
@@ -120,7 +118,7 @@ export default function AdmissionDetails() {
 
   // Discharge mutation
   const dischargeMutation = useMutation({
-    mutationFn: (dischargeData: any) => dischargePatient({ admissionId: id!, ...dischargeData }),
+    mutationFn: (dischargeData: any) => dischargePatient({ admissionId: admission?.id!, ...dischargeData }),
     onSuccess: () => {
       toast({
         title: "Patient Discharged",
@@ -212,10 +210,10 @@ export default function AdmissionDetails() {
   }
 
   const daysAdmitted = calculateDaysAdmitted();
-  const admissionDate = new Date(admission.admission?.admissionDate);
+  const admissionDate = new Date(admission?.admissionDate);
   const patient = admission.patient;
   const bed = admission.bed;
-  const ward = admission.ward;
+  const ward = admission?.bed?.ward;
 
   return (
     <div className="flex h-screen bg-background">
@@ -240,7 +238,7 @@ export default function AdmissionDetails() {
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => navigate("/dashboard/hospital/admissions")}
+                  onClick={() => navigate("/dashboard/admissions")}
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
@@ -249,7 +247,7 @@ export default function AdmissionDetails() {
                     Admission Details
                   </h1>
                   <p className="text-muted-foreground">
-                    Admission ID: {admission.admission?.reference || "N/A"}
+                    Admission ID: {admission?.reference || "N/A"}
                   </p>
                 </div>
               </div>
@@ -293,7 +291,7 @@ export default function AdmissionDetails() {
               <Card>
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-warning">
-                    {admission.admission?.priority?.toUpperCase() || "N/A"}
+                    {admission?.priority?.toUpperCase() || "N/A"}
                   </div>
                   <div className="text-sm text-muted-foreground">
                     Priority Level
@@ -376,8 +374,8 @@ export default function AdmissionDetails() {
                                   MRN: {patient?.patientProvider?.[0]?.medicalRecordNumber || "N/A"}
                                 </p>
                               </div>
-                              <Badge className={ADMISSION_STATUS_COLORS[admission.admission?.status as keyof typeof ADMISSION_STATUS_COLORS]}>
-                                {admission.admission?.status?.toUpperCase() || "N/A"}
+                              <Badge className={ADMISSION_STATUS_COLORS[admission?.status as keyof typeof ADMISSION_STATUS_COLORS]}>
+                                {admission?.status?.toUpperCase() || "N/A"}
                               </Badge>
                             </div>
                             
@@ -467,19 +465,19 @@ export default function AdmissionDetails() {
 
                         <div>
                           <Label className="text-sm font-medium text-muted-foreground">Priority</Label>
-                          <Badge className={`mt-1 ${PRIORITY_COLORS[admission.admission?.priority as keyof typeof PRIORITY_COLORS]}`}>
-                            {admission.admission?.priority?.toUpperCase() || "N/A"}
+                          <Badge className={`mt-1 ${PRIORITY_COLORS[admission?.priority as keyof typeof PRIORITY_COLORS]}`}>
+                            {admission?.priority?.toUpperCase() || "N/A"}
                           </Badge>
                         </div>
 
                         <div>
                           <Label className="text-sm font-medium text-muted-foreground">Admission Type</Label>
-                          <p className="font-medium">{admission.admission?.admissionType || "Routine"}</p>
+                          <p className="font-medium">{admission?.admissionType || "Routine"}</p>
                         </div>
 
                         <div>
                           <Label className="text-sm font-medium text-muted-foreground">Attending Doctor</Label>
-                          <p className="font-medium">{admission.admission?.admittingDoctor || "Not assigned"}</p>
+                          <p className="font-medium">{admission?.admittingDoctor || "Not assigned"}</p>
                         </div>
                       </div>
                     </CardContent>
@@ -645,7 +643,7 @@ function PatientInfoTab({ patient }: any) {
           </div>
           <div>
             <Label className="text-sm font-medium text-muted-foreground">Marital Status</Label>
-            <p className="font-medium">{user?.maritalStatus || "N/A"}</p>
+            <p className="font-medium">{patient?.maritalStatus || "N/A"}</p>
           </div>
         </CardContent>
       </Card>
@@ -670,7 +668,7 @@ function PatientInfoTab({ patient }: any) {
           </div>
           <div>
             <Label className="text-sm font-medium text-muted-foreground">Emergency Contact</Label>
-            <p className="font-medium">{patient?.emergencyContact|| "N/A"}</p>
+            <p className="font-medium">{patient?.emergencyContacts?.map((value)=>value?.phoneNumber) || "N/A"}</p>
           </div>
         </CardContent>
       </Card>
@@ -683,16 +681,16 @@ function PatientInfoTab({ patient }: any) {
         <CardContent className="space-y-4">
           <div>
             <Label className="text-sm font-medium text-muted-foreground">Blood Group</Label>
-            <p className="font-medium">{user?.bloodGroup || "N/A"}</p>
+            <p className="font-medium">{patient?.bloodGroup || "N/A"}</p>
           </div>
           <div>
             <Label className="text-sm font-medium text-muted-foreground">Genotype</Label>
-            <p className="font-medium">{user?.genotype || "N/A"}</p>
+            <p className="font-medium">{patient?.genotype || "N/A"}</p>
           </div>
           <div>
             <Label className="text-sm font-medium text-muted-foreground">Allergies</Label>
             <div className="flex flex-wrap gap-2 mt-2">
-              {user?.allergies?.map((allergy: string, index: number) => (
+              {patient?.allergies?.map((allergy: string, index: number) => (
                 <Badge key={index} variant="outline" className="text-xs">
                   {allergy}
                 </Badge>
@@ -854,8 +852,8 @@ function ActionsTab({ admission, onDischarge, daysAdmitted }: any) {
       icon: Users,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
-      onClick: () => navigate(`/dashboard/transfers/new?admission=${admission.reference}`),
-      disabled: admission.admission?.status !== "admitted",
+    //   onClick: () => navigate(`/dashboard/transfers/new?admission=${admission.reference}`),
+      disabled: admission?.status !== "admitted",
     },
     {
       title: "Update Medical Records",
@@ -871,7 +869,7 @@ function ActionsTab({ admission, onDischarge, daysAdmitted }: any) {
       icon: Calendar,
       color: "text-purple-600",
       bgColor: "bg-purple-100",
-      onClick: () => navigate(`/dashboard/procedures/new?patient=${admission?.patient?.user?.reference}`),
+    //   onClick: () => navigate(`/dashboard/procedures/new?patient=${admission?.patient?.user?.reference}`),
     },
     {
       title: "View Patient History",
@@ -938,16 +936,16 @@ function ActionsTab({ admission, onDischarge, daysAdmitted }: any) {
               </div>
               <Button
                 onClick={onDischarge}
-                disabled={admission.admission?.status !== "admitted"}
+                disabled={admission?.status !== "admitted"}
                 className="bg-gradient-primary hover:shadow-glow transition-all"
               >
                 <CheckCircle className="h-4 w-4 mr-2" />
                 Initiate Discharge
               </Button>
             </div>
-            {admission.admission?.status !== "admitted" && (
+            {admission?.status !== "admitted" && (
               <div className="text-sm text-yellow-600 bg-yellow-50 p-3 rounded-md">
-                Patient is already {admission.admission?.status}. Discharge is not available.
+                Patient is already {admission?.status}. Discharge is not available.
               </div>
             )}
           </div>
@@ -960,10 +958,10 @@ function ActionsTab({ admission, onDischarge, daysAdmitted }: any) {
 // Discharge Dialog Component
 function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }: any) {
   const [formData, setFormData] = useState({
-    dischargeReason: "",
-    dischargeNotes: "",
-    followUpDate: "",
-    medicationPrescribed: "",
+    reason: "",
+    notes: "",
+    // followUpDate: "",
+    // medicationPrescribed: "",
   });
 
   const { toast } = useToast();
@@ -981,7 +979,7 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
   }, [admission]);
 
   const handleSubmit = () => {
-    if (!formData.dischargeReason) {
+    if (!formData.reason) {
       toast({
         title: "Missing Information",
         description: "Please specify the discharge reason.",
@@ -995,7 +993,7 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
 
   if (!admission) return null;
 
-  const admissionDate = new Date(admission.admission?.admissionDate);
+  const admissionDate = new Date(admission?.admissionDate);
   const daysAdmitted = Math.floor(
     (new Date().getTime() - admissionDate.getTime()) / (1000 * 3600 * 24)
   );
@@ -1064,8 +1062,8 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
             <div className="space-y-2">
               <Label>Discharge Reason *</Label>
               <Select
-                value={formData.dischargeReason}
-                onValueChange={(value) => setFormData({ ...formData, dischargeReason: value })}
+                value={formData.reason}
+                onValueChange={(value) => setFormData({ ...formData, reason: value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select reason" />
@@ -1086,13 +1084,13 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
               <Label>Discharge Notes</Label>
               <Textarea
                 placeholder="Summary of treatment, condition at discharge, instructions..."
-                value={formData.dischargeNotes}
-                onChange={(e) => setFormData({ ...formData, dischargeNotes: e.target.value })}
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 rows={3}
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label>Follow-up Date</Label>
                 <Input
@@ -1109,7 +1107,7 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
                   onChange={(e) => setFormData({ ...formData, medicationPrescribed: e.target.value })}
                 />
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 

@@ -52,8 +52,6 @@ import {
 } from "@/components/ui/pagination";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import {
   Plus,
@@ -165,16 +163,15 @@ export default function AdmissionManagement() {
 
     const admissions = admissionsData?.admissions || [];
 
-    console.log(admissions)
-    const pagination = admissionsData?.meta;
-
+  const meta = admissionsData?.meta ?? {};
+  const totalPages = meta.lastPage ?? 1;
   // Fetch admission statistics
   const { data: stats } = useQuery({
     queryKey: ["admission-stats"],
     queryFn: fetchAdmissionStats,
   });
 
-  // Mutations
+    // Mutations
   const admitMutation = useMutation({
     mutationFn: admitPatient,
     onSuccess: () => {
@@ -280,11 +277,11 @@ export default function AdmissionManagement() {
             Currently Admitted
           </div>
           <Progress
-            value={stats?.occupancy_rate || 0}
+            value={stats?.occupancyRate || 0}
             className="mt-2 h-2"
           />
           <div className="text-xs text-muted-foreground mt-1">
-            {stats?.available_beds || 0} beds available
+            {stats?.availableBeds || 0} beds available
           </div>
         </CardContent>
       </Card>
@@ -295,14 +292,14 @@ export default function AdmissionManagement() {
             {isFetching ? (
               <Skeleton className="h-8 w-16" />
             ) : (
-              stats?.average_stay_days || 0
+              stats?.averageStayDays || 0
             )}d
           </div>
           <div className="text-sm text-muted-foreground">
             Average Stay
           </div>
           <div className="text-xs text-muted-foreground mt-1">
-            Longest: {stats?.longest_stay || 0}d
+            Longest: {stats?.longestStay || 0}d
           </div>
         </CardContent>
       </Card>
@@ -313,14 +310,14 @@ export default function AdmissionManagement() {
             {isFetching ? (
               <Skeleton className="h-8 w-16" />
             ) : (
-              stats?.emergency_cases || 0
+              stats?.emergencyCases || 0
             )}
           </div>
           <div className="text-sm text-muted-foreground">
             Emergency Cases
           </div>
           <div className="text-xs text-muted-foreground mt-1">
-            {stats?.pending_admissions || 0} pending
+            {stats?.pendingAdmissions || 0} pending
           </div>
         </CardContent>
       </Card>
@@ -338,7 +335,7 @@ export default function AdmissionManagement() {
             Active Admissions
           </div>
           <div className="text-xs text-muted-foreground mt-1">
-            Page {page} of {pagination?.last_page || 1}
+             {stats?.activeAdmissions || 0}
           </div>
         </CardContent>
       </Card>
@@ -509,7 +506,7 @@ export default function AdmissionManagement() {
                   <CardHeader>
                     <CardTitle>Current Admissions</CardTitle>
                     <CardDescription>
-                      Showing {admissions.length} of {pagination?.total || 0} admissions
+                      Showing {admissions.length} of {meta?.total || 0} admissions
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -571,7 +568,7 @@ export default function AdmissionManagement() {
                         </div>
 
                         {/* Pagination */}
-                        {pagination && pagination.last_page > 1 && (
+                        {meta && meta.lastPage > 1 && (
                           <div className="mt-4">
                             <Pagination>
                               <PaginationContent>
@@ -582,13 +579,13 @@ export default function AdmissionManagement() {
                                   />
                                 </PaginationItem>
 
-                                {Array.from({ length: Math.min(5, pagination.last_page) }, (_, i) => {
+                                {Array.from({ length: Math.min(5, meta.lastPage) }, (_, i) => {
                                   let pageNum = i + 1;
-                                  if (pagination.last_page > 5) {
+                                  if (meta.lastPage > 5) {
                                     if (page <= 3) {
                                       pageNum = i + 1;
-                                    } else if (page >= pagination.last_page - 2) {
-                                      pageNum = pagination.last_page - 4 + i;
+                                    } else if (page >= meta.lastPage - 2) {
+                                      pageNum = meta.lastPage - 4 + i;
                                     } else {
                                       pageNum = page - 2 + i;
                                     }
@@ -609,8 +606,8 @@ export default function AdmissionManagement() {
 
                                 <PaginationItem>
                                   <PaginationNext
-                                    onClick={() => handlePageChange(Math.min(pagination.last_page, page + 1))}
-                                    className={page === pagination.last_page ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                    onClick={() => handlePageChange(Math.min(meta.lastPage, page + 1))}
+                                    className={page === meta.lastPage ? "pointer-events-none opacity-50" : "cursor-pointer"}
                                   />
                                 </PaginationItem>
                               </PaginationContent>
@@ -751,7 +748,7 @@ function AdmissionRow({ admission, onViewAdmission, onViewPatient, onDischarge }
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="ghost" onClick={() => onViewAdmission(admission?.admission?.patientId)}>
+          <Button size="sm" variant="ghost" onClick={() => onViewAdmission(admission?.admission?.reference)}>
             <Eye className="h-4 w-4" />
           </Button>
           <Button size="sm" variant="ghost" onClick={() => onViewPatient(admission.patient?.user?.reference)}>
@@ -876,7 +873,6 @@ function DischargeHistory() {
     queryKey: ["discharge-history"],
     queryFn: () => fetchAdmissions({ status: "discharged", perPage: 20 }),
   });
-
      const discharges = dischargesData?.admissions || [];
     const pagination = dischargesData?.meta;
 
@@ -915,9 +911,9 @@ function DischargeHistory() {
               </TableRow>
             </TableHeader>
             <TableBody className="transition-all duration-300 ease-in-out">
-              {discharges?.data?.map((discharge: any) => {
-                const admissionDate = new Date(discharge.admission_date);
-                const dischargeDate = new Date(discharge.discharge_date);
+              {discharges?.map((discharge: any) => {
+                const admissionDate = new Date(discharge?.admission?.admissionDate);
+                const dischargeDate = new Date(discharge?.admission?.admissionDate);
                 const lengthOfStay = Math.floor(
                   (dischargeDate.getTime() - admissionDate.getTime()) / (1000 * 3600 * 24)
                 );
@@ -925,9 +921,9 @@ function DischargeHistory() {
                 return (
                   <TableRow key={discharge.id} className="hover:bg-muted/50">
                     <TableCell>
-                      <div className="font-medium">{discharge.patient?.full_name}</div>
+                      <div className="font-medium">{discharge.patient?.user?.fullName}</div>
                       <div className="text-sm text-muted-foreground">
-                        Bed: {discharge.bed?.bed_number}
+                        Bed: {discharge.bed?.bedNumber}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -943,7 +939,7 @@ function DischargeHistory() {
                     </TableCell>
                     <TableCell>
                       <div className="max-w-xs truncate">
-                        {discharge.discharge_reason || "Regular discharge"}
+                        {discharge.reason || "Regular discharge"}
                       </div>
                     </TableCell>
                   </TableRow>
@@ -1036,7 +1032,7 @@ function EmergencyCases({ onAdmitPatient }: any) {
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <Clock className="h-4 w-4 text-red-500" />
-                        <span>Admitted: {new Date(emergency.admission_date).toLocaleDateString()}</span>
+                        <span>Admitted: {new Date(emergency?.admission?.admissionDate).toLocaleDateString()}</span>
                       </div>
                     </div>
 
@@ -1117,7 +1113,6 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
     enabled: isOpen && !selectedPatient,
   });
 
-    console.log({patientData})
   // Fetch wards for selection
   const { data: wardsData, isLoading: isLoadingWards } = useQuery({
     queryKey: ["wards-for-admission"],
@@ -1266,12 +1261,12 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
                       <div className="flex justify-between items-start">
                         <div>
                           <div className="font-medium">
-                            {patient.user?.full_name || patient.full_name}
+                            {patient.user?.fullName || patient.fulName}
                           </div>
                           <div className="text-sm text-muted-foreground">
                             MRN: {patient.patientProvider?.[0]?.medicalRecordNumber || "No MRN"} • 
                             Age: {patient.user?.age || "N/A"} • 
-                            Phone: {patient.user?.phone_number || "N/A"}
+                            Phone: {patient.user?.phoneNumber || "N/A"}
                           </div>
                         </div>
                         <Badge variant="outline" className="text-xs">
