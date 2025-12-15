@@ -42,6 +42,8 @@ export type Permission =
   | "subscription" |
   'wallet' 
   | 'admins'
+  | 'ward' | 'ward.create' | 'ward.delete' | 'ward.update' | 'bed' | 'bed.create' | 'bed.update'
+|'admission' | 'admission.create'
   ;
 
 // ACL Configuration: Maps roles to their allowed permissions
@@ -114,6 +116,15 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "staff.records",
     "reports",
     "settings",
+    'admission',
+    'admission.create',
+    'bed',
+    'bed.create',
+    'bed.update',
+    'ward',
+    'ward.create',
+    'ward.update',
+    'ward.delete'
   ],
 
   // Support - View access mainly
@@ -166,6 +177,15 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "reports",
     "subscription",
     'wallet',
+    'ward',
+    'ward.create',
+    'ward.delete',
+    'ward.update',
+    'bed',
+    'bed.create',
+    'bed.update',
+    'admission',
+    'admission.create'
   ],
 
   // HR Manager - Staff and HR management
@@ -228,13 +248,20 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "laboratory.orders",
     "radiology",
     "settings",
+    'ward',
+    'admission',
+    'admission.create',
+    'bed'
+    // 'ward.create',
+    // 'ward.delete',
+    // 'ward.update'
   ],
 
   // Nurse - Patient care and vitals
   nurse: [
     "dashboard",
     "patients",
-    "patients.register",
+    // "patients.register",
     "patients.records",
     "appointments",
     "appointments.checkin",
@@ -247,6 +274,12 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "laboratory",
     "laboratory.reports",
     "settings",
+    'ward',
+    'admission',
+    'bed',
+    // 'ward.create',
+    // 'ward.delete',
+    // 'ward.update'
   ],
 
   // Pharmacist - Medication and prescriptions
@@ -296,6 +329,13 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "appointments.calendar",
     "appointments.checkin",
     "settings",
+    'ward',
+    'ward.create',
+    'ward.delete',
+    'ward.update',
+    'bed',
+    'admission',
+    'admission.create'
   ],
 
   // Cashier - Payment processing
@@ -362,4 +402,5 @@ export const navigationPermissions: Record<string, Permission> = {
   "/dashboard/pharmacy/dispensing": "pharmacy.dispensing",
   "/dashboard/pharmacy/stock": "pharmacy.stock",
   "/dashboard/settings": "settings",
+  // 
 };

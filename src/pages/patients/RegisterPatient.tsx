@@ -189,7 +189,7 @@ export default function RegisterPatient() {
         return !!(formData.title && formData.firstName && formData.lastName && 
                  formData.gender && formData.dateOfBirth && formData.maritalStatus);
       case 1: // Contact Details
-        return !!(formData.phone && formData.email);
+        return !!(formData.phone);
       case 2: // Address
         return !!(formData.countryId && formData.stateId && formData.cityId && formData.address1);
       case 3: // Emergency Contact
@@ -581,12 +581,12 @@ export default function RegisterPatient() {
                       
                       <div className="space-y-2">
                         <Label htmlFor="email" className="flex items-center gap-1">
-                          Email Address <span className="text-destructive">*</span>
+                          Email Address
                         </Label>
                         <Input
                           id="email"
                           type="email"
-                          placeholder="john.smith@email.com"
+                          placeholder="john.smith@curacloud.com.ng"
                           required
                           value={formData.email}
                           onChange={(e) => handleInputChange("email", e.target.value)}
