@@ -69,6 +69,7 @@ import {
   deleteBed,
 } from "@/services/bed";
 import { fetchWards } from "@/services/ward";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export default function BedsManagement() {
   const { toast } = useToast();
@@ -82,7 +83,9 @@ export default function BedsManagement() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingBed, setEditingBed] = useState<any>(null);
-  
+   const { isHealthcare, isAdmin ,isReceptionist} = useUserRole();
+      
+    const showCreateBedButton = isAdmin || isHealthcare || isReceptionist;
   const [filters, setFilters] = useState({
     ward: "",
     status: "",
@@ -432,10 +435,15 @@ export default function BedsManagement() {
                 }
               }}>
                 <DialogTrigger asChild>
-                  <Button className="bg-gradient-primary hover:shadow-glow transition-all">
+                  {
+                    showCreateBedButton && (
+<Button className="bg-gradient-primary hover:shadow-glow transition-all">
                     <Plus className="h-4 w-4 mr-2" />
                     Add New Bed
                   </Button>
+                    )
+                  }
+                  
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
@@ -999,7 +1007,9 @@ export default function BedsManagement() {
                                 >
                                   <Eye className="h-4 w-4" />
                                 </Button>
-                                <Button
+                                {
+                                  showCreateBedButton && (
+  <Button
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => {
@@ -1009,7 +1019,12 @@ export default function BedsManagement() {
                                 >
                                   <Edit className="h-4 w-4" />
                                 </Button>
-                                <Button
+                                  )
+                                }
+                              
+                                {
+                                  showCreateBedButton && (
+    <Button
                                   size="sm"
                                   variant="ghost"
                                   className="text-destructive hover:text-destructive/80"
@@ -1018,6 +1033,9 @@ export default function BedsManagement() {
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
+                                  )
+                                }
+                            
                               </div>
                             </TableCell>
                           </TableRow>

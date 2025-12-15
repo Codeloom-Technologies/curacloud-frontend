@@ -116,6 +116,15 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "staff.records",
     "reports",
     "settings",
+    'admission',
+    'admission.create',
+    'bed',
+    'bed.create',
+    'bed.update',
+    'ward',
+    'ward.create',
+    'ward.update',
+    'ward.delete'
   ],
 
   // Support - View access mainly
@@ -240,6 +249,9 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "radiology",
     "settings",
     'ward',
+    'admission',
+    'admission.create',
+    'bed'
     // 'ward.create',
     // 'ward.delete',
     // 'ward.update'
@@ -249,7 +261,7 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
   nurse: [
     "dashboard",
     "patients",
-    "patients.register",
+    // "patients.register",
     "patients.records",
     "appointments",
     "appointments.checkin",
@@ -263,7 +275,8 @@ export const rolePermissions: Record<RoleSlug, Permission[]> = {
     "laboratory.reports",
     "settings",
     'ward',
-    'admission'
+    'admission',
+    'bed',
     // 'ward.create',
     // 'ward.delete',
     // 'ward.update'
@@ -389,4 +402,5 @@ export const navigationPermissions: Record<string, Permission> = {
   "/dashboard/pharmacy/dispensing": "pharmacy.dispensing",
   "/dashboard/pharmacy/stock": "pharmacy.stock",
   "/dashboard/settings": "settings",
+  // 
 };

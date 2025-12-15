@@ -101,6 +101,7 @@ import {
 } from "@/services/admission";
 import { fetchWards } from "@/services/ward";
 import { fetchPatients } from "@/services/patient";
+import { useUserRole } from "@/hooks/useUserRole";
 
 // Admission Status Colors
 const ADMISSION_STATUS_COLORS = {
@@ -123,7 +124,10 @@ export default function AdmissionManagement() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+  const { isHealthcare, isAdmin, isReceptionist} = useUserRole();
+        
+    const showAddButton = isAdmin || isHealthcare || isReceptionist;
+    
   // State
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -353,7 +357,9 @@ export default function AdmissionManagement() {
         <span>New Admission</span>
       </Button>
       
-      <Button
+          {
+              showAddButton && (
+                   <Button
         className="h-20 flex-col gap-2"
         variant="outline"
         onClick={() => navigate("/dashboard/patients/register")}
@@ -361,6 +367,9 @@ export default function AdmissionManagement() {
         <User className="h-6 w-6" />
         <span>Register New Patient</span>
       </Button>
+              )
+          }
+     
       
       <Button
         className="h-20 flex-col gap-2"

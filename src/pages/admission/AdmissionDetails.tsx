@@ -849,7 +849,7 @@ function ActionsTab({ admission, onDischarge, daysAdmitted }: any) {
     const actions = [
    {
       title: "Medications",
-      description: "Add patient medications",
+      description: "Add medications",
       icon: Pill,
      color: "text-purple-600",
       bgColor: "bg-purple-100",
@@ -861,8 +861,8 @@ function ActionsTab({ admission, onDischarge, daysAdmitted }: any) {
       description: "Transfer patient to another bed or ward",
       icon: Users,
       color: "text-blue-600",
-        bgColor: "bg-blue-100",
-                  disabled: true,
+      bgColor: "bg-blue-100",
+      disabled: true,
     //   onClick: () => navigate(`/dashboard/transfers/new?admission=${admission.reference}`),
     //   disabled: admission?.status !== "admitted",
     },
@@ -871,8 +871,8 @@ function ActionsTab({ admission, onDischarge, daysAdmitted }: any) {
       description: "Add diagnosis, medications, or procedures",
       icon: FileText,
       color: "text-green-600",
-        bgColor: "bg-green-100",
-            disabled: true,
+      bgColor: "bg-green-100",
+      disabled: true,
 
       onClick: () => navigate(`/dashboard/medical-records/${admission.patient?.id}/edit`),
     },

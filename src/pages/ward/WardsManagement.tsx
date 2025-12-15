@@ -63,6 +63,7 @@ import {
   updateWard,
   deleteWard,
 } from "@/services/ward";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export default function WardsManagement() {
   const { toast } = useToast();
@@ -76,6 +77,9 @@ export default function WardsManagement() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingWard, setEditingWard] = useState<any>(null);
+    const { isHealthcare, isAdmin ,isReceptionist} = useUserRole();
+    
+  const showCreateWardButton = isAdmin || isHealthcare || isReceptionist;
   
   const [filters, setFilters] = useState({
     floor: "",
@@ -376,10 +380,15 @@ export default function WardsManagement() {
                 }
               }}>
                 <DialogTrigger asChild>
-                  <Button className="bg-gradient-primary hover:shadow-glow transition-all">
+                   {
+                      showCreateWardButton && (
+                          <Button className="bg-gradient-primary hover:shadow-glow transition-all">
                     <Plus className="h-4 w-4 mr-2" />
                     Create New Ward
                   </Button>
+                      )
+                    }
+                
                 </DialogTrigger>
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
@@ -521,6 +530,7 @@ export default function WardsManagement() {
                     >
                       Cancel
                     </Button>
+                   
                     <Button
                       onClick={handleFormSubmit}
                       disabled={createMutation.isPending || updateMutation.isPending}
@@ -939,7 +949,9 @@ export default function WardsManagement() {
                                   >
                                     <Eye className="h-4 w-4" />
                                   </Button>
-                                  <Button
+                                  {
+                                    showCreateWardButton && (
+ <Button
                                     size="sm"
                                     variant="ghost"
                                     onClick={() => {
@@ -949,7 +961,12 @@ export default function WardsManagement() {
                                   >
                                     <Edit className="h-4 w-4" />
                                   </Button>
-                                  <Button
+                                    )
+                                  }
+                                 
+                                  {
+                                    showCreateWardButton && (
+  <Button
                                     size="sm"
                                     variant="ghost"
                                     className="text-destructive hover:text-destructive/80"
@@ -958,6 +975,9 @@ export default function WardsManagement() {
                                   >
                                     <Trash2 className="h-4 w-4" />
                                   </Button>
+                                    )
+                                  }
+                                
                                 </div>
                               </TableCell>
                             </TableRow>

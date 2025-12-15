@@ -47,7 +47,7 @@ export interface MedicationHistory {
 
   // Administer medication
  export const administerMedication= async (medicationId: number, data: { administeredBy: number; notes?: string }) => {
-    const response = await apiClient(`/medications/${medicationId}/administer`, {body:JSON.stringify(data), method:'POST'});
+    const response = await apiClient(`/medications/${medicationId}/administer`, {body:JSON.stringify({data}), method:'POST'});
     return response;
   }
 
@@ -59,7 +59,7 @@ export interface MedicationHistory {
 
   // Cancel medication
   export const cancelMedication=  async (medicationId: number, reason: string) => {
-    const response = await apiClient(`/medications/${medicationId}/cancel`, {body: JSON.stringify(reason) , method:'Delete'});
+    const response = await apiClient(`/medications/${medicationId}/cancel`, {body: JSON.stringify({reason}) , method:'POST'});
     return response;
   }
 

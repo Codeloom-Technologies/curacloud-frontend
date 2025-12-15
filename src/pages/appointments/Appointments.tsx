@@ -57,6 +57,7 @@ import { APPOINTMENT_STATUS } from "@/constants";
 import TimePicker from "react-time-picker";
 import "react-time-picker/dist/TimePicker.css";
 import "react-clock/dist/Clock.css";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export default function Appointments() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -70,6 +71,9 @@ export default function Appointments() {
   const [debouncedPatientSearch, setDebouncedPatientSearch] = useState("");
     const [doctorSearchQuery, setDoctorSearchQuery] = useState("");
   const [debouncedDoctorSearch, setDebouncedDoctorSearch] = useState("");
+  const { isHealthcare, isAdmin, isReceptionist, isDoctor } = useUserRole();
+  
+  const showCreateAppointmentButton = isDoctor || isAdmin || isHealthcare || isReceptionist;
 
   const [filters, setFilters] = useState({
     startDate: "",
@@ -355,13 +359,18 @@ export default function Appointments() {
                   Manage and schedule patient appointments
                 </p>
               </div>
-              <Button
+              {
+                showCreateAppointmentButton && (
+<Button
                 onClick={() => setShowBookingForm(true)}
                 className="bg-gradient-primary hover:shadow-glow transition-all"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Schedule Appointment
               </Button>
+                )
+              }
+              
             </div>
 
             {/* Search and Filters */}

@@ -58,6 +58,7 @@ import {
   PaginationNext,
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export default function Consultations() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -80,6 +81,10 @@ export default function Consultations() {
     (typeof consultations)[0] | null
   >(null);
   const [showNewConsultationForm, setShowNewConsultationForm] = useState(false);
+
+   const { isHealthcare, isAdmin ,isReceptionist, isDoctor} = useUserRole();
+      
+    const showCreateConsultationButton = isAdmin || isHealthcare || isReceptionist || isDoctor;
 
   // 🕒 Debounce logic: wait 500ms after typing stops
   useEffect(() => {
@@ -448,13 +453,18 @@ export default function Consultations() {
                   <SelectItem value="emergency">Emergency</SelectItem>
                 </SelectContent>
               </Select>
-              <Button
+              {
+                showCreateConsultationButton && (
+   <Button
                 className="shrink-0"
                 onClick={() => setShowNewConsultationForm(true)}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 New Consultation
               </Button>
+                )
+              }
+           
             </div>
 
             {/* Consultations List */}

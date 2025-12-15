@@ -410,10 +410,10 @@ export default function LandingPage() {
                   <TrendingUp className="h-4 w-4 inline mr-1" />
                   Live
                 </div>
-                <div className="absolute -bottom-4 -right-4 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg">
+                {/* <div className="absolute -bottom-4 -right-4 bg-blue-500 text-white px-4 py-2 rounded-full shadow-lg">
                   <Award className="h-4 w-4 inline mr-1" />
                   Award Winning
-                </div>
+                </div> */}
               </div>
             </div>
           </div>

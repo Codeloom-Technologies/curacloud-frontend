@@ -70,6 +70,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface MedicationItem {
   medicationName: string;
@@ -95,7 +96,9 @@ export default function Prescriptions() {
   // Doctor search states
   const [doctorSearchQuery, setDoctorSearchQuery] = useState("");
   const [debouncedDoctorSearch, setDebouncedDoctorSearch] = useState("");
-
+   const { isHealthcare, isAdmin ,isDoctor} = useUserRole();
+      
+    const showCreatePrescriptionButton = isAdmin || isHealthcare || isDoctor;
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showNewPrescriptionForm, setShowNewPrescriptionForm] = useState(false);
@@ -514,13 +517,18 @@ export default function Prescriptions() {
                   <SelectItem value="expired">Expired</SelectItem>
                 </SelectContent>
               </Select>
-              <Button
+              {
+                showCreatePrescriptionButton && (
+ <Button
                 className="shrink-0"
                 onClick={() => setShowNewPrescriptionForm(true)}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 New Prescription
               </Button>
+                )
+              }
+             
             </div>
 
             {/* Prescriptions List */}
