@@ -866,7 +866,7 @@ export default function WardDetail() {
                                     {patient?.user?.fullName}
                                   </div>
                                   <div className="text-sm text-gray-500">
-                                    {patient?.patientProvider[0]
+                                    {patient?.patientProvider?.[0]
                                       ?.medicalRecordNumber ||
                                       `PID-${patient?.id}`}
                                   </div>
