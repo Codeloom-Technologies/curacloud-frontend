@@ -437,7 +437,7 @@ export default function WardDetail() {
                       <h3 className="text-2xl font-bold">
                         {ward.is_icu
                           ? "ICU"
-                          : ward.is_isolation
+                          : ward.isIsolation
                           ? "Isolation"
                           : "General"}
                       </h3>
@@ -447,12 +447,12 @@ export default function WardDetail() {
                     </div>
                   </div>
                   <div className="flex gap-2 mt-2">
-                    {ward.is_icu && (
+                    {ward.isIcu && (
                       <Badge variant="outline" className="text-xs bg-red-50">
                         ICU
                       </Badge>
                     )}
-                    {ward.is_isolation && (
+                    {ward.isIsolation && (
                       <Badge variant="outline" className="text-xs bg-yellow-50">
                         Isolation
                       </Badge>
@@ -668,21 +668,21 @@ export default function WardDetail() {
                                       </Badge>
                                     </div>
 
-                                    {bed.current_patient && (
+                                    {bed?.currentPatient && (
                                       <div className="space-y-2">
                                         <div className="flex items-center gap-2">
                                           <UserCheck className="h-4 w-4 text-gray-500" />
                                           <div className="text-sm">
                                             <div className="font-medium">
                                               {
-                                                bed.currentPatient?.patient
+                                                bed?.currentPatient?.patient
                                                   ?.user?.fullName
                                               }
                                             </div>
                                             <div className="text-xs text-gray-500">
                                               Admitted:{" "}
                                               {new Date(
-                                                bed.currentPatient.assignedAt
+                                                bed?.currentPatient?.assignedAt
                                               ).toLocaleDateString()}
                                             </div>
                                           </div>
@@ -719,12 +719,12 @@ export default function WardDetail() {
                                       </div>
                                     )}
 
-                                    {bed.last_cleaned_at && (
+                                    {bed?.lastCleanedAt && (
                                       <div className="flex items-center gap-2 text-xs text-gray-500">
                                         <Clock className="h-3 w-3" />
                                         Cleaned:{" "}
                                         {new Date(
-                                          bed.lastCleanedAt
+                                          bed?.lastCleanedAt
                                         ).toLocaleDateString()}
                                       </div>
                                     )}
