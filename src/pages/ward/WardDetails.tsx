@@ -863,16 +863,17 @@ export default function WardDetail() {
                               <TableRow key={index}>
                                 <TableCell>
                                   <div className="font-medium">
-                                    {patient.full_name}
+                                    {patient?.user?.fullName}
                                   </div>
                                   <div className="text-sm text-gray-500">
-                                    {patient.medical_record_number ||
-                                      `PID-${patient.id}`}
+                                    {patient?.patientProvider[0]
+                                      ?.medicalRecordNumber ||
+                                      `PID-${patient?.id}`}
                                   </div>
                                 </TableCell>
                                 <TableCell>
                                   <Badge variant="outline">
-                                    {patient.bed_number}
+                                    {patient.bedNumber}
                                   </Badge>
                                 </TableCell>
                                 <TableCell>
@@ -895,7 +896,7 @@ export default function WardDetail() {
                                     variant="ghost"
                                     onClick={() =>
                                       navigate(
-                                        `/dashboard/patients/records/${patient.id}`
+                                        `/dashboard/patients/records/${patient?.user?.reference}`
                                       )
                                     }
                                   >
