@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -40,22 +46,20 @@ import { Input } from "@/components/ui/input";
 // Team data
 const teamMembers = [
   {
-    name: "Obed M .G",
+    name: "Obed M. Gaiya",
     role: "Chief Executive Officer",
-    image: "/placeholder.svg",
-    bio: "Senior Software Engineerwith 7+ years in software engineering",
-    expertise: ["System Architecture", "AI & Machine Learning","DevOps"],
-  },
-  {
-    name: "Michael Rodriguez",
-    role: "Chief Technology Officer",
-    image: "/placeholder.svg",
-    bio: "Technology visionary with expertise in healthcare systems, security, and scalable architecture.",
-    expertise: ["System Architecture", "Security", "AI & Machine Learning"],
+    image: "https://avatars.githubusercontent.com/u/49751060?v=4",
+    bio: "Senior Software Engineerwith 8+ years in software engineering",
+    expertise: [
+      "System Architecture",
+      "AI & Machine Learning",
+      "DevOps",
+      "Software Engineering",
+    ],
   },
   {
     name: "Dr. James Okafor",
-    role: "Chief Medical Officer",
+    role: "Co-founder",
     image: "/placeholder.svg",
     bio: "Board-certified physician with deep experience in clinical workflows and healthcare operations.",
     expertise: ["Clinical Workflows", "Medical Standards", "Quality Assurance"],
@@ -67,6 +71,15 @@ const teamMembers = [
     bio: "Product leader passionate about creating intuitive healthcare solutions that improve patient outcomes.",
     expertise: ["Product Strategy", "UX Design", "User Research"],
   },
+
+  {
+    name: "Epaphras M. Gaiya",
+    role: "UI/UX Intern",
+    image:
+      "https://img.freepik.com/free-vector/smiling-young-man-illustration_1308-174669.jpg?semt=ais_hybrid&w=740&q=80",
+    bio: "Technology visionary with expertise in UI/UX",
+    expertise: ["Figma"],
+  },
 ];
 
 // Values data
@@ -74,32 +87,38 @@ const values = [
   {
     icon: Heart,
     title: "Patient First",
-    description: "Every decision we make prioritizes patient safety, privacy, and positive health outcomes.",
+    description:
+      "Every decision we make prioritizes patient safety, privacy, and positive health outcomes.",
   },
   {
     icon: Shield,
     title: "Security & Compliance",
-    description: "We maintain the highest standards of data security and regulatory compliance in healthcare.",
+    description:
+      "We maintain the highest standards of data security and regulatory compliance in healthcare.",
   },
   {
     icon: Users,
     title: "Collaboration",
-    description: "We believe in working closely with healthcare providers to build solutions that truly meet their needs.",
+    description:
+      "We believe in working closely with healthcare providers to build solutions that truly meet their needs.",
   },
   {
     icon: Zap,
     title: "Innovation",
-    description: "Constantly pushing boundaries to deliver cutting-edge technology that transforms healthcare delivery.",
+    description:
+      "Constantly pushing boundaries to deliver cutting-edge technology that transforms healthcare delivery.",
   },
   {
     icon: Globe,
     title: "Accessibility",
-    description: "Making quality healthcare management accessible to facilities of all sizes, everywhere.",
+    description:
+      "Making quality healthcare management accessible to facilities of all sizes, everywhere.",
   },
   {
     icon: Target,
     title: "Excellence",
-    description: "Committed to delivering exceptional quality in every feature, update, and support interaction.",
+    description:
+      "Committed to delivering exceptional quality in every feature, update, and support interaction.",
   },
 ];
 
@@ -108,29 +127,33 @@ const milestones = [
   {
     year: "2022",
     title: "Company Founded",
-    description: "Curacloud was born from a vision to revolutionize healthcare management in Africa.",
+    description:
+      "Curacloud was born from a vision to revolutionize healthcare management in Africa.",
   },
   {
     year: "2023",
     title: "First Product Launch",
-    description: "Launched our MVP serving 2 healthcare facilities with core HMS features.",
+    description:
+      "Launched our MVP serving 2 healthcare facilities with core HMS features.",
   },
   {
     year: "2024",
     title: "Growth Phase",
-    description: "Expanded to serve 10+ healthcare facilities and introduced advanced analytics.",
+    description:
+      "Expanded to serve 10+ healthcare facilities and introduced advanced analytics.",
   },
   {
     year: "2025",
     title: "Future Vision",
-    description: "Planned expansion across West Africa with AI-powered predictive healthcare tools.",
+    description:
+      "Planned expansion across West Africa with AI-powered predictive healthcare tools.",
   },
 ];
 
 // Stats data
 const companyStats = [
-  { number: "2+", label: "Healthcare Facilities", icon: Building2 },
-  { number: "10+", label: "Patients Served", icon: Users },
+  { number: "1+", label: "Healthcare Facilities", icon: Building2 },
+  { number: "30+", label: "Patients Served", icon: Users },
   { number: "99.9%", label: "System Uptime", icon: Clock },
   { number: "24/7", label: "Support Coverage", icon: UserCheck },
 ];
@@ -163,32 +186,62 @@ export default function AboutPage() {
                   <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                     Curacloud
                   </span>
-                  <span className="block text-xs text-muted-foreground -mt-1">Healthcare Management System</span>
+                  <span className="block text-xs text-muted-foreground -mt-1">
+                    Healthcare Management System
+                  </span>
                 </div>
               </Link>
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link to="/#features" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              <Link
+                to="/"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
+                Home
+              </Link>
+              {/* <Link
+                to="/#features"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 Features
-              </Link>
-              <Link to="/#solutions" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              </Link> */}
+              {/* <Link
+                to="/#solutions"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 Solutions
-              </Link>
-              <Link to="/#pricing" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              </Link> */}
+              {/* <Link
+                to="/#pricing"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 Pricing
-              </Link>
-              <Link to="/#security" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              </Link> */}
+              {/* <Link
+                to="/#security"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 Security
               </Link>
-              {/* <Link 
-                to="/about-us" 
+              {/* <Link
+                to="/about-us"
                 className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
               >
                 About Us
+              </Link>
+              <Link
+                to="/careers"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
+                Careers
               </Link> */}
-              <Button variant="ghost" size="sm" onClick={() => navigate("/auth/login")}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/auth/login")}
+              >
                 Sign In
               </Button>
               <Button
@@ -210,33 +263,20 @@ export default function AboutPage() {
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                 <div className="flex flex-col space-y-6 mt-8">
                   <Link
-                    to="/#features"
+                    to="/"
                     className="text-lg font-medium hover:text-primary transition-colors py-2 border-b"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Features
+                    Home
                   </Link>
+
                   <Link
-                    to="/#solutions"
+                    to="/careers"
                     className="text-lg font-medium hover:text-primary transition-colors py-2 border-b"
-                    onClick={() => setMobileMenuOpen(false)}
                   >
-                    Solutions
+                    Careers
                   </Link>
-                  <Link
-                    to="/#pricing"
-                    className="text-lg font-medium hover:text-primary transition-colors py-2 border-b"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Pricing
-                  </Link>
-                  <Link
-                    to="/#security"
-                    className="text-lg font-medium hover:text-primary transition-colors py-2 border-b"
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    Security
-                  </Link>
+
                   <Link
                     to="/about-us"
                     className="text-lg font-medium hover:text-primary transition-colors py-2 border-b"
@@ -290,8 +330,9 @@ export default function AboutPage() {
               </h1>
 
               <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">
-                We're on a mission to transform healthcare delivery through innovative technology, 
-                making quality care accessible and efficient for every African healthcare facility.
+                We're on a mission to transform healthcare delivery through
+                innovative technology, making quality care accessible and
+                efficient for every African healthcare facility.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -326,7 +367,8 @@ export default function AboutPage() {
                         </div>
                         <h3 className="font-semibold mb-2">Our Mission</h3>
                         <p className="text-sm text-muted-foreground">
-                          Democratize access to world-class healthcare management
+                          Democratize access to world-class healthcare
+                          management
                         </p>
                       </CardContent>
                     </Card>
@@ -376,12 +418,20 @@ export default function AboutPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {companyStats.map((stat, index) => (
-              <div key={index} className="text-center animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+              <div
+                key={index}
+                className="text-center animate-fade-in"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
                 <div className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
                   <stat.icon className="h-8 w-8 text-primary-foreground" />
                 </div>
-                <div className="text-3xl md:text-4xl font-bold text-primary mb-2">{stat.number}</div>
-                <div className="text-sm text-muted-foreground font-medium">{stat.label}</div>
+                <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
+                  {stat.number}
+                </div>
+                <div className="text-sm text-muted-foreground font-medium">
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
@@ -391,17 +441,30 @@ export default function AboutPage() {
       {/* Mission & Vision Section */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-3 mb-16">
-              <TabsTrigger value="mission" className="flex items-center gap-2 text-lg py-3">
+              <TabsTrigger
+                value="mission"
+                className="flex items-center gap-2 text-lg py-3"
+              >
                 <Target className="h-5 w-5" />
                 Our Mission
               </TabsTrigger>
-              <TabsTrigger value="vision" className="flex items-center gap-2 text-lg py-3">
+              <TabsTrigger
+                value="vision"
+                className="flex items-center gap-2 text-lg py-3"
+              >
                 <Eye className="h-5 w-5" />
                 Our Vision
               </TabsTrigger>
-              <TabsTrigger value="story" className="flex items-center gap-2 text-lg py-3">
+              <TabsTrigger
+                value="story"
+                className="flex items-center gap-2 text-lg py-3"
+              >
                 <Award className="h-5 w-5" />
                 Our Story
               </TabsTrigger>
@@ -414,15 +477,16 @@ export default function AboutPage() {
                     Our Mission: Transform Healthcare Delivery
                   </h2>
                   <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                    We believe every healthcare facility in Africa deserves access to world-class 
-                    management tools that enhance patient care, streamline operations, and drive growth.
+                    We believe every healthcare facility in Africa deserves
+                    access to world-class management tools that enhance patient
+                    care, streamline operations, and drive growth.
                   </p>
                   <div className="space-y-4">
                     {[
                       "Make advanced healthcare technology accessible and affordable",
                       "Empower healthcare providers with data-driven insights",
                       "Improve patient outcomes through better care coordination",
-                      "Reduce administrative burden so providers can focus on patients"
+                      "Reduce administrative burden so providers can focus on patients",
                     ].map((item, index) => (
                       <div key={index} className="flex items-center gap-3">
                         <Check className="h-6 w-6 text-green-500 flex-shrink-0" />
@@ -438,9 +502,11 @@ export default function AboutPage() {
                       <div className="text-6xl mb-4">🏥</div>
                       <h3 className="text-2xl font-bold mb-4">Why We Exist</h3>
                       <p className="text-muted-foreground text-lg leading-relaxed">
-                        Healthcare facilities across Africa face unique challenges in management, 
-                        technology adoption, and resource optimization. Curacloud was built specifically 
-                        to address these challenges with localized, affordable, and powerful solutions.
+                        Healthcare facilities across Africa face unique
+                        challenges in management, technology adoption, and
+                        resource optimization. Curacloud was built specifically
+                        to address these challenges with localized, affordable,
+                        and powerful solutions.
                       </p>
                     </CardContent>
                   </Card>
@@ -455,10 +521,14 @@ export default function AboutPage() {
                   <Card className="relative p-8 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
                     <CardContent className="p-6">
                       <div className="text-6xl mb-4">🌍</div>
-                      <h3 className="text-2xl font-bold mb-4">The Future We're Building</h3>
+                      <h3 className="text-2xl font-bold mb-4">
+                        The Future We're Building
+                      </h3>
                       <p className="text-muted-foreground text-lg leading-relaxed">
-                        A connected healthcare ecosystem where every facility, regardless of size or location, 
-                        can deliver exceptional care through intelligent technology and seamless collaboration.
+                        A connected healthcare ecosystem where every facility,
+                        regardless of size or location, can deliver exceptional
+                        care through intelligent technology and seamless
+                        collaboration.
                       </p>
                     </CardContent>
                   </Card>
@@ -468,15 +538,16 @@ export default function AboutPage() {
                     Our Vision: Healthcare Without Boundaries
                   </h2>
                   <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                    We envision a future where technology bridges healthcare gaps, connects providers, 
-                    and creates a unified health ecosystem across Africa.
+                    We envision a future where technology bridges healthcare
+                    gaps, connects providers, and creates a unified health
+                    ecosystem across Africa.
                   </p>
                   <div className="space-y-4">
                     {[
                       "AI-powered predictive healthcare across the continent",
                       "Seamless health data exchange between facilities",
                       "Real-time public health monitoring and response",
-                      "Telemedicine integration for remote communities"
+                      "Telemedicine integration for remote communities",
                     ].map((item, index) => (
                       <div key={index} className="flex items-center gap-3">
                         <TrendingUp className="h-6 w-6 text-blue-500 flex-shrink-0" />
@@ -490,24 +561,32 @@ export default function AboutPage() {
 
             <TabsContent value="story" className="animate-fade-in">
               <div className="text-center max-w-4xl mx-auto">
-                <h2 className="text-4xl md:text-5xl font-bold mb-8">Our Journey</h2>
+                <h2 className="text-4xl md:text-5xl font-bold mb-8">
+                  Our Journey
+                </h2>
                 <p className="text-xl text-muted-foreground mb-12 leading-relaxed">
-                  From a simple idea to transform healthcare management to becoming a trusted partner 
-                  for healthcare facilities across Africa.
+                  From a simple idea to transform healthcare management to
+                  becoming a trusted partner for healthcare facilities across
+                  Africa.
                 </p>
 
                 <div className="relative">
                   {/* Timeline */}
                   <div className="space-y-12">
                     {milestones.map((milestone, index) => (
-                      <div key={index} className="flex flex-col md:flex-row gap-8 items-start">
+                      <div
+                        key={index}
+                        className="flex flex-col md:flex-row gap-8 items-start"
+                      >
                         <div className="flex-shrink-0">
                           <Badge className="bg-gradient-primary text-primary-foreground px-4 py-2 text-lg">
                             {milestone.year}
                           </Badge>
                         </div>
                         <div className="flex-1 text-left">
-                          <h3 className="text-2xl font-bold mb-3">{milestone.title}</h3>
+                          <h3 className="text-2xl font-bold mb-3">
+                            {milestone.title}
+                          </h3>
                           <p className="text-lg text-muted-foreground leading-relaxed">
                             {milestone.description}
                           </p>
@@ -534,7 +613,8 @@ export default function AboutPage() {
               What Drives Us Every Day
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Our core values shape our culture, guide our decisions, and define how we serve our customers.
+              Our core values shape our culture, guide our decisions, and define
+              how we serve our customers.
             </p>
           </div>
 
@@ -571,13 +651,17 @@ export default function AboutPage() {
               The Minds Behind Curacloud
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              A diverse team of healthcare experts, technologists, and innovators united by a common mission.
+              A diverse team of healthcare experts, technologists, and
+              innovators united by a common mission.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {teamMembers.map((member, index) => (
-              <Card key={index} className="group hover:shadow-xl transition-all duration-500 text-center">
+              <Card
+                key={index}
+                className="group hover:shadow-xl transition-all duration-500 text-center"
+              >
                 <CardContent className="p-6">
                   <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-primary/20 group-hover:border-primary/40 transition-colors">
                     <img
@@ -593,7 +677,11 @@ export default function AboutPage() {
                   </p>
                   <div className="flex flex-wrap gap-2 justify-center">
                     {member.expertise.map((skill, skillIndex) => (
-                      <Badge key={skillIndex} variant="secondary" className="text-xs">
+                      <Badge
+                        key={skillIndex}
+                        variant="secondary"
+                        className="text-xs"
+                      >
                         {skill}
                       </Badge>
                     ))}
@@ -611,14 +699,15 @@ export default function AboutPage() {
           <Badge className="mb-6 bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30">
             Join Our Mission
           </Badge>
-          
+
           <h2 className="text-4xl md:text-6xl font-bold mb-8 leading-tight">
             Ready to Transform Your Healthcare Facility?
           </h2>
-          
+
           <p className="text-xl md:text-2xl mb-12 opacity-90 leading-relaxed max-w-4xl mx-auto">
-            Join the growing number of healthcare facilities using Curacloud to deliver exceptional care 
-            while optimizing operations and driving growth.
+            Join the growing number of healthcare facilities using Curacloud to
+            deliver exceptional care while optimizing operations and driving
+            growth.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
@@ -631,7 +720,7 @@ export default function AboutPage() {
               Start Free 14-Day Trial
               <ArrowRight className="ml-3 h-5 w-5" />
             </Button>
-            
+
             <Button
               size="lg"
               variant="outline"
@@ -667,12 +756,14 @@ export default function AboutPage() {
               <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
                 Get In Touch
               </Badge>
-              <h2 className="text-4xl font-bold mb-6">Let's Build the Future of Healthcare Together</h2>
+              <h2 className="text-4xl font-bold mb-6">
+                Let's Build the Future of Healthcare Together
+              </h2>
               <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                Whether you're a healthcare provider, potential partner, or interested in joining our team, 
-                we'd love to hear from you.
+                Whether you're a healthcare provider, potential partner, or
+                interested in joining our team, we'd love to hear from you.
               </p>
-              
+
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
@@ -680,10 +771,12 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold">Email Us</h3>
-                    <p className="text-muted-foreground">hello@curacloud.com.ng</p>
+                    <p className="text-muted-foreground">
+                      hello@curacloud.com.ng
+                    </p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
                     <Phone className="h-6 w-6 text-primary-foreground" />
@@ -693,7 +786,7 @@ export default function AboutPage() {
                     <p className="text-muted-foreground">+234 800 000 0000</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
                     <MapPin className="h-6 w-6 text-primary-foreground" />
@@ -728,16 +821,29 @@ export default function AboutPage() {
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="name">Full Name</Label>
-                      <Input id="name" placeholder="Dr. John Smith" className="h-12" />
+                      <Input
+                        id="name"
+                        placeholder="Dr. John Smith"
+                        className="h-12"
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="email">Email Address</Label>
-                      <Input id="email" type="email" placeholder="john.smith@hospital.com" className="h-12" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="john.smith@hospital.com"
+                        className="h-12"
+                      />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="subject">Subject</Label>
-                    <Input id="subject" placeholder="How can we help you?" className="h-12" />
+                    <Input
+                      id="subject"
+                      placeholder="How can we help you?"
+                      className="h-12"
+                    />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="message">Message</Label>
@@ -748,7 +854,10 @@ export default function AboutPage() {
                       className="w-full px-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
                     />
                   </div>
-                  <Button type="submit" className="w-full bg-gradient-primary h-12">
+                  <Button
+                    type="submit"
+                    className="w-full bg-gradient-primary h-12"
+                  >
                     Send Message
                   </Button>
                 </form>
@@ -756,161 +865,161 @@ export default function AboutPage() {
             </Card>
           </div>
         </div>
-          </section>
-          
-             <footer className="bg-background border-t py-16 px-4 sm:px-6 lg:px-8">
-                  <div className="max-w-7xl mx-auto">
-                    <div className="grid md:grid-cols-4 gap-8 mb-8">
-                      <div>
-                        <div className="flex items-center gap-2 mb-4">
-                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
-                            <Heart className="h-5 w-5 text-primary-foreground" />
-                          </div>
-                          <span className="text-xl font-bold">Curacloud</span>
-                        </div>
-                        <p className="text-muted-foreground mb-4">
-                          Modern healthcare management solution trusted by healthcare
-                          facilities worldwide.
-                        </p>
-                        <div className="flex gap-4">
-                          <Button variant="ghost" size="sm">
-                            <Facebook className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Twitter className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Linkedin className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Instagram className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-          
-                      <div>
-                        <h4 className="font-semibold mb-4">Product</h4>
-                        <ul className="space-y-2 text-sm">
-                          <li>
-                            <a
-                              href="#features"
-                              className="text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                              Features
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#solutions"
-                              className="text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                              Solutions
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#pricing"
-                              className="text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                              Pricing
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
-                              className="text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                              API Documentation
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-          
-                      <div>
-                        <h4 className="font-semibold mb-4">Company</h4>
-                        <ul className="space-y-2 text-sm">
-                          <li>
-                            <Link
-              to="/about-us"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              About Us
-            </Link>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
-                              className="text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                              Careers
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
-                              className="text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                              Blog
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
-                              className="text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                              Contact
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-          
-                      <div>
-                        <h4 className="font-semibold mb-4">Support</h4>
-                        <ul className="space-y-2 text-sm">
-                          <li>
-                            <a
-                              href="#"
-                              className="text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                              Help Center
-                            </a>
-                          </li>
-                          <li>
-                            <Link
-                              to="/privacy-policy"
-                              className="text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                              Privacy Policy
-                            </Link>
-                          </li>
-                          <li>
-                            <a
-                              href="#"
-                              className="text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                              Terms of Service
-                            </a>
-                          </li>
-                          <li>
-                            <a
-                              href="#security"
-                              className="text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                              HIPAA Compliance
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-          
-                    <div className="pt-8 border-t text-center text-sm text-muted-foreground">
-                      <p>
-                        &copy; {new Date().getFullYear()} Curacloud. All rights reserved.
-                        Built with ❤️ for healthcare professionals.
-                      </p>
-                    </div>
-                  </div>
-                </footer>
+      </section>
+
+      <footer className="bg-background border-t py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
+                  <Heart className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <span className="text-xl font-bold">Curacloud</span>
+              </div>
+              <p className="text-muted-foreground mb-4">
+                Modern healthcare management solution trusted by healthcare
+                facilities worldwide.
+              </p>
+              <div className="flex gap-4">
+                <Button variant="ghost" size="sm">
+                  <Facebook className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Twitter className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Linkedin className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Instagram className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Product</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <a
+                    href="#features"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#solutions"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Solutions
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#pricing"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    API Documentation
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Company</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link
+                    to="/about-us"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="careers"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Careers
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Blog
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="contact-us"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Contact
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Support</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Help Center
+                  </a>
+                </li>
+                <li>
+                  <Link
+                    to="/privacy-policy"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Terms of Service
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#security"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    HIPAA Compliance
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t text-center text-sm text-muted-foreground">
+            <p>
+              &copy; {new Date().getFullYear()} Curacloud. All rights reserved.
+              Built with ❤️ for healthcare professionals.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
