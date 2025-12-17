@@ -38,11 +38,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useUserRole } from "@/hooks/useUserRole";
 
 export default function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSubscriptionDialog, setShowSubscriptionDialog] = useState(false);
   const navigate = useNavigate();
+    const { isHealthcare, isAdmin } = useUserRole();
+  const showCard = isAdmin || isHealthcare;
   
   const {
     data: statsData,
@@ -113,6 +116,7 @@ export default function Dashboard() {
 
   const stats = [
     {
+      showCard,
       title: "Total Patients",
       value: statsData?.totalPatients?.toString() || "0",
       change: `${statsData?.newPatientsGrowth || 0}% growth this month`,
@@ -123,6 +127,7 @@ export default function Dashboard() {
       icon: Users,
     },
     {
+      showCard,
       title: "Active Patients",
       value: statsData?.activePatients?.toString() || "0",
       change: `${
@@ -135,6 +140,7 @@ export default function Dashboard() {
       icon: Calendar,
     },
     {
+      showCard,
       title: "Total Appointments",
       value: statsData?.totalAppointments?.toString() || "0",
       change: `${
@@ -147,6 +153,7 @@ export default function Dashboard() {
       icon: Clock,
     },
     {
+      showCard,
       title: "Today's Appointments",
       value: statsData?.pendingCheckIns?.toString() || "0",
       change: "Require attention",
@@ -157,6 +164,7 @@ export default function Dashboard() {
       icon: Clock,
     },
     {
+      showCard,
       title: "Monthly Revenue",
       icon: DollarSign,
       value: statsData?.monthlyRevenue?.toString() || "0",
@@ -169,6 +177,7 @@ export default function Dashboard() {
           : ("negative" as const),
     },
     {
+      showCard,
       title: "Male",
       icon: TrendingUp,
       value: statsData?.byGender.Male?.toString() || "0",
@@ -179,6 +188,7 @@ export default function Dashboard() {
           : ("negative" as const),
     },
     {
+      showCard,
       title: "Female",
       icon: TrendingUp,
       value: statsData?.byGender.Female?.toString() || "0",
@@ -190,6 +200,7 @@ export default function Dashboard() {
     },
 
     {
+      showCard,
       title: "Total Staffs",
       icon: WorkflowIcon,
       value: statsData?.totalStaffs?.toString() || "0",

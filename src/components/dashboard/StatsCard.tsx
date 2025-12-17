@@ -9,15 +9,16 @@ interface StatsCardProps {
   changeType?: "positive" | "negative" | "neutral";
   icon: LucideIcon;
   className?: string;
+  showCard: boolean;
 }
-
-export function StatsCard({ 
-  title, 
-  value, 
-  change, 
-  changeType = "neutral", 
+export function StatsCard({
+  title,
+  value,
+  change,
+  changeType = "neutral",
   icon: Icon,
-  className 
+  className,
+  showCard
 }: StatsCardProps) {
   const changeColorClass = {
     positive: "text-success",
@@ -25,7 +26,7 @@ export function StatsCard({
     neutral: "text-muted-foreground"
   };
 
-  return (
+  return showCard ? (
     <Card className={cn("transition-all hover:shadow-medium", className)}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -44,5 +45,5 @@ export function StatsCard({
         )}
       </CardContent>
     </Card>
-  );
+  ) : null;
 }
