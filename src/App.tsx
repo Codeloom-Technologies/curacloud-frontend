@@ -62,6 +62,7 @@ import BedDetails from "./pages/ward/BedDetails";
 import AdmissionManagement from "./pages/admission/AdmissionManagement";
 import AdmissionDetails from "./pages/admission/AdmissionDetails";
 import AdmissionMedications from "./pages/admission/AdmissionMedications";
+import PatientAdmissionVitals from "./pages/admission/PatientAdmissionVitals";
 
 const queryClient = new QueryClient();
 
@@ -242,6 +243,12 @@ const App = () => (
             path="/dashboard/admissions/:id/medications"
             element={<AdmissionMedications />}
           />
+     <Route
+            path="/dashboard/admissions/:id/vitals"
+            element={<PatientAdmissionVitals />}
+          />
+
+          
       {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
