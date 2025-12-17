@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import {
@@ -90,7 +96,8 @@ const supportTypes = [
   {
     icon: Users,
     title: "Sales Inquiry",
-    description: "Learn about pricing, features, and how Curacloud can help your facility",
+    description:
+      "Learn about pricing, features, and how Curacloud can help your facility",
     responseTime: "Within 1 hour",
     department: "Sales Team",
   },
@@ -104,7 +111,8 @@ const supportTypes = [
   {
     icon: Shield,
     title: "Security & Compliance",
-    description: "Questions about data security, HIPAA compliance, and certifications",
+    description:
+      "Questions about data security, HIPAA compliance, and certifications",
     responseTime: "Within 4 hours",
     department: "Security Team",
   },
@@ -114,27 +122,33 @@ const supportTypes = [
 const faqs = [
   {
     question: "How quickly can I get started with Curacloud?",
-    answer: "You can start your free 14-day trial immediately after signing up. Most facilities are fully set up and running within 48 hours."
+    answer:
+      "You can start your free 14-day trial immediately after signing up. Most facilities are fully set up and running within 48 hours.",
   },
   {
     question: "Do you offer custom solutions for large hospitals?",
-    answer: "Yes! Our Enterprise plan includes custom development, dedicated support, and tailored features for large healthcare facilities."
+    answer:
+      "Yes! Our Enterprise plan includes custom development, dedicated support, and tailored features for large healthcare facilities.",
   },
   {
     question: "Is Curacloud HIPAA compliant?",
-    answer: "Absolutely. We maintain full HIPAA compliance with end-to-end encryption, secure data centers, and regular security audits."
+    answer:
+      "Absolutely. We maintain full HIPAA compliance with end-to-end encryption, secure data centers, and regular security audits.",
   },
   {
     question: "Can I integrate Curacloud with my existing systems?",
-    answer: "Yes, we offer comprehensive API access and support integrations with most major healthcare systems and laboratory interfaces."
+    answer:
+      "Yes, we offer comprehensive API access and support integrations with most major healthcare systems and laboratory interfaces.",
   },
   {
     question: "What kind of support do you provide?",
-    answer: "We provide 24/7 support via phone, email, and live chat, along with dedicated account managers for enterprise customers."
+    answer:
+      "We provide 24/7 support via phone, email, and live chat, along with dedicated account managers for enterprise customers.",
   },
   {
     question: "Do you offer training for our staff?",
-    answer: "Yes, we provide comprehensive training sessions, documentation, and ongoing support to ensure your team is comfortable with the platform."
+    answer:
+      "Yes, we provide comprehensive training sessions, documentation, and ongoing support to ensure your team is comfortable with the platform.",
   },
 ];
 
@@ -160,7 +174,7 @@ export default function ContactPage() {
 
   const handleContactSubmit = (e) => {
     e.preventDefault();
-    
+
     if (!contactForm.name || !contactForm.email || !contactForm.message) {
       toast.error("Please fill in all required fields");
       return;
@@ -206,26 +220,44 @@ export default function ContactPage() {
                   <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                     Curacloud
                   </span>
-                  <span className="block text-xs text-muted-foreground -mt-1">Healthcare Management System</span>
+                  <span className="block text-xs text-muted-foreground -mt-1">
+                    Healthcare Management System
+                  </span>
                 </div>
               </Link>
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link to="/#features" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
-                Features
+              <Link
+                to="/"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
+                Home
               </Link>
-              <Link to="/#solutions" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              {/* <Link
+                to="/#solutions"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 Solutions
               </Link>
-              <Link to="/#pricing" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              <Link
+                to="/#pricing"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 Pricing
               </Link>
-              <Link to="/#security" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              <Link
+                to="/#security"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 Security
-              </Link>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/auth/login")}>
+              </Link> */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/auth/login")}
+              >
                 Sign In
               </Button>
               <Button
@@ -247,13 +279,13 @@ export default function ContactPage() {
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                 <div className="flex flex-col space-y-6 mt-8">
                   <Link
-                    to="/#features"
+                    to="/"
                     className="text-lg font-medium hover:text-primary transition-colors py-2 border-b"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Features
+                    Home
                   </Link>
-                  <Link
+                  {/* <Link
                     to="/#solutions"
                     className="text-lg font-medium hover:text-primary transition-colors py-2 border-b"
                     onClick={() => setMobileMenuOpen(false)}
@@ -273,7 +305,7 @@ export default function ContactPage() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Security
-                  </Link>
+                  </Link> */}
                   <Link
                     to="/about-us"
                     className="text-lg font-medium hover:text-primary transition-colors py-2 border-b"
@@ -342,15 +374,20 @@ export default function ContactPage() {
               </h1>
 
               <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">
-                Ready to streamline your healthcare facility? Our team is here to help you 
-                get started, answer questions, and support your digital transformation journey.
+                Ready to streamline your healthcare facility? Our team is here
+                to help you get started, answer questions, and support your
+                digital transformation journey.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <Button
                   size="lg"
                   className="bg-gradient-primary hover:shadow-glow transition-all text-lg px-8 py-3 h-14 shadow-xl"
-                  onClick={() => document.getElementById('contact-form').scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() =>
+                    document
+                      .getElementById("contact-form")
+                      .scrollIntoView({ behavior: "smooth" })
+                  }
                 >
                   Send Message
                   <Send className="ml-2 h-5 w-5" />
@@ -368,15 +405,26 @@ export default function ContactPage() {
                   </DialogTrigger>
                   <DialogContent className="sm:max-w-[600px]">
                     <DialogHeader>
-                      <DialogTitle className="text-2xl">Schedule a Personalized Demo</DialogTitle>
+                      <DialogTitle className="text-2xl">
+                        Schedule a Personalized Demo
+                      </DialogTitle>
                       <DialogDescription className="text-lg">
-                        See how Curacloud can transform your healthcare facility with a live demo.
+                        See how Curacloud can transform your healthcare facility
+                        with a live demo.
                       </DialogDescription>
                     </DialogHeader>
-                    <form onSubmit={handleDemoSubmit} className="space-y-6 mt-6">
+                    <form
+                      onSubmit={handleDemoSubmit}
+                      className="space-y-6 mt-6"
+                    >
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="demo-name" className="text-sm font-medium">Full Name *</Label>
+                          <Label
+                            htmlFor="demo-name"
+                            className="text-sm font-medium"
+                          >
+                            Full Name *
+                          </Label>
                           <Input
                             id="demo-name"
                             placeholder="Dr. John Smith"
@@ -385,7 +433,12 @@ export default function ContactPage() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="demo-email" className="text-sm font-medium">Email Address *</Label>
+                          <Label
+                            htmlFor="demo-email"
+                            className="text-sm font-medium"
+                          >
+                            Email Address *
+                          </Label>
                           <Input
                             id="demo-email"
                             type="email"
@@ -397,7 +450,12 @@ export default function ContactPage() {
                       </div>
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="demo-phone" className="text-sm font-medium">Phone Number</Label>
+                          <Label
+                            htmlFor="demo-phone"
+                            className="text-sm font-medium"
+                          >
+                            Phone Number
+                          </Label>
                           <Input
                             id="demo-phone"
                             type="tel"
@@ -406,7 +464,12 @@ export default function ContactPage() {
                           />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="demo-facility" className="text-sm font-medium">Facility Name *</Label>
+                          <Label
+                            htmlFor="demo-facility"
+                            className="text-sm font-medium"
+                          >
+                            Facility Name *
+                          </Label>
                           <Input
                             id="demo-facility"
                             placeholder="Metro General Hospital"
@@ -417,24 +480,31 @@ export default function ContactPage() {
                       </div>
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor="demo-date" className="text-sm font-medium">Preferred Date</Label>
-                          <Input
-                            id="demo-date"
-                            type="date"
-                            className="h-12"
-                          />
+                          <Label
+                            htmlFor="demo-date"
+                            className="text-sm font-medium"
+                          >
+                            Preferred Date
+                          </Label>
+                          <Input id="demo-date" type="date" className="h-12" />
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="demo-time" className="text-sm font-medium">Preferred Time</Label>
-                          <Input
-                            id="demo-time"
-                            type="time"
-                            className="h-12"
-                          />
+                          <Label
+                            htmlFor="demo-time"
+                            className="text-sm font-medium"
+                          >
+                            Preferred Time
+                          </Label>
+                          <Input id="demo-time" type="time" className="h-12" />
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="demo-notes" className="text-sm font-medium">Specific Areas of Interest</Label>
+                        <Label
+                          htmlFor="demo-notes"
+                          className="text-sm font-medium"
+                        >
+                          Specific Areas of Interest
+                        </Label>
                         <Textarea
                           id="demo-notes"
                           placeholder="Tell us which features you're most interested in..."
@@ -442,10 +512,17 @@ export default function ContactPage() {
                         />
                       </div>
                       <div className="flex gap-3 justify-end pt-4">
-                        <Button type="button" variant="outline" onClick={() => setDemoDialogOpen(false)}>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setDemoDialogOpen(false)}
+                        >
                           Cancel
                         </Button>
-                        <Button type="submit" className="bg-gradient-primary px-8">
+                        <Button
+                          type="submit"
+                          className="bg-gradient-primary px-8"
+                        >
                           Schedule Demo
                         </Button>
                       </div>
@@ -539,7 +616,8 @@ export default function ContactPage() {
               Multiple Ways to Connect
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Choose the contact method that works best for you. We're here to help however you prefer to communicate.
+              Choose the contact method that works best for you. We're here to
+              help however you prefer to communicate.
             </p>
           </div>
 
@@ -550,7 +628,9 @@ export default function ContactPage() {
                 className="group hover:shadow-xl transition-all duration-500 hover:scale-105 text-center"
               >
                 <CardContent className="p-8">
-                  <div className={`w-16 h-16 ${method.color} rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg`}>
+                  <div
+                    className={`w-16 h-16 ${method.color} rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform shadow-lg`}
+                  >
                     <method.icon className="h-8 w-8 text-white" />
                   </div>
                   <h3 className="text-xl font-semibold mb-3">{method.title}</h3>
@@ -582,7 +662,8 @@ export default function ContactPage() {
               Specialized Support Teams
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Our dedicated teams are ready to assist with your specific needs and ensure you get the best possible support.
+              Our dedicated teams are ready to assist with your specific needs
+              and ensure you get the best possible support.
             </p>
           </div>
 
@@ -596,18 +677,26 @@ export default function ContactPage() {
                   <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                     <support.icon className="h-6 w-6 text-primary-foreground" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-3">{support.title}</h3>
+                  <h3 className="text-xl font-semibold mb-3">
+                    {support.title}
+                  </h3>
                   <p className="text-muted-foreground mb-4 leading-relaxed">
                     {support.description}
                   </p>
                   <div className="space-y-2 pt-4 border-t">
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Response Time:</span>
-                      <span className="font-semibold text-green-600">{support.responseTime}</span>
+                      <span className="text-muted-foreground">
+                        Response Time:
+                      </span>
+                      <span className="font-semibold text-green-600">
+                        {support.responseTime}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Team:</span>
-                      <span className="font-semibold">{support.department}</span>
+                      <span className="font-semibold">
+                        {support.department}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -630,8 +719,9 @@ export default function ContactPage() {
                 Get in Touch
               </h2>
               <p className="text-xl text-muted-foreground mb-8 leading-relaxed">
-                Have questions about Curacloud? Interested in a demo? Need technical support? 
-                Fill out the form and our team will get back to you promptly.
+                Have questions about Curacloud? Interested in a demo? Need
+                technical support? Fill out the form and our team will get back
+                to you promptly.
               </p>
 
               <div className="space-y-6">
@@ -644,7 +734,7 @@ export default function ContactPage() {
                     <p className="text-muted-foreground">hello@curacloud.com</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
                     <Phone className="h-6 w-6 text-primary-foreground" />
@@ -654,7 +744,7 @@ export default function ContactPage() {
                     <p className="text-muted-foreground">+234 800 000 0000</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-gradient-primary rounded-xl flex items-center justify-center">
                     <MapPin className="h-6 w-6 text-primary-foreground" />
@@ -671,8 +761,12 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold">Business Hours</h3>
-                    <p className="text-muted-foreground">Monday - Friday: 8AM - 6PM WAT</p>
-                    <p className="text-muted-foreground">Support: 24/7 Available</p>
+                    <p className="text-muted-foreground">
+                      Monday - Friday: 8AM - 6PM WAT
+                    </p>
+                    <p className="text-muted-foreground">
+                      Support: 24/7 Available
+                    </p>
                   </div>
                 </div>
               </div>
@@ -698,24 +792,38 @@ export default function ContactPage() {
                 <form onSubmit={handleContactSubmit} className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name" className="text-sm font-medium">Full Name *</Label>
+                      <Label htmlFor="name" className="text-sm font-medium">
+                        Full Name *
+                      </Label>
                       <Input
                         id="name"
                         placeholder="Dr. John Smith"
                         value={contactForm.name}
-                        onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })}
+                        onChange={(e) =>
+                          setContactForm({
+                            ...contactForm,
+                            name: e.target.value,
+                          })
+                        }
                         required
                         className="h-12"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm font-medium">Email Address *</Label>
+                      <Label htmlFor="email" className="text-sm font-medium">
+                        Email Address *
+                      </Label>
                       <Input
                         id="email"
                         type="email"
                         placeholder="john.smith@hospital.com"
                         value={contactForm.email}
-                        onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })}
+                        onChange={(e) =>
+                          setContactForm({
+                            ...contactForm,
+                            email: e.target.value,
+                          })
+                        }
                         required
                         className="h-12"
                       />
@@ -723,50 +831,81 @@ export default function ContactPage() {
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="phone" className="text-sm font-medium">Phone Number</Label>
+                      <Label htmlFor="phone" className="text-sm font-medium">
+                        Phone Number
+                      </Label>
                       <Input
                         id="phone"
                         type="tel"
                         placeholder="+234 xxx xxx xxxx"
                         value={contactForm.phone}
-                        onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })}
+                        onChange={(e) =>
+                          setContactForm({
+                            ...contactForm,
+                            phone: e.target.value,
+                          })
+                        }
                         className="h-12"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="facility" className="text-sm font-medium">Facility Name</Label>
+                      <Label htmlFor="facility" className="text-sm font-medium">
+                        Facility Name
+                      </Label>
                       <Input
                         id="facility"
                         placeholder="Metro General Hospital"
                         value={contactForm.facilityName}
-                        onChange={(e) => setContactForm({ ...contactForm, facilityName: e.target.value })}
+                        onChange={(e) =>
+                          setContactForm({
+                            ...contactForm,
+                            facilityName: e.target.value,
+                          })
+                        }
                         className="h-12"
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="subject" className="text-sm font-medium">Subject *</Label>
+                    <Label htmlFor="subject" className="text-sm font-medium">
+                      Subject *
+                    </Label>
                     <Input
                       id="subject"
                       placeholder="How can we help you?"
                       value={contactForm.subject}
-                      onChange={(e) => setContactForm({ ...contactForm, subject: e.target.value })}
+                      onChange={(e) =>
+                        setContactForm({
+                          ...contactForm,
+                          subject: e.target.value,
+                        })
+                      }
                       required
                       className="h-12"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="message" className="text-sm font-medium">Message *</Label>
+                    <Label htmlFor="message" className="text-sm font-medium">
+                      Message *
+                    </Label>
                     <Textarea
                       id="message"
                       placeholder="Tell us about your healthcare facility and how we can help..."
                       value={contactForm.message}
-                      onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
+                      onChange={(e) =>
+                        setContactForm({
+                          ...contactForm,
+                          message: e.target.value,
+                        })
+                      }
                       rows={6}
                       required
                     />
                   </div>
-                  <Button type="submit" className="w-full bg-gradient-primary h-12">
+                  <Button
+                    type="submit"
+                    className="w-full bg-gradient-primary h-12"
+                  >
                     Send Message
                     <Send className="ml-2 h-4 w-4" />
                   </Button>
@@ -789,7 +928,8 @@ export default function ContactPage() {
               Frequently Asked Questions
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Find quick answers to the most common questions about Curacloud and our services.
+              Find quick answers to the most common questions about Curacloud
+              and our services.
             </p>
           </div>
 
@@ -801,8 +941,14 @@ export default function ContactPage() {
                     onClick={() => toggleFaq(index)}
                     className="flex items-center justify-between w-full text-left"
                   >
-                    <h3 className="text-lg font-semibold pr-4">{faq.question}</h3>
-                    <div className={`transform transition-transform ${activeFaq === index ? 'rotate-180' : ''}`}>
+                    <h3 className="text-lg font-semibold pr-4">
+                      {faq.question}
+                    </h3>
+                    <div
+                      className={`transform transition-transform ${
+                        activeFaq === index ? "rotate-180" : ""
+                      }`}
+                    >
                       <ArrowRight className="h-5 w-5 text-muted-foreground" />
                     </div>
                   </button>
@@ -824,14 +970,15 @@ export default function ContactPage() {
           <Badge className="mb-6 bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30">
             Ready to Get Started?
           </Badge>
-          
+
           <h2 className="text-4xl md:text-6xl font-bold mb-8 leading-tight">
             Transform Your Healthcare Facility Today
           </h2>
-          
+
           <p className="text-xl md:text-2xl mb-12 opacity-90 leading-relaxed max-w-4xl mx-auto">
-            Join thousands of healthcare facilities using Curacloud to deliver exceptional patient care 
-            while optimizing operations and driving growth.
+            Join thousands of healthcare facilities using Curacloud to deliver
+            exceptional patient care while optimizing operations and driving
+            growth.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
@@ -844,7 +991,7 @@ export default function ContactPage() {
               Start Free 14-Day Trial
               <ArrowRight className="ml-3 h-5 w-5" />
             </Button>
-            
+
             <Button
               size="lg"
               variant="outline"
@@ -871,162 +1018,161 @@ export default function ContactPage() {
             </div>
           </div>
         </div>
-          </section>
-          
+      </section>
 
-                 <footer className="bg-background border-t py-16 px-4 sm:px-6 lg:px-8">
-                            <div className="max-w-7xl mx-auto">
-                              <div className="grid md:grid-cols-4 gap-8 mb-8">
-                                <div>
-                                  <div className="flex items-center gap-2 mb-4">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
-                                      <Heart className="h-5 w-5 text-primary-foreground" />
-                                    </div>
-                                    <span className="text-xl font-bold">Curacloud</span>
-                                  </div>
-                                  <p className="text-muted-foreground mb-4">
-                                    Modern healthcare management solution trusted by healthcare
-                                    facilities worldwide.
-                                  </p>
-                                  <div className="flex gap-4">
-                                    <Button variant="ghost" size="sm">
-                                      <Facebook className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm">
-                                      <Twitter className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm">
-                                      <Linkedin className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm">
-                                      <Instagram className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </div>
-                    
-                                <div>
-                                  <h4 className="font-semibold mb-4">Product</h4>
-                                  <ul className="space-y-2 text-sm">
-                                    <li>
-                                      <a
-                                        href="#features"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Features
-                                      </a>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#solutions"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Solutions
-                                      </a>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#pricing"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Pricing
-                                      </a>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        API Documentation
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                    
-                                <div>
-                                  <h4 className="font-semibold mb-4">Company</h4>
-                                  <ul className="space-y-2 text-sm">
-                                    <li>
-                                      <Link
-                        to="/about-us"
-                        className="text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        About Us
-                      </Link>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Careers
-                                      </a>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Blog
-                                      </a>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Contact
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                    
-                                <div>
-                                  <h4 className="font-semibold mb-4">Support</h4>
-                                  <ul className="space-y-2 text-sm">
-                                    <li>
-                                      <a
-                                        href="#"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Help Center
-                                      </a>
-                                    </li>
-                                    <li>
-                                      <Link
-                                        to="/privacy-policy"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Privacy Policy
-                                      </Link>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Terms of Service
-                                      </a>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#security"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        HIPAA Compliance
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                              </div>
-                    
-                              <div className="pt-8 border-t text-center text-sm text-muted-foreground">
-                                <p>
-                                  &copy; {new Date().getFullYear()} Curacloud. All rights reserved.
-                                  Built with ❤️ for healthcare professionals.
-                                </p>
-                              </div>
-                            </div>
-                          </footer>
+      <footer className="bg-background border-t py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
+                  <Heart className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <span className="text-xl font-bold">Curacloud</span>
+              </div>
+              <p className="text-muted-foreground mb-4">
+                Modern healthcare management solution trusted by healthcare
+                facilities worldwide.
+              </p>
+              <div className="flex gap-4">
+                <Button variant="ghost" size="sm">
+                  <Facebook className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Twitter className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Linkedin className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Instagram className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Product</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <a
+                    href="#features"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#solutions"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Solutions
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#pricing"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    API Documentation
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Company</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link
+                    to="/about-us"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="careers"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Careers
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Blog
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="contact-us"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Contact
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Support</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Help Center
+                  </a>
+                </li>
+                <li>
+                  <Link
+                    to="/privacy-policy"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Terms of Service
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#security"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    HIPAA Compliance
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t text-center text-sm text-muted-foreground">
+            <p>
+              &copy; {new Date().getFullYear()} Curacloud. All rights reserved.
+              Built with ❤️ for healthcare professionals.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -59,7 +65,8 @@ const jobOpenings = [
     location: "Lagos, Nigeria",
     remote: true,
     experience: "5+ years",
-    description: "Build beautiful, responsive healthcare management interfaces that transform patient care delivery.",
+    description:
+      "Build beautiful, responsive healthcare management interfaces that transform patient care delivery.",
     skills: ["React", "TypeScript", "Next.js", "Tailwind CSS", "GraphQL"],
   },
   {
@@ -70,8 +77,15 @@ const jobOpenings = [
     location: "Remote",
     remote: true,
     experience: "4+ years",
-    description: "Lead product strategy and development for our healthcare management platform.",
-    skills: ["Product Strategy", "User Research", "Agile", "Healthcare", "Analytics"],
+    description:
+      "Lead product strategy and development for our healthcare management platform.",
+    skills: [
+      "Product Strategy",
+      "User Research",
+      "Agile",
+      "Healthcare",
+      "Analytics",
+    ],
   },
   {
     id: 3,
@@ -81,7 +95,8 @@ const jobOpenings = [
     location: "Lagos, Nigeria",
     remote: true,
     experience: "3+ years",
-    description: "Ensure our healthcare platform maintains 99.9% uptime with robust infrastructure.",
+    description:
+      "Ensure our healthcare platform maintains 99.9% uptime with robust infrastructure.",
     skills: ["AWS", "Docker", "Kubernetes", "Terraform", "CI/CD"],
   },
   {
@@ -92,7 +107,8 @@ const jobOpenings = [
     location: "Remote",
     remote: true,
     experience: "3+ years",
-    description: "Help healthcare facilities maximize their use of Curacloud and achieve their goals.",
+    description:
+      "Help healthcare facilities maximize their use of Curacloud and achieve their goals.",
     skills: ["Customer Success", "Healthcare", "Training", "Support", "CRM"],
   },
   {
@@ -103,8 +119,15 @@ const jobOpenings = [
     location: "Lagos, Nigeria",
     remote: true,
     experience: "3+ years",
-    description: "Design intuitive experiences that make healthcare management simple and efficient.",
-    skills: ["Figma", "User Research", "Prototyping", "Healthcare", "Design Systems"],
+    description:
+      "Design intuitive experiences that make healthcare management simple and efficient.",
+    skills: [
+      "Figma",
+      "User Research",
+      "Prototyping",
+      "Healthcare",
+      "Design Systems",
+    ],
   },
   {
     id: 6,
@@ -114,7 +137,8 @@ const jobOpenings = [
     location: "Remote",
     remote: true,
     experience: "2+ years",
-    description: "Connect with healthcare facilities and introduce them to Curacloud's transformative solutions.",
+    description:
+      "Connect with healthcare facilities and introduce them to Curacloud's transformative solutions.",
     skills: ["Sales", "Healthcare", "CRM", "Communication", "Outreach"],
   },
 ];
@@ -124,12 +148,14 @@ const benefits = [
   {
     icon: DollarSign,
     title: "Competitive Salary",
-    description: "Industry-competitive compensation with regular reviews and bonuses",
+    description:
+      "Industry-competitive compensation with regular reviews and bonuses",
   },
   {
     icon: Shield,
     title: "Health Insurance",
-    description: "Comprehensive health, dental, and vision insurance for you and your family",
+    description:
+      "Comprehensive health, dental, and vision insurance for you and your family",
   },
   {
     icon: Globe,
@@ -139,17 +165,20 @@ const benefits = [
   {
     icon: GraduationCap,
     title: "Learning Budget",
-    description: "Annual budget for conferences, courses, and professional development",
+    description:
+      "Annual budget for conferences, courses, and professional development",
   },
   {
     icon: Award,
     title: "Career Growth",
-    description: "Clear career paths and mentorship programs for professional development",
+    description:
+      "Clear career paths and mentorship programs for professional development",
   },
   {
     icon: Users,
     title: "Great Team Culture",
-    description: "Collaborative environment with regular team events and activities",
+    description:
+      "Collaborative environment with regular team events and activities",
   },
 ];
 
@@ -158,22 +187,26 @@ const cultureValues = [
   {
     icon: Heart,
     title: "Patient-First Mindset",
-    description: "Everything we do is centered around improving patient care and outcomes",
+    description:
+      "Everything we do is centered around improving patient care and outcomes",
   },
   {
     icon: Zap,
     title: "Innovation Driven",
-    description: "We encourage experimentation and pushing boundaries in healthcare technology",
+    description:
+      "We encourage experimentation and pushing boundaries in healthcare technology",
   },
   {
     icon: Users,
     title: "Collaborative Spirit",
-    description: "We believe in working together to solve complex healthcare challenges",
+    description:
+      "We believe in working together to solve complex healthcare challenges",
   },
   {
     icon: Target,
     title: "Impact Focused",
-    description: "We measure success by the positive impact we create in healthcare delivery",
+    description:
+      "We measure success by the positive impact we create in healthcare delivery",
   },
 ];
 
@@ -204,8 +237,13 @@ export default function CareersPage() {
   const handleApplicationSubmit = (e) => {
     e.preventDefault();
     // Here you would typically send the application to your backend
-    console.log("Application submitted:", { job: selectedJob, ...applicationForm });
-    toast.success("Application submitted successfully! We'll be in touch soon.");
+    console.log("Application submitted:", {
+      job: selectedJob,
+      ...applicationForm,
+    });
+    toast.success(
+      "Application submitted successfully! We'll be in touch soon."
+    );
     setApplyDialogOpen(false);
     setApplicationForm({
       name: "",
@@ -217,10 +255,20 @@ export default function CareersPage() {
     });
   };
 
-  const departments = ["all", "engineering", "product", "design", "sales", "customer-success"];
-  const filteredJobs = activeDepartment === "all" 
-    ? jobOpenings 
-    : jobOpenings.filter(job => job.department.toLowerCase() === activeDepartment);
+  const departments = [
+    "all",
+    "engineering",
+    "product",
+    "design",
+    "sales",
+    "customer-success",
+  ];
+  const filteredJobs =
+    activeDepartment === "all"
+      ? jobOpenings
+      : jobOpenings.filter(
+          (job) => job.department.toLowerCase() === activeDepartment
+        );
 
   return (
     <div className="min-h-screen bg-background">
@@ -237,32 +285,62 @@ export default function CareersPage() {
                   <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                     Curacloud
                   </span>
-                  <span className="block text-xs text-muted-foreground -mt-1">Healthcare Management System</span>
+                  <span className="block text-xs text-muted-foreground -mt-1">
+                    Healthcare Management System
+                  </span>
                 </div>
               </Link>
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link to="/#features" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              <Link
+                to="/"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
+                Home
+              </Link>
+              {/* <Link
+                to="/#features"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 Features
               </Link>
-              <Link to="/#solutions" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              <Link
+                to="/#solutions"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 Solutions
               </Link>
-              <Link to="/#pricing" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              <Link
+                to="/#pricing"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 Pricing
               </Link>
-              <Link to="/#security" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              <Link
+                to="/#security"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 Security
-              </Link>
-              <Link to="/about-us" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              </Link> */}
+              {/* <Link
+                to="/about-us"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 About Us
-              </Link>
-              <Link to="/careers" className="text-sm font-medium text-primary border-b-2 border-primary">
+              </Link> */}
+              {/* <Link
+                to="/careers"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 Careers
-              </Link>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/auth/login")}>
+              </Link> */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/auth/login")}
+              >
                 Sign In
               </Button>
               <Button
@@ -284,13 +362,13 @@ export default function CareersPage() {
               <SheetContent side="right" className="w-[300px] sm:w-[400px]">
                 <div className="flex flex-col space-y-6 mt-8">
                   <Link
-                    to="/#features"
+                    to="/"
                     className="text-lg font-medium hover:text-primary transition-colors py-2 border-b"
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    Features
+                    Home
                   </Link>
-                  <Link
+                  {/* <Link
                     to="/#solutions"
                     className="text-lg font-medium hover:text-primary transition-colors py-2 border-b"
                     onClick={() => setMobileMenuOpen(false)}
@@ -310,7 +388,7 @@ export default function CareersPage() {
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     Security
-                  </Link>
+                  </Link> */}
                   <Link
                     to="/about-us"
                     className="text-lg font-medium hover:text-primary transition-colors py-2 border-b"
@@ -371,15 +449,20 @@ export default function CareersPage() {
               </h1>
 
               <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">
-                Join us in revolutionizing healthcare delivery across Africa. Work on meaningful problems 
-                that impact millions of patients and healthcare providers.
+                Join us in revolutionizing healthcare delivery across Africa.
+                Work on meaningful problems that impact millions of patients and
+                healthcare providers.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
                 <Button
                   size="lg"
                   className="bg-gradient-primary hover:shadow-glow transition-all text-lg px-8 py-3 h-14 shadow-xl"
-                  onClick={() => document.getElementById('open-positions').scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() =>
+                    document
+                      .getElementById("open-positions")
+                      .scrollIntoView({ behavior: "smooth" })
+                  }
                 >
                   View Open Positions
                   <ArrowRight className="ml-2 h-5 w-5" />
@@ -388,7 +471,11 @@ export default function CareersPage() {
                   variant="outline"
                   size="lg"
                   className="text-lg px-8 py-3 h-14 border-2"
-                  onClick={() => document.getElementById('culture').scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() =>
+                    document
+                      .getElementById("culture")
+                      .scrollIntoView({ behavior: "smooth" })
+                  }
                 >
                   <Play className="mr-2 h-5 w-5" />
                   Learn About Culture
@@ -480,7 +567,8 @@ export default function CareersPage() {
               Work With Purpose
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              We're building more than just software - we're creating a better healthcare future for Africa.
+              We're building more than just software - we're creating a better
+              healthcare future for Africa.
             </p>
           </div>
 
@@ -517,7 +605,8 @@ export default function CareersPage() {
               We Take Care of Our Team
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Comprehensive benefits designed to support your well-being and professional growth.
+              Comprehensive benefits designed to support your well-being and
+              professional growth.
             </p>
           </div>
 
@@ -533,7 +622,9 @@ export default function CareersPage() {
                       <benefit.icon className="h-6 w-6 text-primary-foreground" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold mb-3">{benefit.title}</h3>
+                      <h3 className="text-xl font-semibold mb-3">
+                        {benefit.title}
+                      </h3>
                       <p className="text-muted-foreground leading-relaxed">
                         {benefit.description}
                       </p>
@@ -558,17 +649,25 @@ export default function CareersPage() {
               Join Our Mission
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Help us build the future of healthcare management. Check out our current openings.
+              Help us build the future of healthcare management. Check out our
+              current openings.
             </p>
           </div>
 
           {/* Department Filter */}
-          <Tabs value={activeDepartment} onValueChange={setActiveDepartment} className="mb-12">
+          <Tabs
+            value={activeDepartment}
+            onValueChange={setActiveDepartment}
+            className="mb-12"
+          >
             <TabsList className="flex flex-wrap justify-center">
               <TabsTrigger value="all" className="flex items-center gap-2">
                 All Departments
               </TabsTrigger>
-              <TabsTrigger value="engineering" className="flex items-center gap-2">
+              <TabsTrigger
+                value="engineering"
+                className="flex items-center gap-2"
+              >
                 <Code className="h-4 w-4" />
                 Engineering
               </TabsTrigger>
@@ -584,7 +683,10 @@ export default function CareersPage() {
                 <TrendingUp className="h-4 w-4" />
                 Sales
               </TabsTrigger>
-              <TabsTrigger value="customer-success" className="flex items-center gap-2">
+              <TabsTrigger
+                value="customer-success"
+                className="flex items-center gap-2"
+              >
                 <HeadphonesIcon className="h-4 w-4" />
                 Customer Success
               </TabsTrigger>
@@ -594,7 +696,10 @@ export default function CareersPage() {
           {/* Job Listings */}
           <div className="grid gap-6">
             {filteredJobs.map((job) => (
-              <Card key={job.id} className="group hover:shadow-xl transition-all duration-500 hover:border-primary/30">
+              <Card
+                key={job.id}
+                className="group hover:shadow-xl transition-all duration-500 hover:border-primary/30"
+              >
                 <CardContent className="p-8">
                   <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
                     <div className="flex-1">
@@ -604,12 +709,15 @@ export default function CareersPage() {
                           {job.department}
                         </Badge>
                         {job.remote && (
-                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          <Badge
+                            variant="outline"
+                            className="bg-green-50 text-green-700 border-green-200"
+                          >
                             Remote
                           </Badge>
                         )}
                       </div>
-                      
+
                       <div className="flex flex-wrap items-center gap-4 mb-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <MapPin className="h-4 w-4" />
@@ -631,7 +739,11 @@ export default function CareersPage() {
 
                       <div className="flex flex-wrap gap-2">
                         {job.skills.map((skill, index) => (
-                          <Badge key={index} variant="secondary" className="text-xs">
+                          <Badge
+                            key={index}
+                            variant="secondary"
+                            className="text-xs"
+                          >
                             {skill}
                           </Badge>
                         ))}
@@ -656,7 +768,8 @@ export default function CareersPage() {
               <Briefcase className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-2xl font-bold mb-2">No Open Positions</h3>
               <p className="text-muted-foreground mb-6">
-                There are currently no open positions in this department. Check back later or explore other departments.
+                There are currently no open positions in this department. Check
+                back later or explore other departments.
               </p>
               <Button
                 onClick={() => setActiveDepartment("all")}
@@ -677,80 +790,133 @@ export default function CareersPage() {
               Apply for {selectedJob?.title}
             </DialogTitle>
             <DialogDescription className="text-lg">
-              Join us in transforming healthcare across Africa. We're excited to learn about you!
+              Join us in transforming healthcare across Africa. We're excited to
+              learn about you!
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleApplicationSubmit} className="space-y-6 mt-6">
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="applicant-name" className="text-sm font-medium">Full Name *</Label>
+                <Label htmlFor="applicant-name" className="text-sm font-medium">
+                  Full Name *
+                </Label>
                 <Input
                   id="applicant-name"
                   placeholder="John Smith"
                   value={applicationForm.name}
-                  onChange={(e) => setApplicationForm({ ...applicationForm, name: e.target.value })}
+                  onChange={(e) =>
+                    setApplicationForm({
+                      ...applicationForm,
+                      name: e.target.value,
+                    })
+                  }
                   required
                   className="h-12"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="applicant-email" className="text-sm font-medium">Email Address *</Label>
+                <Label
+                  htmlFor="applicant-email"
+                  className="text-sm font-medium"
+                >
+                  Email Address *
+                </Label>
                 <Input
                   id="applicant-email"
                   type="email"
                   placeholder="john.smith@example.com"
                   value={applicationForm.email}
-                  onChange={(e) => setApplicationForm({ ...applicationForm, email: e.target.value })}
+                  onChange={(e) =>
+                    setApplicationForm({
+                      ...applicationForm,
+                      email: e.target.value,
+                    })
+                  }
                   required
                   className="h-12"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="applicant-phone" className="text-sm font-medium">Phone Number</Label>
+              <Label htmlFor="applicant-phone" className="text-sm font-medium">
+                Phone Number
+              </Label>
               <Input
                 id="applicant-phone"
                 type="tel"
                 placeholder="+234 xxx xxx xxxx"
                 value={applicationForm.phone}
-                onChange={(e) => setApplicationForm({ ...applicationForm, phone: e.target.value })}
+                onChange={(e) =>
+                  setApplicationForm({
+                    ...applicationForm,
+                    phone: e.target.value,
+                  })
+                }
                 className="h-12"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="applicant-resume" className="text-sm font-medium">Resume *</Label>
+              <Label htmlFor="applicant-resume" className="text-sm font-medium">
+                Resume *
+              </Label>
               <Input
                 id="applicant-resume"
                 type="file"
                 accept=".pdf,.doc,.docx"
-                onChange={(e) => setApplicationForm({ ...applicationForm, resume: e.target.files[0] })}
+                onChange={(e) =>
+                  setApplicationForm({
+                    ...applicationForm,
+                    resume: e.target.files[0],
+                  })
+                }
                 required
                 className="h-12"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="applicant-portfolio" className="text-sm font-medium">Portfolio/LinkedIn URL</Label>
+              <Label
+                htmlFor="applicant-portfolio"
+                className="text-sm font-medium"
+              >
+                Portfolio/LinkedIn URL
+              </Label>
               <Input
                 id="applicant-portfolio"
                 type="url"
                 placeholder="https://linkedin.com/in/yourprofile"
                 value={applicationForm.portfolio}
-                onChange={(e) => setApplicationForm({ ...applicationForm, portfolio: e.target.value })}
+                onChange={(e) =>
+                  setApplicationForm({
+                    ...applicationForm,
+                    portfolio: e.target.value,
+                  })
+                }
                 className="h-12"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="applicant-cover" className="text-sm font-medium">Cover Letter</Label>
+              <Label htmlFor="applicant-cover" className="text-sm font-medium">
+                Cover Letter
+              </Label>
               <Textarea
                 id="applicant-cover"
                 placeholder="Tell us why you're excited about this role and what you can bring to our team..."
                 value={applicationForm.coverLetter}
-                onChange={(e) => setApplicationForm({ ...applicationForm, coverLetter: e.target.value })}
+                onChange={(e) =>
+                  setApplicationForm({
+                    ...applicationForm,
+                    coverLetter: e.target.value,
+                  })
+                }
                 rows={4}
               />
             </div>
             <div className="flex gap-3 justify-end pt-4">
-              <Button type="button" variant="outline" onClick={() => setApplyDialogOpen(false)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setApplyDialogOpen(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" className="bg-gradient-primary px-8">
@@ -767,14 +933,15 @@ export default function CareersPage() {
           <Badge className="mb-6 bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30">
             Can't Find Your Role?
           </Badge>
-          
+
           <h2 className="text-4xl md:text-6xl font-bold mb-8 leading-tight">
             We're Always Looking for Talent
           </h2>
-          
+
           <p className="text-xl md:text-2xl mb-12 opacity-90 leading-relaxed max-w-4xl mx-auto">
-            Even if you don't see the perfect role listed, we'd love to hear from you. 
-            Send us your resume and tell us how you can help transform healthcare in Africa.
+            Even if you don't see the perfect role listed, we'd love to hear
+            from you. Send us your resume and tell us how you can help transform
+            healthcare in Africa.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
@@ -790,7 +957,7 @@ export default function CareersPage() {
               Send General Application
               <ArrowRight className="ml-3 h-5 w-5" />
             </Button>
-            
+
             <Button
               size="lg"
               variant="outline"
@@ -817,161 +984,161 @@ export default function CareersPage() {
             </div>
           </div>
         </div>
-          </section>
-          
-                 <footer className="bg-background border-t py-16 px-4 sm:px-6 lg:px-8">
-                            <div className="max-w-7xl mx-auto">
-                              <div className="grid md:grid-cols-4 gap-8 mb-8">
-                                <div>
-                                  <div className="flex items-center gap-2 mb-4">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
-                                      <Heart className="h-5 w-5 text-primary-foreground" />
-                                    </div>
-                                    <span className="text-xl font-bold">Curacloud</span>
-                                  </div>
-                                  <p className="text-muted-foreground mb-4">
-                                    Modern healthcare management solution trusted by healthcare
-                                    facilities worldwide.
-                                  </p>
-                                  <div className="flex gap-4">
-                                    <Button variant="ghost" size="sm">
-                                      <Facebook className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm">
-                                      <Twitter className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm">
-                                      <Linkedin className="h-4 w-4" />
-                                    </Button>
-                                    <Button variant="ghost" size="sm">
-                                      <Instagram className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                </div>
-                    
-                                <div>
-                                  <h4 className="font-semibold mb-4">Product</h4>
-                                  <ul className="space-y-2 text-sm">
-                                    <li>
-                                      <a
-                                        href="#features"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Features
-                                      </a>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#solutions"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Solutions
-                                      </a>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#pricing"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Pricing
-                                      </a>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        API Documentation
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                    
-                                <div>
-                                  <h4 className="font-semibold mb-4">Company</h4>
-                                  <ul className="space-y-2 text-sm">
-                                    <li>
-                                      <Link
-                        to="/about-us"
-                        className="text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        About Us
-                      </Link>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Careers
-                                      </a>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Blog
-                                      </a>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Contact
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                    
-                                <div>
-                                  <h4 className="font-semibold mb-4">Support</h4>
-                                  <ul className="space-y-2 text-sm">
-                                    <li>
-                                      <a
-                                        href="#"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Help Center
-                                      </a>
-                                    </li>
-                                    <li>
-                                      <Link
-                                        to="/privacy-policy"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Privacy Policy
-                                      </Link>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        Terms of Service
-                                      </a>
-                                    </li>
-                                    <li>
-                                      <a
-                                        href="#security"
-                                        className="text-muted-foreground hover:text-foreground transition-colors"
-                                      >
-                                        HIPAA Compliance
-                                      </a>
-                                    </li>
-                                  </ul>
-                                </div>
-                              </div>
-                    
-                              <div className="pt-8 border-t text-center text-sm text-muted-foreground">
-                                <p>
-                                  &copy; {new Date().getFullYear()} Curacloud. All rights reserved.
-                                  Built with ❤️ for healthcare professionals.
-                                </p>
-                              </div>
-                            </div>
-                          </footer>
+      </section>
+
+      <footer className="bg-background border-t py-16 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-primary shadow-glow">
+                  <Heart className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <span className="text-xl font-bold">Curacloud</span>
+              </div>
+              <p className="text-muted-foreground mb-4">
+                Modern healthcare management solution trusted by healthcare
+                facilities worldwide.
+              </p>
+              <div className="flex gap-4">
+                <Button variant="ghost" size="sm">
+                  <Facebook className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Twitter className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Linkedin className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <Instagram className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Product</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <a
+                    href="#features"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Features
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#solutions"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Solutions
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#pricing"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Pricing
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    API Documentation
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Company</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <Link
+                    to="/about-us"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="careers"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Careers
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Blog
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="contact-us"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Contact
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-semibold mb-4">Support</h4>
+              <ul className="space-y-2 text-sm">
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Help Center
+                  </a>
+                </li>
+                <li>
+                  <Link
+                    to="/privacy-policy"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="#"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Terms of Service
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="#security"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    HIPAA Compliance
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-8 border-t text-center text-sm text-muted-foreground">
+            <p>
+              &copy; {new Date().getFullYear()} Curacloud. All rights reserved.
+              Built with ❤️ for healthcare professionals.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

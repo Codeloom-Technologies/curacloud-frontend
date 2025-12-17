@@ -63,6 +63,7 @@ import {
   Users,
   Brain,
   Pi,
+  Database,
 } from "lucide-react";
 import {
   fetchAdmissionById,
@@ -855,6 +856,15 @@ function ActionsTab({ admission, onDischarge, daysAdmitted }: any) {
       bgColor: "bg-purple-100",
       onClick: () => navigate(`/dashboard/admissions/${admission?.reference}/medications`),
       disabled: admission?.status !== "admitted",
+      },
+       {
+      title: "Patient Vitals",
+      description: "Add medications",
+      icon: Database,
+     color: "text-grren-600",
+      bgColor: "bg-purple-100",
+      onClick: () => navigate(`/dashboard/admissions/${admission?.reference}/vitals`),
+      disabled: admission?.status !== "admitted",
     },
     {
       title: "Transfer Patient",
@@ -866,16 +876,15 @@ function ActionsTab({ admission, onDischarge, daysAdmitted }: any) {
     //   onClick: () => navigate(`/dashboard/transfers/new?admission=${admission.reference}`),
     //   disabled: admission?.status !== "admitted",
     },
-    {
-      title: "Update Medical Records",
-      description: "Add diagnosis, medications, or procedures",
-      icon: FileText,
-      color: "text-green-600",
-      bgColor: "bg-green-100",
-      disabled: true,
-
-      onClick: () => navigate(`/dashboard/medical-records/${admission.patient?.id}/edit`),
-    },
+    // {
+    //   title: "Update Medical Records",
+    //   description: "Add diagnosis, medications, or procedures",
+    //   icon: FileText,
+    //   color: "text-green-600",
+    //   bgColor: "bg-green-100",
+    //   disabled: true,
+    //   onClick: () => navigate(`/dashboard/medical-records/${admission.patient?.id}/edit`),
+    // },
     // {
     //   title: "Schedule Procedure",
     //   description: "Schedule a medical procedure or surgery",

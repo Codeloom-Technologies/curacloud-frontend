@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -54,38 +60,52 @@ const features = [
   {
     icon: Users,
     title: "Patient Management",
-    description: "Comprehensive patient records, medical history, and care coordination in one secure platform.",
-    benefits: ["Digital Health Records", "Patient Portal", "Care Coordination"]
+    description:
+      "Comprehensive patient records, medical history, and care coordination in one secure platform.",
+    benefits: ["Digital Health Records", "Patient Portal", "Care Coordination"],
   },
   {
     icon: Calendar,
     title: "Appointment Scheduling",
-    description: "Intelligent scheduling with automated reminders, waitlist management, and real-time availability.",
-    benefits: ["Online Booking", "Automated Reminders", "Resource Optimization"]
+    description:
+      "Intelligent scheduling with automated reminders, waitlist management, and real-time availability.",
+    benefits: [
+      "Online Booking",
+      "Automated Reminders",
+      "Resource Optimization",
+    ],
   },
   {
     icon: FileText,
     title: "Electronic Health Records",
-    description: "Fully compliant EMR/EHR system with secure data sharing and interoperability standards.",
-    benefits: ["HIPAA Compliant", "Interoperability", "Clinical Documentation"]
+    description:
+      "Fully compliant EMR/EHR system with secure data sharing and interoperability standards.",
+    benefits: ["HIPAA Compliant", "Interoperability", "Clinical Documentation"],
   },
   {
     icon: CreditCard,
     title: "Revenue Cycle Management",
-    description: "End-to-end billing, insurance claims processing, and financial analytics.",
-    benefits: ["Automated Billing", "Insurance Claims", "Revenue Analytics"]
+    description:
+      "End-to-end billing, insurance claims processing, and financial analytics.",
+    benefits: ["Automated Billing", "Insurance Claims", "Revenue Analytics"],
   },
   {
     icon: Pill,
     title: "Pharmacy & Inventory",
-    description: "Complete medication management with prescription tracking and smart inventory control.",
-    benefits: ["e-Prescribing", "Inventory Tracking", "Drug Interactions"]
+    description:
+      "Complete medication management with prescription tracking and smart inventory control.",
+    benefits: ["e-Prescribing", "Inventory Tracking", "Drug Interactions"],
   },
   {
     icon: BarChart3,
     title: "Advanced Analytics",
-    description: "Real-time business intelligence, performance metrics, and predictive analytics.",
-    benefits: ["Real-time Dashboards", "Predictive Analytics", "Performance Metrics"]
+    description:
+      "Real-time business intelligence, performance metrics, and predictive analytics.",
+    benefits: [
+      "Real-time Dashboards",
+      "Predictive Analytics",
+      "Performance Metrics",
+    ],
   },
 ];
 
@@ -96,8 +116,9 @@ const testimonials = [
     hospital: "Awason Ultramodern Hospital",
     image: "/placeholder.svg",
     rating: 5,
-    quote: "Curacloud HMS has transformed how we manage patient care. The intuitive interface and comprehensive features have improved our efficiency by 40%.",
-    metrics: "40% efficiency improvement"
+    quote:
+      "Curacloud HMS has transformed how we manage patient care. The intuitive interface and comprehensive features have improved our efficiency by 40%.",
+    metrics: "40% efficiency improvement",
   },
   {
     name: "Michael R.",
@@ -105,8 +126,9 @@ const testimonials = [
     hospital: "Awason Ultramodern Hospital",
     image: "/placeholder.svg",
     rating: 5,
-    quote: "The scheduling system is a game-changer. We've reduced patient wait times significantly and our staff coordination has never been better.",
-    metrics: "Reduced wait times by 35%"
+    quote:
+      "The scheduling system is a game-changer. We've reduced patient wait times significantly and our staff coordination has never been better.",
+    metrics: "Reduced wait times by 35%",
   },
   {
     name: "Lisa C",
@@ -114,8 +136,9 @@ const testimonials = [
     hospital: "Awason Ultramodern Hospital",
     image: "/placeholder.svg",
     rating: 5,
-    quote: "The analytics dashboard gives us insights we never had before. Decision-making is now data-driven and our operational costs have decreased by 25%.",
-    metrics: "25% cost reduction"
+    quote:
+      "The analytics dashboard gives us insights we never had before. Decision-making is now data-driven and our operational costs have decreased by 25%.",
+    metrics: "25% cost reduction",
   },
 ];
 
@@ -130,29 +153,33 @@ const securityFeatures = [
   {
     icon: ShieldCheck,
     title: "HIPAA Compliant",
-    description: "Full compliance with healthcare data security standards"
+    description: "Full compliance with healthcare data security standards",
   },
   {
     icon: Lock,
     title: "End-to-End Encryption",
-    description: "All data encrypted in transit and at rest"
+    description: "All data encrypted in transit and at rest",
   },
   {
     icon: Database,
     title: "Secure Data Centers",
-    description: "Enterprise-grade infrastructure with redundant backups"
+    description: "Enterprise-grade infrastructure with redundant backups",
   },
   {
     icon: Cloud,
     title: "SOC 2 Certified",
-    description: "Regular security audits and compliance certifications"
+    description: "Regular security audits and compliance certifications",
   },
 ];
 
-
-
 // Calendly Popup Component
-const CalendlyPopup = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) => {
+const CalendlyPopup = ({
+  isOpen,
+  onClose,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+}) => {
   const CALENDLY_URL = "https://calendly.com/gaiyaobed94/30min?month=2025-12";
 
   if (!isOpen) return null;
@@ -175,8 +202,8 @@ const CalendlyPopup = ({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
           <InlineWidget
             url={CALENDLY_URL}
             styles={{
-              height: '650px',
-              width: '100%'
+              height: "650px",
+              width: "100%",
             }}
           />
         </div>
@@ -189,7 +216,7 @@ export default function LandingPage() {
   const [activeRole, setActiveRole] = useState("doctors");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [demoDialogOpen, setDemoDialogOpen] = useState(false);
-    const [showCalendly, setShowCalendly] = useState(false);
+  const [showCalendly, setShowCalendly] = useState(false);
 
   const [demoForm, setDemoForm] = useState({
     name: "",
@@ -205,24 +232,27 @@ export default function LandingPage() {
     navigate("/auth/onboarding");
   };
 
-  const { 
-    data: subscriptionPlans, 
+  const {
+    data: subscriptionPlans,
     isLoading,
     isFetching,
-    isError
+    isError,
   } = useQuery({
     queryKey: ["subscription-plans"],
     queryFn: () => getSubscriptionPlans(),
   });
 
   if (isLoading || isFetching || isError) {
-    return <LoadingSpinner />; 
+    return <LoadingSpinner />;
   }
 
   return (
     <div className="min-h-screen bg-background">
-       {/* Calendly Popup */}
-      <CalendlyPopup isOpen={showCalendly} onClose={() => setShowCalendly(false)} />
+      {/* Calendly Popup */}
+      <CalendlyPopup
+        isOpen={showCalendly}
+        onClose={() => setShowCalendly(false)}
+      />
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-background/95 backdrop-blur-md z-50 border-b">
@@ -236,25 +266,50 @@ export default function LandingPage() {
                 <span className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                   Curacloud
                 </span>
-                <span className="block text-xs text-muted-foreground -mt-1">Healthcare Management System</span>
+                <span className="block text-xs text-muted-foreground -mt-1">
+                  Healthcare Management System
+                </span>
               </div>
             </div>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              {/* <Link
+                to="/"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
+                Home
+              </Link> */}
+              <a
+                href="#features"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 Features
               </a>
-              <a href="#solutions" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              <a
+                href="#solutions"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 Solutions
               </a>
-              <a href="#pricing" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              <a
+                href="#pricing"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 Pricing
               </a>
-              <a href="#security" className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors">
+              <a
+                href="#security"
+                className="text-sm font-medium text-foreground/80 hover:text-primary transition-colors"
+              >
                 Security
               </a>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/auth/login")}>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/auth/login")}
+              >
                 Sign In
               </Button>
               <Button
@@ -349,8 +404,9 @@ export default function LandingPage() {
               </h1>
 
               <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">
-                Enterprise-grade healthcare management platform that streamlines operations, 
-                enhances patient care, and drives financial performance for modern healthcare facilities.
+                Enterprise-grade healthcare management platform that streamlines
+                operations, enhances patient care, and drives financial
+                performance for modern healthcare facilities.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 mb-8">
@@ -364,12 +420,12 @@ export default function LandingPage() {
                 </Button>
                 <Button
                   onClick={() => setShowCalendly(true)}
-                      variant="outline"
-                      size="lg"
-                      className="text-lg px-8 py-3 h-14 border-2"
-                    >
-                      <Play className="mr-2 h-5 w-5" />
-                      Watch Demo
+                  variant="outline"
+                  size="lg"
+                  className="text-lg px-8 py-3 h-14 border-2"
+                >
+                  <Play className="mr-2 h-5 w-5" />
+                  Watch Demo
                 </Button>
               </div>
 
@@ -404,7 +460,7 @@ export default function LandingPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-background/20 to-transparent"></div>
                 </div>
-                
+
                 {/* Floating elements */}
                 <div className="absolute -top-4 -left-4 bg-green-500 text-white px-4 py-2 rounded-full shadow-lg">
                   <TrendingUp className="h-4 w-4 inline mr-1" />
@@ -425,9 +481,17 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
-              <div key={index} className="text-center animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="text-3xl md:text-4xl font-bold text-primary mb-2">{stat.number}</div>
-                <div className="text-sm text-muted-foreground font-medium">{stat.label}</div>
+              <div
+                key={index}
+                className="text-center animate-fade-in"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="text-3xl md:text-4xl font-bold text-primary mb-2">
+                  {stat.number}
+                </div>
+                <div className="text-sm text-muted-foreground font-medium">
+                  {stat.label}
+                </div>
               </div>
             ))}
           </div>
@@ -446,8 +510,8 @@ export default function LandingPage() {
               Comprehensive Healthcare Platform
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-              Everything you need to manage modern healthcare delivery, from patient intake to discharge 
-              and everything in between.
+              Everything you need to manage modern healthcare delivery, from
+              patient intake to discharge and everything in between.
             </p>
           </div>
 
@@ -463,7 +527,9 @@ export default function LandingPage() {
                       <feature.icon className="h-7 w-7 text-primary-foreground" />
                     </div>
                     <div>
-                      <CardTitle className="text-xl mb-2">{feature.title}</CardTitle>
+                      <CardTitle className="text-xl mb-2">
+                        {feature.title}
+                      </CardTitle>
                       <CardDescription className="text-base leading-relaxed">
                         {feature.description}
                       </CardDescription>
@@ -473,7 +539,10 @@ export default function LandingPage() {
                 <CardContent>
                   <ul className="space-y-2">
                     {feature.benefits.map((benefit, benefitIndex) => (
-                      <li key={benefitIndex} className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <li
+                        key={benefitIndex}
+                        className="flex items-center gap-2 text-sm text-muted-foreground"
+                      >
                         <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
                         {benefit}
                       </li>
@@ -498,18 +567,24 @@ export default function LandingPage() {
               Built with Security First
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Your patient data is protected with enterprise-grade security measures and full regulatory compliance.
+              Your patient data is protected with enterprise-grade security
+              measures and full regulatory compliance.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {securityFeatures.map((feature, index) => (
-              <Card key={index} className="text-center hover:shadow-lg transition-all">
+              <Card
+                key={index}
+                className="text-center hover:shadow-lg transition-all"
+              >
                 <CardContent className="p-8">
                   <div className="w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                     <feature.icon className="h-8 w-8 text-primary-foreground" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
+                  <h3 className="text-xl font-semibold mb-3">
+                    {feature.title}
+                  </h3>
                   <p className="text-muted-foreground text-sm leading-relaxed">
                     {feature.description}
                   </p>
@@ -521,7 +596,10 @@ export default function LandingPage() {
       </section>
 
       {/* Solutions Section - Fixed ID */}
-      <section id="solutions" className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30">
+      <section
+        id="solutions"
+        className="py-20 px-4 sm:px-6 lg:px-8 bg-muted/30"
+      >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16 animate-fade-in">
             <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
@@ -760,7 +838,10 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section id="testimonials" className="py-24 bg-muted/50 px-4 sm:px-6 lg:px-8">
+      <section
+        id="testimonials"
+        className="py-24 bg-muted/50 px-4 sm:px-6 lg:px-8"
+      >
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20 animate-fade-in">
             <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
@@ -771,17 +852,24 @@ export default function LandingPage() {
               Trusted by Healthcare Leaders
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Join thousands of healthcare facilities that have transformed their operations with Curacloud.
+              Join thousands of healthcare facilities that have transformed
+              their operations with Curacloud.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="group hover:shadow-xl transition-all duration-500 hover:scale-105">
+              <Card
+                key={index}
+                className="group hover:shadow-xl transition-all duration-500 hover:scale-105"
+              >
                 <CardContent className="p-8">
                   <div className="flex items-center gap-1 mb-6">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
+                      <Star
+                        key={i}
+                        className="h-5 w-5 fill-yellow-400 text-yellow-400"
+                      />
                     ))}
                   </div>
 
@@ -796,10 +884,18 @@ export default function LandingPage() {
                       className="w-14 h-14 rounded-full object-cover border-2 border-primary/20"
                     />
                     <div>
-                      <p className="font-semibold text-lg">{testimonial.name}</p>
-                      <p className="text-primary font-medium">{testimonial.role}</p>
-                      <p className="text-sm text-muted-foreground">{testimonial.hospital}</p>
-                      <p className="text-sm text-green-600 font-medium mt-1">{testimonial.metrics}</p>
+                      <p className="font-semibold text-lg">
+                        {testimonial.name}
+                      </p>
+                      <p className="text-primary font-medium">
+                        {testimonial.role}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {testimonial.hospital}
+                      </p>
+                      <p className="text-sm text-green-600 font-medium mt-1">
+                        {testimonial.metrics}
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -827,9 +923,9 @@ export default function LandingPage() {
 
           <div className="grid md:grid-cols-4 gap-4">
             {subscriptionPlans?.map((plan, index) => {
-              const isPopular = plan.name === 'Growth Plan';
-              const isEnterprise = plan.name === 'Enterprise Plan';
-              
+              const isPopular = plan.name === "Growth Plan";
+              const isEnterprise = plan.name === "Enterprise Plan";
+
               return (
                 <Card
                   key={plan.id || index}
@@ -842,7 +938,7 @@ export default function LandingPage() {
                       Most Popular
                     </Badge>
                   )}
-{/* 
+                  {/* 
                   {isEnterprise && (
                     <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-primary text-primary-foreground">
                       Enterprise
@@ -850,22 +946,22 @@ export default function LandingPage() {
                   )} */}
 
                   <CardHeader className="pb-4">
-                    <CardTitle className="text-2xl">
-                      {plan.name}
-                    </CardTitle>
+                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
                     <div className="mb-2">
                       <span className="text-4xl font-bold">
-                        {isEnterprise ? 'Custom' : formatNaira(Math.abs(plan.price))}
-                      </span> 
+                        {isEnterprise
+                          ? "Custom"
+                          : formatNaira(Math.abs(plan.price))}
+                      </span>
                       <span className="text-muted-foreground">
-                        {isEnterprise ? '' : '/month'}
+                        {isEnterprise ? "" : "/month"}
                       </span>
                     </div>
                     <CardDescription>
-                      {isEnterprise 
-                        ? 'For large healthcare facilities with custom needs'
-                        : plan.description || `Perfect for ${plan.name?.toLowerCase()} healthcare facilities`
-                      }
+                      {isEnterprise
+                        ? "For large healthcare facilities with custom needs"
+                        : plan.description ||
+                          `Perfect for ${plan.name?.toLowerCase()} healthcare facilities`}
                     </CardDescription>
                   </CardHeader>
 
@@ -890,9 +986,19 @@ export default function LandingPage() {
 
                     <Button
                       className={`w-full ${
-                        isPopular ? "bg-gradient-primary hover:shadow-glow" : "bg-primary hover:bg-primary/90"
-                      } ${isEnterprise ? "bg-gradient-primary hover:shadow-glow" : ""}`}
-                      onClick={isEnterprise ? () => setDemoDialogOpen(true) : handleGetStarted}
+                        isPopular
+                          ? "bg-gradient-primary hover:shadow-glow"
+                          : "bg-primary hover:bg-primary/90"
+                      } ${
+                        isEnterprise
+                          ? "bg-gradient-primary hover:shadow-glow"
+                          : ""
+                      }`}
+                      onClick={
+                        isEnterprise
+                          ? () => setDemoDialogOpen(true)
+                          : handleGetStarted
+                      }
                     >
                       {isEnterprise ? (
                         <>
@@ -941,14 +1047,15 @@ export default function LandingPage() {
           <Badge className="mb-6 bg-primary-foreground/20 text-primary-foreground border-primary-foreground/30">
             Ready to Transform Your Facility?
           </Badge>
-          
+
           <h2 className="text-4xl md:text-6xl font-bold mb-8 leading-tight">
             Start Your Digital Transformation Today
           </h2>
-          
+
           <p className="text-xl md:text-2xl mb-12 opacity-90 leading-relaxed max-w-4xl mx-auto">
-            Join the leading healthcare facilities using Curacloud to deliver exceptional patient care 
-            while optimizing operations and driving growth.
+            Join the leading healthcare facilities using Curacloud to deliver
+            exceptional patient care while optimizing operations and driving
+            growth.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
@@ -961,7 +1068,7 @@ export default function LandingPage() {
               Start Free 14-Day Trial
               <ArrowRight className="ml-3 h-5 w-5" />
             </Button>
-            
+
             <Button
               size="lg"
               variant="outline"
@@ -1064,19 +1171,19 @@ export default function LandingPage() {
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link
-    to="/about-us"
-    className="text-muted-foreground hover:text-foreground transition-colors"
-  >
-    About Us
-  </Link>
+                    to="/about-us"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    About Us
+                  </Link>
                 </li>
                 <li>
-                               <Link
-    to="/careers"
-    className="text-muted-foreground hover:text-foreground transition-colors"
-  >
-    Careers
-  </Link>
+                  <Link
+                    to="/careers"
+                    className="text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Careers
+                  </Link>
                 </li>
                 <li>
                   <a
@@ -1088,7 +1195,7 @@ export default function LandingPage() {
                 </li>
                 <li>
                   <Link
-    to="/contact-us"
+                    to="contact-us"
                     className="text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Contact
