@@ -59,7 +59,7 @@ import {
   getPrescriptionStats,
 } from "@/services/prescription";
 import { getAllDoctors } from "@/services/staff";
-import {  fetchPatients } from "@/services/patient";
+import { fetchPatients } from "@/services/patient";
 import { FREQUENCY_OPTIONS } from "@/constants/medical/prescription";
 import {
   Pagination,
@@ -87,18 +87,18 @@ export default function Prescriptions() {
   const [selectedPrescription, setSelectedPrescription] = useState<any>(null);
   const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   // Patient search states
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [patientSearchQuery, setPatientSearchQuery] = useState("");
   const [debouncedPatientSearch, setDebouncedPatientSearch] = useState("");
-  
+
   // Doctor search states
   const [doctorSearchQuery, setDoctorSearchQuery] = useState("");
   const [debouncedDoctorSearch, setDebouncedDoctorSearch] = useState("");
-   const { isHealthcare, isAdmin ,isDoctor} = useUserRole();
-      
-    const showCreatePrescriptionButton = isAdmin || isHealthcare || isDoctor;
+  const { isHealthcare, isAdmin, isDoctor } = useUserRole();
+
+  const showCreatePrescriptionButton = isAdmin || isHealthcare || isDoctor;
   const { toast } = useToast();
   const navigate = useNavigate();
   const [showNewPrescriptionForm, setShowNewPrescriptionForm] = useState(false);
@@ -219,10 +219,10 @@ export default function Prescriptions() {
   }, [doctorSearchQuery]);
 
   // Fetch patients for search
-  const { 
-    data: patientData, 
-    isLoading: isLoadingPatient, 
-    isFetching: isFetchingPatient 
+  const {
+    data: patientData,
+    isLoading: isLoadingPatient,
+    isFetching: isFetchingPatient,
   } = useQuery({
     queryKey: ["patients-search", debouncedPatientSearch],
     queryFn: () => fetchPatients(1, 50, debouncedPatientSearch),
@@ -243,16 +243,14 @@ export default function Prescriptions() {
   const doctors = doctorsData?.doctors || [];
 
   const handlePatientSelect = (patientId: string) => {
-    const patient = patientData?.patients?.find(
-      (p: any) => p.id === patientId
-    );
-    
+    const patient = patientData?.patients?.find((p: any) => p.id === patientId);
+
     if (patient) {
       setSelectedPatient(patient);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         patientId: patient.id,
-        name: patient.user?.fullName || patient.fullName || patient.name || ""
+        name: patient.user?.fullName || patient.fullName || patient.name || "",
       }));
     }
   };
@@ -517,18 +515,15 @@ export default function Prescriptions() {
                   <SelectItem value="expired">Expired</SelectItem>
                 </SelectContent>
               </Select>
-              {
-                showCreatePrescriptionButton && (
- <Button
-                className="shrink-0"
-                onClick={() => setShowNewPrescriptionForm(true)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                New Prescription
-              </Button>
-                )
-              }
-             
+              {showCreatePrescriptionButton && (
+                <Button
+                  className="shrink-0"
+                  onClick={() => setShowNewPrescriptionForm(true)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Prescription
+                </Button>
+              )}
             </div>
 
             {/* Prescriptions List */}
@@ -577,7 +572,8 @@ export default function Prescriptions() {
                           <Badge
                             className={getStatusColor(prescription?.status)}
                           >
-                            {prescription?.status.charAt(0).toUpperCase() + prescription.status.slice(1)}
+                            {prescription?.status.charAt(0).toUpperCase() +
+                              prescription.status.slice(1)}
                           </Badge>
                         </div>
                       </div>
@@ -845,17 +841,22 @@ export default function Prescriptions() {
                       {/* Patient Selection */}
                       <div className="space-y-2">
                         <Label htmlFor="patient">Patient *</Label>
-                        
+
                         {/* Selected Patient Display */}
                         {selectedPatient && (
                           <div className="p-3 bg-green-50 border border-green-200 rounded-md">
                             <div className="flex justify-between items-center">
                               <div>
                                 <p className="font-medium text-green-800">
-                                  {selectedPatient.user?.fullName || selectedPatient.fullName || selectedPatient.name || "No name"}
+                                  {selectedPatient.user?.fullName ||
+                                    selectedPatient.fullName ||
+                                    selectedPatient.name ||
+                                    "No name"}
                                 </p>
                                 <p className="text-sm text-green-600">
-                                  MRN: {selectedPatient?.patientProvider[0]?.medicalRecordNumber || "N/A"}
+                                  MRN:{" "}
+                                  {selectedPatient?.patientProvider[0]
+                                    ?.medicalRecordNumber || "N/A"}
                                 </p>
                               </div>
                               <Button
@@ -864,10 +865,10 @@ export default function Prescriptions() {
                                 size="sm"
                                 onClick={() => {
                                   setSelectedPatient(null);
-                                  setFormData(prev => ({ 
-                                    ...prev, 
-                                    patientId: "", 
-                                    name: "" 
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    patientId: "",
+                                    name: "",
                                   }));
                                 }}
                               >
@@ -886,7 +887,9 @@ export default function Prescriptions() {
                                 placeholder="Search patients by name or MRN..."
                                 className="pl-10"
                                 value={patientSearchQuery}
-                                onChange={(e) => setPatientSearchQuery(e.target.value)}
+                                onChange={(e) =>
+                                  setPatientSearchQuery(e.target.value)
+                                }
                               />
                             </div>
 
@@ -898,26 +901,32 @@ export default function Prescriptions() {
                                 </div>
                               )}
 
-                              {!isLoadingPatient && 
-                               !isFetchingPatient && 
-                               patientData?.patients?.length === 0 && (
-                                <div className="p-4 text-center text-sm text-muted-foreground">
-                                  No patients found
-                                </div>
-                              )}
+                              {!isLoadingPatient &&
+                                !isFetchingPatient &&
+                                patientData?.patients?.length === 0 && (
+                                  <div className="p-4 text-center text-sm text-muted-foreground">
+                                    No patients found
+                                  </div>
+                                )}
 
                               {patientData?.patients?.map((patient: any) => (
                                 <div
                                   key={patient.id}
                                   className="p-3 border-b last:border-b-0 hover:bg-muted cursor-pointer"
-                                  onClick={() => handlePatientSelect(patient.id)}
+                                  onClick={() =>
+                                    handlePatientSelect(patient.id)
+                                  }
                                 >
                                   <div className="flex justify-between items-start">
                                     <span className="font-medium">
-                                      {patient.user?.fullName || patient.fullName || patient.name || "Unnamed Patient"}
+                                      {patient.user?.fullName ||
+                                        patient.fullName ||
+                                        patient.name ||
+                                        "Unnamed Patient"}
                                     </span>
                                     <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                      {patient?.patientProvider[0]?.medicalRecordNumber || "No MRN"}
+                                      {patient?.patientProvider[0]
+                                        ?.medicalRecordNumber || "No MRN"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between items-center text-sm text-muted-foreground mt-1">
@@ -933,13 +942,17 @@ export default function Prescriptions() {
 
                       {/* Patient Name Field - Auto-populated */}
                       <div>
-                        <Label htmlFor="prescriptionPatientName">Patient Name *</Label>
+                        <Label htmlFor="prescriptionPatientName">
+                          Patient Name *
+                        </Label>
                         <Input
                           id="prescriptionPatientName"
                           placeholder="John Smith"
                           required
                           value={formData.name}
-                          onChange={(e) => handleInputChange("name", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("name", e.target.value)
+                          }
                           readOnly={!!selectedPatient}
                           className={selectedPatient ? "bg-muted" : ""}
                         />
@@ -952,10 +965,14 @@ export default function Prescriptions() {
 
                       {/* Doctor Selection */}
                       <div>
-                        <Label htmlFor="prescriptionDoctor">Prescribing Doctor *</Label>
+                        <Label htmlFor="prescriptionDoctor">
+                          Prescribing Doctor *
+                        </Label>
                         <Select
                           value={formData.prescripBy}
-                          onValueChange={(value) => handleInputChange("prescripBy", value)}
+                          onValueChange={(value) =>
+                            handleInputChange("prescripBy", value)
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue
@@ -975,7 +992,9 @@ export default function Prescriptions() {
                                   placeholder="Search doctors by name, email, or phone..."
                                   className="pl-8"
                                   value={doctorSearchQuery}
-                                  onChange={(e) => setDoctorSearchQuery(e.target.value)}
+                                  onChange={(e) =>
+                                    setDoctorSearchQuery(e.target.value)
+                                  }
                                   onClick={(e) => e.stopPropagation()}
                                 />
                               </div>
@@ -989,23 +1008,28 @@ export default function Prescriptions() {
                             )}
 
                             {/* No Results */}
-                            {!isFetchingDoctor && 
-                             !isLoadingDoctor && 
-                             doctors.length === 0 && (
-                              <div className="p-4 text-center text-sm text-muted-foreground">
-                                No doctors found
-                              </div>
-                            )}
+                            {!isFetchingDoctor &&
+                              !isLoadingDoctor &&
+                              doctors.length === 0 && (
+                                <div className="p-4 text-center text-sm text-muted-foreground">
+                                  No doctors found
+                                </div>
+                              )}
 
                             {/* Doctors List */}
                             {doctors.map((doctor: any) => (
                               <SelectItem
                                 key={doctor.user?.id || doctor.id}
-                                value={doctor.user?.id?.toString() || doctor.id.toString()}
+                                value={
+                                  doctor.user?.id?.toString() ||
+                                  doctor.id.toString()
+                                }
                               >
                                 <div className="flex flex-col">
                                   <span className="font-medium">
-                                    {doctor.user?.fullName || doctor.fullName || doctor.name}
+                                    {doctor.user?.fullName ||
+                                      doctor.fullName ||
+                                      doctor.name}
                                   </span>
                                   {doctor.user?.email && (
                                     <span className="text-xs text-muted-foreground">
@@ -1193,7 +1217,11 @@ export default function Prescriptions() {
                         <Button
                           type="submit"
                           className="bg-gradient-primary"
-                          disabled={mutation.isPending || !selectedPatient || !formData.prescripBy}
+                          disabled={
+                            mutation.isPending ||
+                            !selectedPatient ||
+                            !formData.prescripBy
+                          }
                         >
                           {mutation.isPending
                             ? "Creating..."
