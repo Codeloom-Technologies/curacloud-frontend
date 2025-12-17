@@ -69,11 +69,12 @@ export default function Appointments() {
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
   const [patientSearchQuery, setPatientSearchQuery] = useState("");
   const [debouncedPatientSearch, setDebouncedPatientSearch] = useState("");
-    const [doctorSearchQuery, setDoctorSearchQuery] = useState("");
+  const [doctorSearchQuery, setDoctorSearchQuery] = useState("");
   const [debouncedDoctorSearch, setDebouncedDoctorSearch] = useState("");
   const { isHealthcare, isAdmin, isReceptionist, isDoctor } = useUserRole();
-  
-  const showCreateAppointmentButton = isDoctor || isAdmin || isHealthcare || isReceptionist;
+
+  const showCreateAppointmentButton =
+    isDoctor || isAdmin || isHealthcare || isReceptionist;
 
   const [filters, setFilters] = useState({
     startDate: "",
@@ -110,32 +111,29 @@ export default function Appointments() {
   }, [patientSearchQuery]);
 
   // Fetch patients for the booking form dropdown
-  const { 
-    data: patientData, 
-    isLoading: isLoadingPatient, 
-    isFetching: isFetchingPatient 
+  const {
+    data: patientData,
+    isLoading: isLoadingPatient,
+    isFetching: isFetchingPatient,
   } = useQuery({
     queryKey: ["patients-search", debouncedPatientSearch],
     queryFn: () => fetchPatients(1, 50, debouncedPatientSearch),
     enabled: showBookingForm, // Only fetch when form is open
   });
 
-// In the handlePatientSelect function, update it to:
+  // In the handlePatientSelect function, update it to:
   const handlePatientSelect = (patientId: string) => {
-  const patient = patientData?.patients?.find(
-    (p: any) => p.id === patientId
-  );
+    const patient = patientData?.patients?.find((p: any) => p.id === patientId);
 
-  if (patient) {
-    setSelectedPatient(patient);
-    setFormData(prev => ({
-      ...prev,
-      patientId: patient.id,
-      name: patient.user?.fullName || "" // This will auto-populate the name
-    }));
-  }
-};
-
+    if (patient) {
+      setSelectedPatient(patient);
+      setFormData((prev) => ({
+        ...prev,
+        patientId: patient.id,
+        name: patient.user?.fullName || "", // This will auto-populate the name
+      }));
+    }
+  };
 
   // Debounce main search term
   useEffect(() => {
@@ -158,7 +156,7 @@ export default function Appointments() {
     isLoading: isLoadingDoctor,
   } = useQuery({
     queryKey: ["getAllDoctors", debouncedDoctorSearch],
-    queryFn: () => getAllDoctors(1, 50, debouncedDoctorSearch), 
+    queryFn: () => getAllDoctors(1, 50, debouncedDoctorSearch),
   });
 
   const doctors = doctorsData?.doctors || [];
@@ -359,18 +357,15 @@ export default function Appointments() {
                   Manage and schedule patient appointments
                 </p>
               </div>
-              {
-                showCreateAppointmentButton && (
-<Button
-                onClick={() => setShowBookingForm(true)}
-                className="bg-gradient-primary hover:shadow-glow transition-all"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Schedule Appointment
-              </Button>
-                )
-              }
-              
+              {showCreateAppointmentButton && (
+                <Button
+                  onClick={() => setShowBookingForm(true)}
+                  className="bg-gradient-primary hover:shadow-glow transition-all"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Schedule Appointment
+                </Button>
+              )}
             </div>
 
             {/* Search and Filters */}
@@ -560,13 +555,19 @@ export default function Appointments() {
                                 {appointment?.patient?.user?.fullName}
                               </span>
                               <span className="text-sm text-muted-foreground">
-                                ({appointment?.patient?.patientProvider[0]?.medicalRecordNumber})
+                                (
+                                {
+                                  appointment?.patient?.patientProvider[0]
+                                    ?.medicalRecordNumber
+                                }
+                                )
                               </span>
                             </div>
                             <Badge
                               className={getStatusColor(appointment.status)}
                             >
-                              {appointment?.status.charAt(0).toUpperCase() + appointment?.status?.slice(1) }
+                              {appointment?.status.charAt(0).toUpperCase() +
+                                appointment?.status?.slice(1)}
                             </Badge>
                           </div>
 
@@ -589,8 +590,8 @@ export default function Appointments() {
                             <p className="text-sm text-muted-foreground">
                               <strong>Department:</strong> Not Available |
                               <strong> Type:</strong> {appointment.type} |
-                              <strong> priority:</strong> {appointment.priority} |
-                              <strong> Reason:</strong> {appointment.reason}
+                              <strong> priority:</strong> {appointment.priority}{" "}
+                              |<strong> Reason:</strong> {appointment.reason}
                             </p>
                           </div>
                         </div>
@@ -685,7 +686,7 @@ export default function Appointments() {
                         {/* Patient Selection */}
                         <div className="space-y-2">
                           <Label htmlFor="patient">Patient *</Label>
-                          
+
                           {/* Selected Patient Display */}
                           {selectedPatient && (
                             <div className="p-3 rounded-md  bg-green-50 border border-green-200">
@@ -695,7 +696,11 @@ export default function Appointments() {
                                     {selectedPatient.user?.fullName}
                                   </p>
                                   <p className="text-sm text-muted-foreground">
-                                    MRN: {selectedPatient?.patientProvider[0]?.medicalRecordNumber}
+                                    MRN:{" "}
+                                    {
+                                      selectedPatient?.patientProvider[0]
+                                        ?.medicalRecordNumber
+                                    }
                                   </p>
                                 </div>
                                 <Button
@@ -704,7 +709,11 @@ export default function Appointments() {
                                   size="sm"
                                   onClick={() => {
                                     setSelectedPatient(null);
-                                    setFormData(prev => ({ ...prev, patientId: "", name: "" }));
+                                    setFormData((prev) => ({
+                                      ...prev,
+                                      patientId: "",
+                                      name: "",
+                                    }));
                                   }}
                                 >
                                   Change
@@ -722,7 +731,9 @@ export default function Appointments() {
                                   placeholder="Search patients by name or MRN..."
                                   className="pl-10"
                                   value={patientSearchQuery}
-                                  onChange={(e) => setPatientSearchQuery(e.target.value)}
+                                  onChange={(e) =>
+                                    setPatientSearchQuery(e.target.value)
+                                  }
                                 />
                               </div>
 
@@ -734,19 +745,21 @@ export default function Appointments() {
                                   </div>
                                 )}
 
-                                {!isLoadingPatient && 
-                                 !isFetchingPatient && 
-                                 patientData?.patients?.length === 0 && (
-                                  <div className="p-4 text-center text-sm text-muted-foreground">
-                                    No patients found
-                                  </div>
-                                )}
+                                {!isLoadingPatient &&
+                                  !isFetchingPatient &&
+                                  patientData?.patients?.length === 0 && (
+                                    <div className="p-4 text-center text-sm text-muted-foreground">
+                                      No patients found
+                                    </div>
+                                  )}
 
                                 {patientData?.patients?.map((patient: any) => (
                                   <div
                                     key={patient.id}
                                     className="p-3 border-b last:border-b-0 hover:bg-muted cursor-pointer"
-                                    onClick={() => handlePatientSelect(patient.id)}
+                                    onClick={() =>
+                                      handlePatientSelect(patient.id)
+                                    }
                                   >
                                     <div className="flex justify-between items-start">
                                       <span className="font-medium">
@@ -754,7 +767,13 @@ export default function Appointments() {
                                       </span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm text-muted-foreground">
-                                      <span>MRN: {patient?.patientProvider[0]?.medicalRecordNumber}</span>
+                                      <span>
+                                        MRN:{" "}
+                                        {
+                                          patient?.patientProvider[0]
+                                            ?.medicalRecordNumber
+                                        }
+                                      </span>
                                     </div>
                                   </div>
                                 ))}
@@ -764,88 +783,96 @@ export default function Appointments() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                     <div>
-  <Label htmlFor="patientName">Patient Name *</Label>
-  <Input
-    id="patientName"
-    placeholder="John Smith"
-    required
-    value={formData.name}
-    onChange={(e) => handleInputChange("name", e.target.value)}
-    readOnly={!!selectedPatient} // Make it read-only when patient is selected
-    className={selectedPatient ? "bg-muted" : ""} // Visual feedback
-  />
-  {selectedPatient && (
-    <p className="text-xs text-muted-foreground mt-1">
-      Name auto-filled from selected patient
-    </p>
-  )}
-</div>
                           <div>
-  <Label htmlFor="doctor">Doctor *</Label>
-  <Select
-    value={formData.doctorId}
-    onValueChange={(value) => handleInputChange("doctorId", value)}
-  >
-    <SelectTrigger>
-      <SelectValue
-        placeholder={
-          isFetchingDoctor || isLoadingDoctor
-            ? "Loading..."
-            : "Select Doctor"
-        }
-      />
-    </SelectTrigger>
-    <SelectContent>
-      {/* Search Input inside dropdown */}
-      <div className="p-2 border-b">
-        <div className="relative">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search doctors..."
-            className="pl-8"
-            value={doctorSearchQuery}
-            onChange={(e) => setDoctorSearchQuery(e.target.value)}
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      </div>
+                            <Label htmlFor="patientName">Patient Name *</Label>
+                            <Input
+                              id="patientName"
+                              placeholder="John Smith"
+                              required
+                              value={formData.name}
+                              onChange={(e) =>
+                                handleInputChange("name", e.target.value)
+                              }
+                              readOnly={!!selectedPatient} // Make it read-only when patient is selected
+                              className={selectedPatient ? "bg-muted" : ""} // Visual feedback
+                            />
+                            {selectedPatient && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Name auto-filled from selected patient
+                              </p>
+                            )}
+                          </div>
+                          <div>
+                            <Label htmlFor="doctor">Doctor *</Label>
+                            <Select
+                              value={formData.doctorId}
+                              onValueChange={(value) =>
+                                handleInputChange("doctorId", value)
+                              }
+                            >
+                              <SelectTrigger>
+                                <SelectValue
+                                  placeholder={
+                                    isFetchingDoctor || isLoadingDoctor
+                                      ? "Loading..."
+                                      : "Select Doctor"
+                                  }
+                                />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {/* Search Input inside dropdown */}
+                                <div className="p-2 border-b">
+                                  <div className="relative">
+                                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                      placeholder="Search doctors..."
+                                      className="pl-8"
+                                      value={doctorSearchQuery}
+                                      onChange={(e) =>
+                                        setDoctorSearchQuery(e.target.value)
+                                      }
+                                      onClick={(e) => e.stopPropagation()}
+                                    />
+                                  </div>
+                                </div>
 
-      {/* Loading State */}
-      {(isFetchingDoctor || isLoadingDoctor) && (
-        <div className="p-4 text-center text-sm text-muted-foreground">
-          Loading doctors...
-        </div>
-      )}
+                                {/* Loading State */}
+                                {(isFetchingDoctor || isLoadingDoctor) && (
+                                  <div className="p-4 text-center text-sm text-muted-foreground">
+                                    Loading doctors...
+                                  </div>
+                                )}
 
-      {/* No Results */}
-      {!isFetchingDoctor && 
-       !isLoadingDoctor && 
-       doctors.length === 0 && (
-        <div className="p-4 text-center text-sm text-muted-foreground">
-          No doctors found
-        </div>
-      )}
+                                {/* No Results */}
+                                {!isFetchingDoctor &&
+                                  !isLoadingDoctor &&
+                                  doctors.length === 0 && (
+                                    <div className="p-4 text-center text-sm text-muted-foreground">
+                                      No doctors found
+                                    </div>
+                                  )}
 
-      {/* Doctors List */}
-      {doctors.map((doctor: any) => (
-        <SelectItem
-          key={doctor.user.id}
-          value={doctor.user.id.toString()}
-        >
-          <div className="flex flex-col">
-            <span className="font-medium">{doctor.user?.fullName}</span>
-            {doctor.user?.email && (
-              <span className="text-xs text-muted-foreground">
-                {doctor.user.email}
-              </span>
-            )}
-          </div>
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-</div>
+                                {/* Doctors List */}
+                                {doctors.map((doctor: any) => (
+                                  <SelectItem
+                                    key={doctor.user.id}
+                                    value={doctor.user.id.toString()}
+                                  >
+                                    <div className="flex flex-col">
+                                      <span className="font-medium">
+                                        {doctor.user?.fullName}
+                                      </span>
+                                      {doctor.user?.email && (
+                                        <span className="text-xs text-muted-foreground">
+                                          {doctor.user.email}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -871,7 +898,7 @@ export default function Appointments() {
                               </SelectContent>
                             </Select>
                           </div>
-                          
+
                           <div>
                             <Label htmlFor="priority">Priority</Label>
                             <Select

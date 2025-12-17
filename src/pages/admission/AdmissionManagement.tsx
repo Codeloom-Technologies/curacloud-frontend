@@ -124,10 +124,10 @@ export default function AdmissionManagement() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { isHealthcare, isAdmin, isReceptionist} = useUserRole();
-        
-    const showAddButton = isAdmin || isHealthcare || isReceptionist;
-    
+  const { isHealthcare, isAdmin, isReceptionist } = useUserRole();
+
+  const showAddButton = isAdmin || isHealthcare || isReceptionist;
+
   // State
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [page, setPage] = useState(1);
@@ -140,7 +140,7 @@ export default function AdmissionManagement() {
   const [isDischargeDialogOpen, setIsDischargeDialogOpen] = useState(false);
   const [selectedAdmission, setSelectedAdmission] = useState<any>(null);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
-  
+
   // Debounce search term
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedSearch(searchQuery), 400);
@@ -154,7 +154,14 @@ export default function AdmissionManagement() {
     refetch,
     isFetching,
   } = useQuery({
-    queryKey: ["admissions", page, perPage, debouncedSearch, statusFilter, priorityFilter],
+    queryKey: [
+      "admissions",
+      page,
+      perPage,
+      debouncedSearch,
+      statusFilter,
+      priorityFilter,
+    ],
     queryFn: () =>
       fetchAdmissions({
         page,
@@ -165,7 +172,7 @@ export default function AdmissionManagement() {
       }),
   });
 
-    const admissions = admissionsData?.admissions || [];
+  const admissions = admissionsData?.admissions || [];
 
   const meta = admissionsData?.meta ?? {};
   const totalPages = meta.lastPage ?? 1;
@@ -175,7 +182,7 @@ export default function AdmissionManagement() {
     queryFn: fetchAdmissionStats,
   });
 
-    // Mutations
+  // Mutations
   const admitMutation = useMutation({
     mutationFn: admitPatient,
     onSuccess: () => {
@@ -222,7 +229,7 @@ export default function AdmissionManagement() {
 
   const handleDischargePatient = (dischargeData: any) => {
     if (!selectedAdmission) return;
-    
+
     dischargeMutation.mutate({
       admissionId: selectedAdmission.id,
       ...dischargeData,
@@ -259,9 +266,7 @@ export default function AdmissionManagement() {
               stats?.totalAdmissions || 0
             )}
           </div>
-          <div className="text-sm text-muted-foreground">
-            Total Admissions
-          </div>
+          <div className="text-sm text-muted-foreground">Total Admissions</div>
           <div className="text-xs text-muted-foreground mt-1">
             Today: {stats?.todayAdmissions || 0}
           </div>
@@ -280,10 +285,7 @@ export default function AdmissionManagement() {
           <div className="text-sm text-muted-foreground">
             Currently Admitted
           </div>
-          <Progress
-            value={stats?.occupancyRate || 0}
-            className="mt-2 h-2"
-          />
+          <Progress value={stats?.occupancyRate || 0} className="mt-2 h-2" />
           <div className="text-xs text-muted-foreground mt-1">
             {stats?.availableBeds || 0} beds available
           </div>
@@ -297,11 +299,10 @@ export default function AdmissionManagement() {
               <Skeleton className="h-8 w-16" />
             ) : (
               stats?.averageStayDays || 0
-            )}d
+            )}
+            d
           </div>
-          <div className="text-sm text-muted-foreground">
-            Average Stay
-          </div>
+          <div className="text-sm text-muted-foreground">Average Stay</div>
           <div className="text-xs text-muted-foreground mt-1">
             Longest: {stats?.longestStay || 0}d
           </div>
@@ -317,9 +318,7 @@ export default function AdmissionManagement() {
               stats?.emergencyCases || 0
             )}
           </div>
-          <div className="text-sm text-muted-foreground">
-            Emergency Cases
-          </div>
+          <div className="text-sm text-muted-foreground">Emergency Cases</div>
           <div className="text-xs text-muted-foreground mt-1">
             {stats?.pendingAdmissions || 0} pending
           </div>
@@ -329,17 +328,11 @@ export default function AdmissionManagement() {
       <Card>
         <CardContent className="p-4">
           <div className="text-2xl font-bold text-warning">
-            {isFetching ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              admissions.length
-            )}
+            {isFetching ? <Skeleton className="h-8 w-16" /> : admissions.length}
           </div>
-          <div className="text-sm text-muted-foreground">
-            Active Admissions
-          </div>
+          <div className="text-sm text-muted-foreground">Active Admissions</div>
           <div className="text-xs text-muted-foreground mt-1">
-             {stats?.activeAdmissions || 0}
+            {stats?.activeAdmissions || 0}
           </div>
         </CardContent>
       </Card>
@@ -356,21 +349,18 @@ export default function AdmissionManagement() {
         <UserPlus className="h-6 w-6" />
         <span>New Admission</span>
       </Button>
-      
-          {
-              showAddButton && (
-                   <Button
-        className="h-20 flex-col gap-2"
-        variant="outline"
-        onClick={() => navigate("/dashboard/patients/register")}
-      >
-        <User className="h-6 w-6" />
-        <span>Register New Patient</span>
-      </Button>
-              )
-          }
-     
-      
+
+      {showAddButton && (
+        <Button
+          className="h-20 flex-col gap-2"
+          variant="outline"
+          onClick={() => navigate("/dashboard/patients/register")}
+        >
+          <User className="h-6 w-6" />
+          <span>Register New Patient</span>
+        </Button>
+      )}
+
       <Button
         className="h-20 flex-col gap-2"
         variant="outline"
@@ -409,7 +399,7 @@ export default function AdmissionManagement() {
                   Manage patient admissions, discharges, and transfers
                 </p>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 <Button variant="outline" onClick={() => refetch()}>
                   <RefreshCw className="h-4 w-4 mr-2" />
@@ -490,19 +480,31 @@ export default function AdmissionManagement() {
             {/* Main Content Tabs */}
             <Tabs defaultValue="admissions" className="space-y-6">
               <TabsList className="grid w-full md:w-auto grid-cols-4">
-                <TabsTrigger value="admissions" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="admissions"
+                  className="flex items-center gap-2"
+                >
                   <Users className="h-4 w-4" />
                   Admissions ({stats?.currentAdmissions || 0})
                 </TabsTrigger>
-                <TabsTrigger value="pending" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="pending"
+                  className="flex items-center gap-2"
+                >
                   <Clock className="h-4 w-4" />
                   Pending ({stats?.pendingAdmissions || 0})
                 </TabsTrigger>
-                <TabsTrigger value="discharges" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="discharges"
+                  className="flex items-center gap-2"
+                >
                   <CheckCircle className="h-4 w-4" />
                   Discharges
                 </TabsTrigger>
-                <TabsTrigger value="emergency" className="flex items-center gap-2">
+                <TabsTrigger
+                  value="emergency"
+                  className="flex items-center gap-2"
+                >
                   <AlertCircle className="h-4 w-4" />
                   Emergency ({stats?.emergencyCases || 0})
                 </TabsTrigger>
@@ -515,7 +517,8 @@ export default function AdmissionManagement() {
                   <CardHeader>
                     <CardTitle>Current Admissions</CardTitle>
                     <CardDescription>
-                      Showing {admissions.length} of {meta?.total || 0} admissions
+                      Showing {admissions.length} of {meta?.total || 0}{" "}
+                      admissions
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -532,11 +535,13 @@ export default function AdmissionManagement() {
                           No admissions found
                         </h3>
                         <p className="text-muted-foreground mb-4">
-                          {searchQuery || statusFilter !== "all" || priorityFilter !== "all"
+                          {searchQuery ||
+                          statusFilter !== "all" ||
+                          priorityFilter !== "all"
                             ? "No admissions match your filters."
                             : "No active admissions at the moment."}
                         </p>
-                        <Button 
+                        <Button
                           onClick={() => setIsAdmitDialogOpen(true)}
                           className="bg-gradient-primary hover:shadow-glow transition-all"
                         >
@@ -583,40 +588,59 @@ export default function AdmissionManagement() {
                               <PaginationContent>
                                 <PaginationItem>
                                   <PaginationPrevious
-                                    onClick={() => handlePageChange(Math.max(1, page - 1))}
-                                    className={page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                    onClick={() =>
+                                      handlePageChange(Math.max(1, page - 1))
+                                    }
+                                    className={
+                                      page === 1
+                                        ? "pointer-events-none opacity-50"
+                                        : "cursor-pointer"
+                                    }
                                   />
                                 </PaginationItem>
 
-                                {Array.from({ length: Math.min(5, meta.lastPage) }, (_, i) => {
-                                  let pageNum = i + 1;
-                                  if (meta.lastPage > 5) {
-                                    if (page <= 3) {
-                                      pageNum = i + 1;
-                                    } else if (page >= meta.lastPage - 2) {
-                                      pageNum = meta.lastPage - 4 + i;
-                                    } else {
-                                      pageNum = page - 2 + i;
+                                {Array.from(
+                                  { length: Math.min(5, meta.lastPage) },
+                                  (_, i) => {
+                                    let pageNum = i + 1;
+                                    if (meta.lastPage > 5) {
+                                      if (page <= 3) {
+                                        pageNum = i + 1;
+                                      } else if (page >= meta.lastPage - 2) {
+                                        pageNum = meta.lastPage - 4 + i;
+                                      } else {
+                                        pageNum = page - 2 + i;
+                                      }
                                     }
-                                  }
 
-                                  return (
-                                    <PaginationItem key={pageNum}>
-                                      <PaginationLink
-                                        onClick={() => handlePageChange(pageNum)}
-                                        isActive={pageNum === page}
-                                        className="cursor-pointer"
-                                      >
-                                        {pageNum}
-                                      </PaginationLink>
-                                    </PaginationItem>
-                                  );
-                                })}
+                                    return (
+                                      <PaginationItem key={pageNum}>
+                                        <PaginationLink
+                                          onClick={() =>
+                                            handlePageChange(pageNum)
+                                          }
+                                          isActive={pageNum === page}
+                                          className="cursor-pointer"
+                                        >
+                                          {pageNum}
+                                        </PaginationLink>
+                                      </PaginationItem>
+                                    );
+                                  }
+                                )}
 
                                 <PaginationItem>
                                   <PaginationNext
-                                    onClick={() => handlePageChange(Math.min(meta.lastPage, page + 1))}
-                                    className={page === meta.lastPage ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                                    onClick={() =>
+                                      handlePageChange(
+                                        Math.min(meta.lastPage, page + 1)
+                                      )
+                                    }
+                                    className={
+                                      page === meta.lastPage
+                                        ? "pointer-events-none opacity-50"
+                                        : "cursor-pointer"
+                                    }
                                   />
                                 </PaginationItem>
                               </PaginationContent>
@@ -699,9 +723,16 @@ export default function AdmissionManagement() {
 }
 
 // Admission Row Component
-function AdmissionRow({ admission, onViewAdmission, onViewPatient, onDischarge }: any) {
+function AdmissionRow({
+  admission,
+  onViewAdmission,
+  onViewPatient,
+  onDischarge,
+}: any) {
   const daysAdmitted = Math.floor(
-    (new Date().getTime() - new Date(admission?.admission?.admissionDate).getTime()) / (1000 * 3600 * 24)
+    (new Date().getTime() -
+      new Date(admission?.admission?.admissionDate).getTime()) /
+      (1000 * 3600 * 24)
   );
 
   return (
@@ -712,7 +743,9 @@ function AdmissionRow({ admission, onViewAdmission, onViewPatient, onDischarge }
             <User className="h-5 w-5 text-blue-600" />
           </div>
           <div>
-            <div className="font-medium">{admission.patient?.user?.fullName}</div>
+            <div className="font-medium">
+              {admission.patient?.user?.fullName}
+            </div>
             <div className="text-sm text-muted-foreground">
               {admission.patient?.patientProvider[0]?.medicalRecordNumber}
             </div>
@@ -736,7 +769,10 @@ function AdmissionRow({ admission, onViewAdmission, onViewPatient, onDischarge }
             {new Date(admission?.admission?.admissionDate).toLocaleDateString()}
           </div>
           <div className="text-sm text-muted-foreground">
-            {new Date(admission?.admission?.admissionDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            {new Date(admission?.admission?.admissionDate).toLocaleTimeString(
+              [],
+              { hour: "2-digit", minute: "2-digit" }
+            )}
           </div>
         </div>
       </TableCell>
@@ -746,24 +782,45 @@ function AdmissionRow({ admission, onViewAdmission, onViewPatient, onDischarge }
         </Badge>
       </TableCell>
       <TableCell>
-        <Badge className={PRIORITY_COLORS[admission?.admission?.priority as keyof typeof PRIORITY_COLORS]}>
+        <Badge
+          className={
+            PRIORITY_COLORS[
+              admission?.admission?.priority as keyof typeof PRIORITY_COLORS
+            ]
+          }
+        >
           {admission?.admission?.priority}
         </Badge>
       </TableCell>
       <TableCell>
-        <Badge className={ADMISSION_STATUS_COLORS[admission?.admission?.status as keyof typeof ADMISSION_STATUS_COLORS]}>
+        <Badge
+          className={
+            ADMISSION_STATUS_COLORS[
+              admission?.admission
+                ?.status as keyof typeof ADMISSION_STATUS_COLORS
+            ]
+          }
+        >
           {admission?.admission?.status}
         </Badge>
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="ghost" onClick={() => onViewAdmission(admission?.admission?.reference)}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => onViewAdmission(admission?.admission?.reference)}
+          >
             <Eye className="h-4 w-4" />
           </Button>
-          <Button size="sm" variant="ghost" onClick={() => onViewPatient(admission.patient?.user?.reference)}>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => onViewPatient(admission.patient?.user?.reference)}
+          >
             <User className="h-4 w-4" />
           </Button>
-          {admission.status === 'admitted' && (
+          {admission.status === "admitted" && (
             <Button size="sm" variant="ghost" onClick={onDischarge}>
               <CheckCircle className="h-4 w-4 text-green-600" />
             </Button>
@@ -776,14 +833,17 @@ function AdmissionRow({ admission, onViewAdmission, onViewPatient, onDischarge }
 
 // Pending Admissions Component
 function PendingAdmissions({ onAdmitPatient }: any) {
-  const { data: pendingAdmissionsData, isLoading, isFetching } = useQuery({
+  const {
+    data: pendingAdmissionsData,
+    isLoading,
+    isFetching,
+  } = useQuery({
     queryKey: ["pending-admissions"],
     queryFn: () => fetchAdmissions({ status: "pending" }),
   });
 
-        const pendingAdmissions = pendingAdmissionsData?.admissions || [];
-    const pagination = pendingAdmissionsData?.meta;
-
+  const pendingAdmissions = pendingAdmissionsData?.admissions || [];
+  const pagination = pendingAdmissionsData?.meta;
 
   if (isLoading) {
     return (
@@ -803,9 +863,7 @@ function PendingAdmissions({ onAdmitPatient }: any) {
     <Card>
       <CardHeader>
         <CardTitle>Pending Admissions</CardTitle>
-        <CardDescription>
-          Patients waiting for bed assignment
-        </CardDescription>
+        <CardDescription>Patients waiting for bed assignment</CardDescription>
       </CardHeader>
       <CardContent>
         {pendingAdmissions?.data?.length === 0 ? (
@@ -830,7 +888,9 @@ function PendingAdmissions({ onAdmitPatient }: any) {
                           <User className="h-6 w-6 text-yellow-600" />
                         </div>
                         <div>
-                          <div className="font-semibold">{admission.patient?.full_name}</div>
+                          <div className="font-semibold">
+                            {admission.patient?.full_name}
+                          </div>
                           <div className="text-sm text-muted-foreground">
                             MRN: {admission.patient?.medical_record_number}
                           </div>
@@ -839,7 +899,8 @@ function PendingAdmissions({ onAdmitPatient }: any) {
                       <div className="text-sm">
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
-                          Requested: {new Date(admission.created_at).toLocaleDateString()}
+                          Requested:{" "}
+                          {new Date(admission.created_at).toLocaleDateString()}
                         </div>
                         <div className="flex items-center gap-2 mt-1">
                           <Stethoscope className="h-4 w-4" />
@@ -878,12 +939,16 @@ function PendingAdmissions({ onAdmitPatient }: any) {
 
 // Discharge History Component
 function DischargeHistory() {
-  const { data: dischargesData, isLoading, isFetching } = useQuery({
+  const {
+    data: dischargesData,
+    isLoading,
+    isFetching,
+  } = useQuery({
     queryKey: ["discharge-history"],
     queryFn: () => fetchAdmissions({ status: "discharged", perPage: 20 }),
   });
-     const discharges = dischargesData?.admissions || [];
-    const pagination = dischargesData?.meta;
+  const discharges = dischargesData?.admissions || [];
+  const pagination = dischargesData?.meta;
 
   if (isLoading) {
     return (
@@ -903,9 +968,7 @@ function DischargeHistory() {
     <Card>
       <CardHeader>
         <CardTitle>Recent Discharges</CardTitle>
-        <CardDescription>
-          Last 20 patient discharges
-        </CardDescription>
+        <CardDescription>Last 20 patient discharges</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -921,30 +984,31 @@ function DischargeHistory() {
             </TableHeader>
             <TableBody className="transition-all duration-300 ease-in-out">
               {discharges?.map((discharge: any) => {
-                const admissionDate = new Date(discharge?.admission?.admissionDate);
-                const dischargeDate = new Date(discharge?.admission?.admissionDate);
+                const admissionDate = new Date(
+                  discharge?.admission?.admissionDate
+                );
+                const dischargeDate = new Date(
+                  discharge?.admission?.admissionDate
+                );
                 const lengthOfStay = Math.floor(
-                  (dischargeDate.getTime() - admissionDate.getTime()) / (1000 * 3600 * 24)
+                  (dischargeDate.getTime() - admissionDate.getTime()) /
+                    (1000 * 3600 * 24)
                 );
 
                 return (
                   <TableRow key={discharge.id} className="hover:bg-muted/50">
                     <TableCell>
-                      <div className="font-medium">{discharge.patient?.user?.fullName}</div>
+                      <div className="font-medium">
+                        {discharge.patient?.user?.fullName}
+                      </div>
                       <div className="text-sm text-muted-foreground">
                         Bed: {discharge.bed?.bedNumber}
                       </div>
                     </TableCell>
+                    <TableCell>{admissionDate.toLocaleDateString()}</TableCell>
+                    <TableCell>{dischargeDate.toLocaleDateString()}</TableCell>
                     <TableCell>
-                      {admissionDate.toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      {dischargeDate.toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline">
-                        {lengthOfStay} days
-                      </Badge>
+                      <Badge variant="outline">{lengthOfStay} days</Badge>
                     </TableCell>
                     <TableCell>
                       <div className="max-w-xs truncate">
@@ -969,14 +1033,18 @@ function DischargeHistory() {
 
 // Emergency Cases Component
 function EmergencyCases({ onAdmitPatient }: any) {
-  const { data: emergenciesData, isLoading, isFetching } = useQuery({
+  const {
+    data: emergenciesData,
+    isLoading,
+    isFetching,
+  } = useQuery({
     queryKey: ["emergency-cases"],
-    queryFn: () => fetchAdmissions({ priority: "critical", status: "admitted" }),
+    queryFn: () =>
+      fetchAdmissions({ priority: "critical", status: "admitted" }),
   });
-    
-       const emergencies = emergenciesData?.admissions || [];
-    const pagination = emergenciesData?.meta;
 
+  const emergencies = emergenciesData?.admissions || [];
+  const pagination = emergenciesData?.meta;
 
   if (isLoading) {
     return (
@@ -1014,7 +1082,10 @@ function EmergencyCases({ onAdmitPatient }: any) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {emergencies?.data?.map((emergency: any) => (
-              <Card key={emergency.id} className="border-2 border-red-200 bg-red-50">
+              <Card
+                key={emergency.id}
+                className="border-2 border-red-200 bg-red-50"
+              >
                 <CardContent className="pt-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-start">
@@ -1023,7 +1094,9 @@ function EmergencyCases({ onAdmitPatient }: any) {
                           <AlertCircle className="h-5 w-5 text-red-600" />
                         </div>
                         <div>
-                          <div className="font-semibold">{emergency.patient?.user?.fulName}</div>
+                          <div className="font-semibold">
+                            {emergency.patient?.user?.fulName}
+                          </div>
                           <Badge className="bg-red-100 text-red-700">
                             Critical
                           </Badge>
@@ -1033,7 +1106,7 @@ function EmergencyCases({ onAdmitPatient }: any) {
                         {emergency.bed?.bedNumber}
                       </div>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-sm">
                         <HeartPulse className="h-4 w-4 text-red-500" />
@@ -1041,7 +1114,12 @@ function EmergencyCases({ onAdmitPatient }: any) {
                       </div>
                       <div className="flex items-center gap-2 text-sm">
                         <Clock className="h-4 w-4 text-red-500" />
-                        <span>Admitted: {new Date(emergency?.admission?.admissionDate).toLocaleDateString()}</span>
+                        <span>
+                          Admitted:{" "}
+                          {new Date(
+                            emergency?.admission?.admissionDate
+                          ).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
 
@@ -1050,7 +1128,10 @@ function EmergencyCases({ onAdmitPatient }: any) {
                         <Activity className="h-4 w-4 mr-2" />
                         View Vitals
                       </Button>
-                      <Button size="sm" className="flex-1 bg-gradient-primary hover:shadow-glow transition-all">
+                      <Button
+                        size="sm"
+                        className="flex-1 bg-gradient-primary hover:shadow-glow transition-all"
+                      >
                         <Stethoscope className="h-4 w-4 mr-2" />
                         Doctor Alert
                       </Button>
@@ -1072,11 +1153,17 @@ function EmergencyCases({ onAdmitPatient }: any) {
 }
 
 // Admission Dialog Component
-function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) {
+function AdmissionDialog({
+  isOpen,
+  onClose,
+  patient,
+  onAdmit,
+  isLoading,
+}: any) {
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  
+
   // State
   const [selectedPatient, setSelectedPatient] = useState<any>(patient || null);
   const [patientSearchQuery, setPatientSearchQuery] = useState("");
@@ -1089,7 +1176,7 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
     priority: "medium",
     diagnosis: "",
     symptoms: "",
-    notes: ""
+    notes: "",
   });
 
   // Debounce patient search
@@ -1103,7 +1190,7 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
   // Update form when patient is selected or changed
   useEffect(() => {
     if (selectedPatient) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         patientId: selectedPatient.id.toString(),
         emergency_contact: selectedPatient.user?.phoneNumber || "",
@@ -1112,10 +1199,10 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
   }, [selectedPatient]);
 
   // Fetch patients for search
-  const { 
-    data: patientData, 
-    isLoading: isLoadingPatient, 
-    isFetching: isFetchingPatient 
+  const {
+    data: patientData,
+    isLoading: isLoadingPatient,
+    isFetching: isFetchingPatient,
   } = useQuery({
     queryKey: ["patients-search", debouncedPatientSearch],
     queryFn: () => fetchPatients(1, 50, debouncedPatientSearch, {}),
@@ -1136,7 +1223,7 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
     enabled: !!selectedWard && isOpen,
   });
 
-    const availableBeds = availableBedsData?.beds || []
+  const availableBeds = availableBedsData?.beds || [];
 
   const wards = wardsData?.wards || [];
 
@@ -1147,7 +1234,7 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
 
   const handleClearPatient = () => {
     setSelectedPatient(null);
-    setFormData(prev => ({ ...prev, patientId: "" }));
+    setFormData((prev) => ({ ...prev, patientId: "" }));
   };
 
   const handleSubmit = () => {
@@ -1174,7 +1261,10 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
       patientId: parseInt(selectedPatient.id),
       bedId: parseInt(formData.bedId),
       wardId: parseInt(selectedWard),
-      symptoms: formData.symptoms.split(',').map(s => s.trim()).filter(s => s),
+      symptoms: formData.symptoms
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s),
     };
 
     onAdmit(admissionData);
@@ -1197,7 +1287,7 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
           {/* Patient Selection Section */}
           <div className="space-y-4">
             <Label>Patient Selection *</Label>
-            
+
             {/* Selected Patient Display */}
             {selectedPatient && (
               <Card className="border-green-200 bg-green-50">
@@ -1209,12 +1299,15 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
                       </div>
                       <div>
                         <div className="font-semibold">
-                          {selectedPatient.user?.fullName || selectedPatient.fullName}
+                          {selectedPatient.user?.fullName ||
+                            selectedPatient.fullName}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          MRN: {selectedPatient.patientProvider?.[0]?.medicalRecordNumber || "N/A"} • 
-                          Age: {selectedPatient.user?.age || "N/A"} • 
-                          Gender: {selectedPatient.user?.gender || "N/A"}
+                          MRN:{" "}
+                          {selectedPatient.patientProvider?.[0]
+                            ?.medicalRecordNumber || "N/A"}{" "}
+                          • Age: {selectedPatient.user?.age || "N/A"} • Gender:{" "}
+                          {selectedPatient.user?.gender || "N/A"}
                         </div>
                       </div>
                     </div>
@@ -1253,13 +1346,13 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
                     </div>
                   )}
 
-                  {!isLoadingPatient && 
-                   !isFetchingPatient && 
-                   patientData?.patients?.length === 0 && (
-                    <div className="p-4 text-center text-sm text-muted-foreground">
-                      No patients found. Try a different search term.
-                    </div>
-                  )}
+                  {!isLoadingPatient &&
+                    !isFetchingPatient &&
+                    patientData?.patients?.length === 0 && (
+                      <div className="p-4 text-center text-sm text-muted-foreground">
+                        No patients found. Try a different search term.
+                      </div>
+                    )}
 
                   {patientData?.patients?.map((patient: any) => (
                     <div
@@ -1273,9 +1366,11 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
                             {patient.user?.fullName || patient.fulName}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            MRN: {patient.patientProvider?.[0]?.medicalRecordNumber || "No MRN"} • 
-                            Age: {patient.user?.age || "N/A"} • 
-                            Phone: {patient.user?.phoneNumber || "N/A"}
+                            MRN:{" "}
+                            {patient.patientProvider?.[0]
+                              ?.medicalRecordNumber || "No MRN"}{" "}
+                            • Age: {patient.user?.age || "N/A"} • Phone:{" "}
+                            {patient.user?.phoneNumber || "N/A"}
                           </div>
                         </div>
                         <Badge variant="outline" className="text-xs">
@@ -1297,7 +1392,9 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
                 <Label>Admission Type *</Label>
                 <Select
                   value={formData.admissionType}
-                  onValueChange={(value) => setFormData({ ...formData, admissionType: value })}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, admissionType: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select type" />
@@ -1313,10 +1410,12 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
 
               <div className="space-y-2">
                 <Label>Priority Level *</Label>
-                              <Select
-                                  required
+                <Select
+                  required
                   value={formData.priority}
-                  onValueChange={(value) => setFormData({ ...formData, priority: value })}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, priority: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select priority" />
@@ -1329,19 +1428,19 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
                   </SelectContent>
                 </Select>
               </div>
-
-    
             </div>
 
             {/* Medical Information Column */}
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Primary Diagnosis *</Label>
-                              <Input
-                                  required
+                <Input
+                  required
                   placeholder="e.g., Pneumonia, Fracture, etc."
                   value={formData.diagnosis}
-                  onChange={(e) => setFormData({ ...formData, diagnosis: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, diagnosis: e.target.value })
+                  }
                 />
               </div>
 
@@ -1350,18 +1449,18 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
                 <Input
                   placeholder="e.g., Fever, Cough, Pain"
                   value={formData.symptoms}
-                  onChange={(e) => setFormData({ ...formData, symptoms: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, symptoms: e.target.value })
+                  }
                 />
               </div>
-
-       
             </div>
           </div>
 
           {/* Ward and Bed Selection */}
           <div className="space-y-4">
             <Label>Ward and Bed Selection *</Label>
-            
+
             {/* Ward Selection */}
             <div className="space-y-2">
               <Label>Select Ward</Label>
@@ -1374,17 +1473,25 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
                   disabled={!selectedPatient}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={selectedPatient ? "Select a ward" : "Select patient first"} />
+                    <SelectValue
+                      placeholder={
+                        selectedPatient
+                          ? "Select a ward"
+                          : "Select patient first"
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
                     {wards.map((ward: any) => (
                       <SelectItem key={ward.id} value={ward.id.toString()}>
                         <div className="flex items-center gap-2">
-                          <div 
-                            className="w-3 h-3 rounded" 
+                          <div
+                            className="w-3 h-3 rounded"
                             style={{ backgroundColor: ward.colorCode }}
                           />
-                          <span>{ward.name} ({ward.code})</span>
+                          <span>
+                            {ward.name} ({ward.code})
+                          </span>
                           <Badge variant="outline" className="ml-2">
                             {ward.current_occupancy}/{ward.capacity} beds
                           </Badge>
@@ -1412,9 +1519,13 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
                       No Available Beds
                     </h3>
                     <p className="text-muted-foreground mb-4">
-                      All beds in this ward are currently occupied or under maintenance.
+                      All beds in this ward are currently occupied or under
+                      maintenance.
                     </p>
-                    <Button variant="outline" onClick={() => navigate("/dashboard/beds")}>
+                    <Button
+                      variant="outline"
+                      onClick={() => navigate("/dashboard/beds")}
+                    >
                       View All Beds
                     </Button>
                   </div>
@@ -1428,14 +1539,20 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
                             ? "border-blue-500 bg-blue-50"
                             : "border-gray-200 hover:border-blue-300"
                         }`}
-                        onClick={() => setFormData({ ...formData, bedId: bed.id.toString() })}
+                        onClick={() =>
+                          setFormData({ ...formData, bedId: bed.id.toString() })
+                        }
                       >
                         <CardContent className="pt-6">
                           <div className="space-y-3">
                             <div className="flex justify-between items-start">
                               <div>
-                                <div className="font-semibold">{bed.bedNumber}</div>
-                                <div className="text-sm text-muted-foreground">{bed.ward?.name}</div>
+                                <div className="font-semibold">
+                                  {bed.bedNumber}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  {bed.ward?.name}
+                                </div>
                               </div>
                               {formData.bedId === bed.id.toString() ? (
                                 <Badge className="bg-blue-100 text-blue-700">
@@ -1459,11 +1576,17 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
                             </div>
                             {bed.equipment?.length > 0 && (
                               <div className="flex flex-wrap gap-1">
-                                {bed.equipment.slice(0, 2).map((eq: string, idx: number) => (
-                                  <Badge key={idx} variant="outline" className="text-xs">
-                                    {eq}
-                                  </Badge>
-                                ))}
+                                {bed.equipment
+                                  .slice(0, 2)
+                                  .map((eq: string, idx: number) => (
+                                    <Badge
+                                      key={idx}
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
+                                      {eq}
+                                    </Badge>
+                                  ))}
                                 {bed.equipment.length > 2 && (
                                   <Badge variant="outline" className="text-xs">
                                     +{bed.equipment.length - 2} more
@@ -1483,17 +1606,16 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
 
           {/* Additional Information */}
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-         
-            
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
 
             <div className="space-y-2">
               <Label>Additional Notes</Label>
               <Textarea
                 placeholder="Any additional information..."
                 value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, notes: e.target.value })
+                }
                 rows={3}
               />
             </div>
@@ -1504,8 +1626,8 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             disabled={isLoading || !selectedPatient || !formData.bedId}
             className="bg-gradient-primary hover:shadow-glow transition-all"
           >
@@ -1528,7 +1650,13 @@ function AdmissionDialog({ isOpen, onClose, patient, onAdmit, isLoading }: any) 
 }
 
 // Discharge Dialog Component (unchanged from previous version)
-function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }: any) {
+function DischargeDialog({
+  isOpen,
+  onClose,
+  admission,
+  onDischarge,
+  isLoading,
+}: any) {
   const [formData, setFormData] = useState({
     discharge_reason: "",
     discharge_notes: "",
@@ -1543,9 +1671,9 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
       // Auto-fill today's date for follow-up (7 days from now)
       const nextWeek = new Date();
       nextWeek.setDate(nextWeek.getDate() + 7);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        follow_up_date: nextWeek.toISOString().split('T')[0],
+        follow_up_date: nextWeek.toISOString().split("T")[0],
       }));
     }
   }, [admission]);
@@ -1579,7 +1707,8 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
             Discharge Patient
           </DialogTitle>
           <DialogDescription>
-            Complete the discharge process for {admission.patient?.user?.fullName}
+            Complete the discharge process for{" "}
+            {admission.patient?.user?.fullName}
           </DialogDescription>
         </DialogHeader>
 
@@ -1594,34 +1723,50 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
                       <User className="h-6 w-6 text-green-600" />
                     </div>
                     <div>
-                      <div className="font-semibold">{admission.patient?.user?.fullName}</div>
+                      <div className="font-semibold">
+                        {admission.patient?.user?.fullName}
+                      </div>
                       <div className="text-sm text-muted-foreground">
-                        MRN: {admission.patient?.patientProvider[0].medicalRecordNumber}
+                        MRN:{" "}
+                        {
+                          admission.patient?.patientProvider[0]
+                            .medicalRecordNumber
+                        }
                       </div>
                     </div>
                   </div>
-                  <Badge variant="outline">
-                    {daysAdmitted} days admitted
-                  </Badge>
+                  <Badge variant="outline">{daysAdmitted} days admitted</Badge>
                 </div>
 
                 <Separator />
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Admission Date</Label>
-                    <p className="font-medium">{admissionDate.toLocaleDateString()}</p>
+                    <Label className="text-sm font-medium text-muted-foreground">
+                      Admission Date
+                    </Label>
+                    <p className="font-medium">
+                      {admissionDate.toLocaleDateString()}
+                    </p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Bed</Label>
+                    <Label className="text-sm font-medium text-muted-foreground">
+                      Bed
+                    </Label>
                     <p className="font-medium">{admission.bed?.bedNumber}</p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Diagnosis</Label>
-                    <p className="font-medium">{admission.diagnosis || "Not specified"}</p>
+                    <Label className="text-sm font-medium text-muted-foreground">
+                      Diagnosis
+                    </Label>
+                    <p className="font-medium">
+                      {admission.diagnosis || "Not specified"}
+                    </p>
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Attending Doctor</Label>
+                    <Label className="text-sm font-medium text-muted-foreground">
+                      Attending Doctor
+                    </Label>
                     <p className="font-medium">{admission?.admittingDoctor}</p>
                   </div>
                 </div>
@@ -1635,7 +1780,9 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
               <Label>Discharge Reason *</Label>
               <Select
                 value={formData.discharge_reason}
-                onValueChange={(value) => setFormData({ ...formData, discharge_reason: value })}
+                onValueChange={(value) =>
+                  setFormData({ ...formData, discharge_reason: value })
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select reason" />
@@ -1643,9 +1790,13 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
                 <SelectContent>
                   <SelectItem value="recovered">Recovered</SelectItem>
                   <SelectItem value="improved">Condition Improved</SelectItem>
-                  <SelectItem value="referred">Referred to Another Facility</SelectItem>
+                  <SelectItem value="referred">
+                    Referred to Another Facility
+                  </SelectItem>
                   <SelectItem value="requested">Patient Request</SelectItem>
-                  <SelectItem value="against_advice">Against Medical Advice</SelectItem>
+                  <SelectItem value="against_advice">
+                    Against Medical Advice
+                  </SelectItem>
                   <SelectItem value="expired">Expired</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
@@ -1657,7 +1808,9 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
               <Textarea
                 placeholder="Summary of treatment, condition at discharge, instructions..."
                 value={formData.discharge_notes}
-                onChange={(e) => setFormData({ ...formData, discharge_notes: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, discharge_notes: e.target.value })
+                }
                 rows={3}
               />
             </div>
@@ -1668,7 +1821,9 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
                 <Input
                   type="date"
                   value={formData.follow_up_date}
-                  onChange={(e) => setFormData({ ...formData, follow_up_date: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, follow_up_date: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -1676,7 +1831,12 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
                 <Input
                   placeholder="e.g., Antibiotics, Painkillers"
                   value={formData.medication_prescribed}
-                  onChange={(e) => setFormData({ ...formData, medication_prescribed: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      medication_prescribed: e.target.value,
+                    })
+                  }
                 />
               </div>
             </div>
@@ -1687,8 +1847,8 @@ function DischargeDialog({ isOpen, onClose, admission, onDischarge, isLoading }:
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleSubmit} 
+          <Button
+            onClick={handleSubmit}
             disabled={isLoading}
             className="bg-gradient-primary hover:shadow-glow transition-all"
           >

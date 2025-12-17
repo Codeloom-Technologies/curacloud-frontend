@@ -110,16 +110,13 @@ export default function AppointmentCalendar() {
     return dates;
   };
 
-
   const getAppointmentsForDate = (date: Date) => {
     const formattedDate = formatDate(date);
 
     return calendar.filter((apt: any) => apt.appointmentDate === formattedDate);
   };
 
-
   const getAppointmentForTimeSlot = (date: Date, time: string) => {
-
     const appointments = getAppointmentsForDate(date);
     return appointments.find((apt) => {
       const appointmentTime = apt.appointmentTime.slice(0, 5); // "16:30"

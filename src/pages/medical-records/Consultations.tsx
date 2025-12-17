@@ -46,8 +46,12 @@ import { CONSULTATION_TYPES } from "@/constants/medical/consultation-types";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { createConsultation, getConsultations, getConsultationStats } from "@/services/consultation";
-import {  fetchPatients } from "@/services/patient";
+import {
+  createConsultation,
+  getConsultations,
+  getConsultationStats,
+} from "@/services/consultation";
+import { fetchPatients } from "@/services/patient";
 import { getAllDoctors } from "@/services/staff";
 import {
   Pagination,
@@ -82,9 +86,10 @@ export default function Consultations() {
   >(null);
   const [showNewConsultationForm, setShowNewConsultationForm] = useState(false);
 
-   const { isHealthcare, isAdmin ,isReceptionist, isDoctor} = useUserRole();
-      
-    const showCreateConsultationButton = isAdmin || isHealthcare || isReceptionist || isDoctor;
+  const { isHealthcare, isAdmin, isReceptionist, isDoctor } = useUserRole();
+
+  const showCreateConsultationButton =
+    isAdmin || isHealthcare || isReceptionist || isDoctor;
 
   // 🕒 Debounce logic: wait 500ms after typing stops
   useEffect(() => {
@@ -163,10 +168,10 @@ export default function Consultations() {
   });
 
   // Fetch patients for search
-  const { 
-    data: patientData, 
-    isLoading: isLoadingPatient, 
-    isFetching: isFetchingPatient 
+  const {
+    data: patientData,
+    isLoading: isLoadingPatient,
+    isFetching: isFetchingPatient,
   } = useQuery({
     queryKey: ["patients-search", debouncedPatientSearch],
     queryFn: () => fetchPatients(1, 50, debouncedPatientSearch),
@@ -187,16 +192,14 @@ export default function Consultations() {
   const doctors = doctorsData?.doctors || [];
 
   const handlePatientSelect = (patientId: string) => {
-    const patient = patientData?.patients?.find(
-      (p: any) => p.id === patientId
-    );
-    
+    const patient = patientData?.patients?.find((p: any) => p.id === patientId);
+
     if (patient) {
       setSelectedPatient(patient);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
         patientId: patient.id,
-        name: patient.user?.fullName || patient.fullName || patient.name || ""
+        name: patient.user?.fullName || patient.fullName || patient.name || "",
       }));
     }
   };
@@ -262,8 +265,9 @@ export default function Consultations() {
     isFetching: isFetchingConsultation,
     refetch,
   } = useQuery({
-    queryKey: ["consultations", currentPage, debouncedSearch,statusFilter],
-    queryFn: () => getConsultations(currentPage, perPage, debouncedSearch,statusFilter),
+    queryKey: ["consultations", currentPage, debouncedSearch, statusFilter],
+    queryFn: () =>
+      getConsultations(currentPage, perPage, debouncedSearch, statusFilter),
   });
   const consultations = consultationsData?.consultations ?? [];
   const meta = consultationsData?.meta ?? {};
@@ -271,15 +275,14 @@ export default function Consultations() {
   const perPage = meta.perPage ?? 10; // default to 10
   const totalPages = Math.ceil(total / perPage);
 
-
-  const { 
-  data: statsData, 
-  isLoading: isLoadingStats,
-  isFetching: isFetchingStats 
-} = useQuery({
-  queryKey: ["consultation-stats"],
-  queryFn: () => getConsultationStats(),
-});
+  const {
+    data: statsData,
+    isLoading: isLoadingStats,
+    isFetching: isFetchingStats,
+  } = useQuery({
+    queryKey: ["consultation-stats"],
+    queryFn: () => getConsultationStats(),
+  });
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -339,85 +342,84 @@ export default function Consultations() {
             </div>
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <Card>
-  <CardHeader className="pb-2">
-    <CardTitle className="text-sm font-medium">
-      Today's Consultations
-    </CardTitle>
-  </CardHeader>
-  <CardContent>
-    <div className="text-2xl font-bold">
-      {isLoadingStats || isFetchingStats ? (
-        <Skeleton className="h-8 w-16" />
-      ) : (
-        statsData?.data?.todaysConsultations || 0
-      )}
-    </div>
-    <p className="text-xs text-muted-foreground">
-      {statsData?.data?.percentageChange >= 0 ? '+' : ''}{statsData?.data?.percentageChange || 0}% from yesterday
-    </p>
-  </CardContent>
-</Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Today's Consultations
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {isLoadingStats || isFetchingStats ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      statsData?.data?.todaysConsultations || 0
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {statsData?.data?.percentageChange >= 0 ? "+" : ""}
+                    {statsData?.data?.percentageChange || 0}% from yesterday
+                  </p>
+                </CardContent>
+              </Card>
 
-<Card>
-  <CardHeader className="pb-2">
-    <CardTitle className="text-sm font-medium">
-      In Progress
-    </CardTitle>
-  </CardHeader>
-  <CardContent>
-    <div className="text-2xl font-bold">
-      {isLoadingStats || isFetchingStats ? (
-        <Skeleton className="h-8 w-16" />
-      ) : (
-        statsData?.data?.inProgress || 0
-      )}
-    </div>
-    <p className="text-xs text-muted-foreground">
-      Currently active
-    </p>
-  </CardContent>
-</Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    In Progress
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {isLoadingStats || isFetchingStats ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      statsData?.data?.inProgress || 0
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Currently active
+                  </p>
+                </CardContent>
+              </Card>
 
-<Card>
-  <CardHeader className="pb-2">
-    <CardTitle className="text-sm font-medium">
-      Completed Today
-    </CardTitle>
-  </CardHeader>
-  <CardContent>
-    <div className="text-2xl font-bold">
-      {isLoadingStats || isFetchingStats ? (
-        <Skeleton className="h-8 w-16" />
-      ) : (
-        statsData?.data?.completedToday || 0
-      )}
-    </div>
-    <p className="text-xs text-muted-foreground">
-      Average {statsData?.data?.averageDuration || 45} min
-    </p>
-  </CardContent>
-</Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Completed Today
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {isLoadingStats || isFetchingStats ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      statsData?.data?.completedToday || 0
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Average {statsData?.data?.averageDuration || 45} min
+                  </p>
+                </CardContent>
+              </Card>
 
-<Card>
-  <CardHeader className="pb-2">
-    <CardTitle className="text-sm font-medium">
-      Emergency Cases
-    </CardTitle>
-  </CardHeader>
-  <CardContent>
-    <div className="text-2xl font-bold">
-      {isLoadingStats || isFetchingStats ? (
-        <Skeleton className="h-8 w-16" />
-      ) : (
-        statsData?.data?.emergencyCases || 0
-      )}
-    </div>
-    <p className="text-xs text-muted-foreground">
-      This week
-    </p>
-  </CardContent>
-</Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    Emergency Cases
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {isLoadingStats || isFetchingStats ? (
+                      <Skeleton className="h-8 w-16" />
+                    ) : (
+                      statsData?.data?.emergencyCases || 0
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">This week</p>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Filters and Actions */}
@@ -453,18 +455,15 @@ export default function Consultations() {
                   <SelectItem value="emergency">Emergency</SelectItem>
                 </SelectContent>
               </Select>
-              {
-                showCreateConsultationButton && (
-   <Button
-                className="shrink-0"
-                onClick={() => setShowNewConsultationForm(true)}
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                New Consultation
-              </Button>
-                )
-              }
-           
+              {showCreateConsultationButton && (
+                <Button
+                  className="shrink-0"
+                  onClick={() => setShowNewConsultationForm(true)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  New Consultation
+                </Button>
+              )}
             </div>
 
             {/* Consultations List */}
@@ -512,7 +511,8 @@ export default function Consultations() {
                               consultation?.status ?? "In Progress"
                             )}
                           >
-                            {consultation?.status?.charAt(0).toUpperCase() + consultation.status.slice(1)}
+                            {consultation?.status?.charAt(0).toUpperCase() +
+                              consultation.status.slice(1)}
                           </Badge>
                           <Badge
                             className={getTypeColor(
@@ -755,17 +755,22 @@ export default function Consultations() {
                       {/* Patient Selection */}
                       <div className="space-y-2">
                         <Label htmlFor="patient">Patient *</Label>
-                        
+
                         {/* Selected Patient Display */}
                         {selectedPatient && (
                           <div className="p-3 bg-green-50 border border-green-200 rounded-md">
                             <div className="flex justify-between items-center">
                               <div>
                                 <p className="font-medium text-green-800">
-                                  {selectedPatient.user?.fullName || selectedPatient.fullName || selectedPatient.name || "No name"}
+                                  {selectedPatient.user?.fullName ||
+                                    selectedPatient.fullName ||
+                                    selectedPatient.name ||
+                                    "No name"}
                                 </p>
                                 <p className="text-sm text-green-600">
-                                  MRN: {selectedPatient?.patientProvider[0]?.medicalRecordNumber || "N/A"}
+                                  MRN:{" "}
+                                  {selectedPatient?.patientProvider[0]
+                                    ?.medicalRecordNumber || "N/A"}
                                 </p>
                               </div>
                               <Button
@@ -774,10 +779,10 @@ export default function Consultations() {
                                 size="sm"
                                 onClick={() => {
                                   setSelectedPatient(null);
-                                  setFormData(prev => ({ 
-                                    ...prev, 
-                                    patientId: "", 
-                                    name: "" 
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    patientId: "",
+                                    name: "",
                                   }));
                                 }}
                               >
@@ -796,7 +801,9 @@ export default function Consultations() {
                                 placeholder="Search patients by name or MRN..."
                                 className="pl-10"
                                 value={patientSearchQuery}
-                                onChange={(e) => setPatientSearchQuery(e.target.value)}
+                                onChange={(e) =>
+                                  setPatientSearchQuery(e.target.value)
+                                }
                               />
                             </div>
 
@@ -808,26 +815,32 @@ export default function Consultations() {
                                 </div>
                               )}
 
-                              {!isLoadingPatient && 
-                               !isFetchingPatient && 
-                               patientData?.patients?.length === 0 && (
-                                <div className="p-4 text-center text-sm text-muted-foreground">
-                                  No patients found
-                                </div>
-                              )}
+                              {!isLoadingPatient &&
+                                !isFetchingPatient &&
+                                patientData?.patients?.length === 0 && (
+                                  <div className="p-4 text-center text-sm text-muted-foreground">
+                                    No patients found
+                                  </div>
+                                )}
 
                               {patientData?.patients?.map((patient: any) => (
                                 <div
                                   key={patient.id}
                                   className="p-3 border-b last:border-b-0 hover:bg-muted cursor-pointer"
-                                  onClick={() => handlePatientSelect(patient.id)}
+                                  onClick={() =>
+                                    handlePatientSelect(patient.id)
+                                  }
                                 >
                                   <div className="flex justify-between items-start">
                                     <span className="font-medium">
-                                      {patient.user?.fullName || patient.fullName || patient.name || "Unnamed Patient"}
+                                      {patient.user?.fullName ||
+                                        patient.fullName ||
+                                        patient.name ||
+                                        "Unnamed Patient"}
                                     </span>
                                     <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                                      {patient?.patientProvider[0]?.medicalRecordNumber || "No MRN"}
+                                      {patient?.patientProvider[0]
+                                        ?.medicalRecordNumber || "No MRN"}
                                     </span>
                                   </div>
                                   <div className="flex justify-between items-center text-sm text-muted-foreground mt-1">
@@ -843,13 +856,17 @@ export default function Consultations() {
 
                       {/* Patient Name Field - Auto-populated */}
                       <div>
-                        <Label htmlFor="consultationPatientName">Patient Name *</Label>
+                        <Label htmlFor="consultationPatientName">
+                          Patient Name *
+                        </Label>
                         <Input
                           id="consultationPatientName"
                           placeholder="John Smith"
                           required
                           value={formData.name}
-                          onChange={(e) => handleInputChange("name", e.target.value)}
+                          onChange={(e) =>
+                            handleInputChange("name", e.target.value)
+                          }
                           readOnly={!!selectedPatient}
                           className={selectedPatient ? "bg-muted" : ""}
                         />
@@ -865,7 +882,9 @@ export default function Consultations() {
                         <Label htmlFor="consultationDoctor">Doctor *</Label>
                         <Select
                           value={formData.consultBy}
-                          onValueChange={(value) => handleInputChange("consultBy", value)}
+                          onValueChange={(value) =>
+                            handleInputChange("consultBy", value)
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue
@@ -885,7 +904,9 @@ export default function Consultations() {
                                   placeholder="Search doctors by name, email, or phone..."
                                   className="pl-8"
                                   value={doctorSearchQuery}
-                                  onChange={(e) => setDoctorSearchQuery(e.target.value)}
+                                  onChange={(e) =>
+                                    setDoctorSearchQuery(e.target.value)
+                                  }
                                   onClick={(e) => e.stopPropagation()}
                                 />
                               </div>
@@ -899,23 +920,28 @@ export default function Consultations() {
                             )}
 
                             {/* No Results */}
-                            {!isFetchingDoctor && 
-                             !isLoadingDoctor && 
-                             doctors.length === 0 && (
-                              <div className="p-4 text-center text-sm text-muted-foreground">
-                                No doctors found
-                              </div>
-                            )}
+                            {!isFetchingDoctor &&
+                              !isLoadingDoctor &&
+                              doctors.length === 0 && (
+                                <div className="p-4 text-center text-sm text-muted-foreground">
+                                  No doctors found
+                                </div>
+                              )}
 
                             {/* Doctors List */}
                             {doctors.map((doctor: any) => (
                               <SelectItem
                                 key={doctor.user?.id || doctor.id}
-                                value={doctor.user?.id?.toString() || doctor.id.toString()}
+                                value={
+                                  doctor.user?.id?.toString() ||
+                                  doctor.id.toString()
+                                }
                               >
                                 <div className="flex flex-col">
                                   <span className="font-medium">
-                                    {doctor.user?.fullName || doctor.fullName || doctor.name}
+                                    {doctor.user?.fullName ||
+                                      doctor.fullName ||
+                                      doctor.name}
                                   </span>
                                   {doctor.user?.email && (
                                     <span className="text-xs text-muted-foreground">
@@ -1046,12 +1072,18 @@ export default function Consultations() {
                         >
                           Cancel
                         </Button>
-                        <Button 
-                          type="submit" 
+                        <Button
+                          type="submit"
                           className="bg-gradient-primary"
-                          disabled={mutation.isPending || !selectedPatient || !formData.consultBy}
+                          disabled={
+                            mutation.isPending ||
+                            !selectedPatient ||
+                            !formData.consultBy
+                          }
                         >
-                          {mutation.isPending ? "Creating..." : "Create Consultation"}
+                          {mutation.isPending
+                            ? "Creating..."
+                            : "Create Consultation"}
                         </Button>
                       </div>
                     </form>

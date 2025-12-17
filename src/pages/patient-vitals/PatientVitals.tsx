@@ -116,7 +116,10 @@ export default function PatientVitals() {
   // Populate form with vital data
   const populateForm = (vital: any) => {
     setFormData({
-      patientId: vital.patient?.patientProvider[0]?.medicalRecordNumber || vital.patientId || "",
+      patientId:
+        vital.patient?.patientProvider[0]?.medicalRecordNumber ||
+        vital.patientId ||
+        "",
       name: vital.patient?.user?.fullName || "",
       id: vital.id || "",
       doctor: vital.recordedByUser?.fullName || vital.doctor || "",
@@ -348,7 +351,12 @@ export default function PatientVitals() {
                                 {vital?.patient?.user?.fullName}
                               </span>
                               <span className="text-sm text-muted-foreground">
-                                ({vital?.patient?.patientProvider[0]?.medicalRecordNumber})
+                                (
+                                {
+                                  vital?.patient?.patientProvider[0]
+                                    ?.medicalRecordNumber
+                                }
+                                )
                               </span>
                             </div>
                             <Badge className="bg-green-100 text-green-800 border-green-200">
@@ -512,8 +520,8 @@ export default function PatientVitals() {
                               Medical Record Number
                             </Label>
                             <p className="text-base">
-                              {selectedVital.patient?.patientProvider[0]?.medicalRecordNumber ||
-                                "N/A"}
+                              {selectedVital.patient?.patientProvider[0]
+                                ?.medicalRecordNumber || "N/A"}
                             </p>
                           </div>
                           <div>
