@@ -9,14 +9,17 @@ import {
   Settings,
   ChevronDown,
   Heart,
-  BookText, Receipt,
-  Wallet, Building2,ReceiptIcon,
+  BookText,
+  Receipt,
+  Wallet,
+  Building2,
+  ReceiptIcon,
   TrendingUp,
   Shield,
   TestTube2,
   TestTubeIcon,
   Bed,
-  Space
+  Space,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -42,7 +45,7 @@ interface NavigationItem {
 }
 
 const superAdminNavigationItems: NavigationItem[] = [
-    {
+  {
     title: "Dashboard",
     icon: LayoutDashboard,
     href: "/dashboard/admin",
@@ -61,31 +64,6 @@ const superAdminNavigationItems: NavigationItem[] = [
       },
     ],
   },
-  //   {
-  //   title: "Reports",
-  //   icon: ReceiptIcon,
-  //   href: "/dashboard/admin",
-  //   permission: "admins" as Permission,
-  //   children: [
-  //       {
-  //       title: "Analytics",
-  //       href: "/dashboard/admin/reports",
-  //       permission: "admins" as Permission,
-  //     },
-  //   ],
-  // },
-  // {
-  //   title: "Healthcare Providers",
-  //   icon: Building2,
-  //   href: "/super-admin/healthcare-providers",
-  //   permission: "super_admin.healthcare_providers" as Permission,
-  // },
-  // {
-  //   title: "User Management",
-  //   icon: Users,
-  //   href: "/super-admin/users",
-  //   permission: "super_admin.users" as Permission,
-  // },
   {
     title: "Analytics & Reports",
     icon: TrendingUp,
@@ -159,11 +137,6 @@ const navigationItems: NavigationItem[] = [
         href: "/dashboard/appointment-check-ins",
         permission: "patient-vitals.appointments" as Permission,
       },
-      // {
-      //   title: "Vitals Entries",
-      //   href: "/dashboard/patient-vitals",
-      //   permission: "patient-vitals" as Permission,
-      // },
     ],
   },
   {
@@ -182,11 +155,6 @@ const navigationItems: NavigationItem[] = [
         href: "/dashboard/prescriptions",
         permission: "prescriptions" as Permission,
       },
-      // {
-      //   title: "Medical History",
-      //   href: "/dashboard/medical-history",
-      //   permission: "medical-history" as Permission,
-      // },
     ],
   },
   {
@@ -212,7 +180,7 @@ const navigationItems: NavigationItem[] = [
       },
     ],
   },
-    {
+  {
     title: "Laboratory",
     icon: TestTubeIcon,
     href: "/dashboard/laboratory",
@@ -223,16 +191,6 @@ const navigationItems: NavigationItem[] = [
         href: "/dashboard/lab/orders",
         permission: "laboratory.orders" as Permission,
       },
-      // {
-      //   title: "Results",
-      //   href: "/dashboard/lab/results",
-      //   permission: "laboratory.results" as Permission,
-      // },
-      // {
-      //   title: "Reports",
-      //   href: "/dashboard/lab/reports",
-      //   permission: "laboratory.reports" as Permission,
-      // },
     ],
   },
   {
@@ -312,7 +270,6 @@ const navigationItems: NavigationItem[] = [
       },
     ],
   },
-    
   {
     title: "Wards & beds",
     icon: Bed,
@@ -331,7 +288,6 @@ const navigationItems: NavigationItem[] = [
       },
     ],
   },
-
   {
     title: "Admissions",
     icon: Space,
@@ -346,7 +302,7 @@ const navigationItems: NavigationItem[] = [
     ],
   },
   // admin dashboard
-    {
+  {
     title: "Dashboard",
     icon: LayoutDashboard,
     href: "/dashboard/admin",
@@ -365,20 +321,20 @@ const navigationItems: NavigationItem[] = [
       },
     ],
   },
-    {
+  {
     title: "Reports",
     icon: ReceiptIcon,
     href: "/dashboard/admin",
     permission: "admins" as Permission,
     children: [
-        {
+      {
         title: "Analytics",
         href: "/dashboard/admin/reports",
         permission: "admins" as Permission,
       },
     ],
   },
-   {
+  {
     title: "Settings",
     icon: Settings,
     href: "/dashboard/settings",
@@ -398,12 +354,12 @@ export function Sidebar({ className }: SidebarProps) {
   const { user } = useAuthStore();
 
   // Check if user is super admin
-  const isSuperAdmin = user?.roles?.some(role => role.slug === 'super_admin');
+  const isSuperAdmin = user?.roles?.some((role) => role.slug === "super_admin");
 
   // Filter navigation items based on user permissions
   const filteredNavigationItems = useMemo(() => {
     const items = isSuperAdmin ? superAdminNavigationItems : navigationItems;
-    
+
     return items
       .filter((item) => hasPermission(item.permission))
       .map((item) => {
@@ -455,9 +411,10 @@ export function Sidebar({ className }: SidebarProps) {
   };
 
   return (
-    <div className={cn("pb-12", className)}>
-      <div className="space-y-4 py-4">
-        <div className="px-3 py-2">
+    <div className={cn("sticky top-0 h-screen pb-12", className)}>
+      <div className="h-full flex flex-col">
+        {/* Logo/Header Section - Fixed */}
+        <div className="flex-shrink-0 px-3 py-2">
           <div className="flex items-center gap-2 px-4 mb-6">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary shadow-glow">
               <Heart className="h-6 w-6 text-primary-foreground" />
@@ -469,8 +426,11 @@ export function Sidebar({ className }: SidebarProps) {
               </p>
             </div>
           </div>
+        </div>
 
-          <div className="space-y-1">
+        {/* Scrollable Navigation Section */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden py-2">
+          <div className="space-y-1 px-3">
             {filteredNavigationItems.map((item) => {
               const isActive = isActiveRoute(item.href);
               const hasActiveChild = item.children?.some((child) =>
@@ -488,12 +448,14 @@ export function Sidebar({ className }: SidebarProps) {
                     )}
                     onClick={() => handleNavigation(item)}
                   >
-                    <item.icon className="h-4 w-4" />
-                    <span className="flex-1 text-left">{item.title}</span>
+                    <item.icon className="h-4 w-4 flex-shrink-0" />
+                    <span className="flex-1 text-left truncate">
+                      {item.title}
+                    </span>
                     {item.children && item.children.length > 0 && (
                       <ChevronDown
                         className={cn(
-                          "h-4 w-4 transition-transform",
+                          "h-4 w-4 flex-shrink-0 transition-transform",
                           expandedItems.includes(item.title) && "rotate-180"
                         )}
                       />
@@ -520,7 +482,7 @@ export function Sidebar({ className }: SidebarProps) {
                               )}
                               onClick={() => navigate(child.href)}
                             >
-                              {child.title}
+                              <span className="truncate">{child.title}</span>
                             </Button>
                           );
                         })}
@@ -531,6 +493,11 @@ export function Sidebar({ className }: SidebarProps) {
             })}
           </div>
         </div>
+
+        {/* Optional: Bottom Section (if needed) */}
+        {/* <div className="flex-shrink-0 px-3 py-4 mt-auto border-t">
+          Additional bottom content here
+        </div> */}
       </div>
     </div>
   );
