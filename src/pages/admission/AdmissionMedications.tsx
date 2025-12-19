@@ -666,7 +666,10 @@ export default function AdmissionMedications() {
                   <Eye className="h-4 w-4 mr-2" />
                   View Admission
                 </Button>
-                <Button
+
+                {
+                  showAddButton && (
+  <Button
                   onClick={() => setIsAddDialogOpen(true)}
                   disabled={prescribeMutation.isPending}
                   className="bg-gradient-primary hover:shadow-glow transition-all"
@@ -678,6 +681,9 @@ export default function AdmissionMedications() {
                   )}
                   Prescribe Medication
                 </Button>
+                  )
+                }
+              
               </div>
             </div>
 
@@ -967,7 +973,6 @@ export default function AdmissionMedications() {
       )}
 
       {/* Add Medication Dialog */}
-      {showAddButton && (
         <AddMedicationDialog
           isOpen={isAddDialogOpen}
           onClose={() => {
@@ -981,7 +986,6 @@ export default function AdmissionMedications() {
           onSubmit={handleAddMedication}
           isLoading={prescribeMutation.isPending}
         />
-      )}
 
       {/* Administer Medication Dialog */}
       <AdministerMedicationDialog
