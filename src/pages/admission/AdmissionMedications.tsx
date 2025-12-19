@@ -80,6 +80,7 @@ import {
   AlertTriangle,
   RefreshCw,
   BarChart3,
+  Menu,
 } from "lucide-react";
 import {
   administerMedication,
@@ -515,10 +516,10 @@ export default function AdmissionMedications() {
         <Sidebar />
         <div className="flex-1 flex flex-col overflow-hidden">
           <Header />
-          <main className="flex-1 overflow-y-auto p-6">
-            <div className="text-center py-12">
-              <AlertTriangle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <main className="flex-1 overflow-y-auto p-4 md:p-6">
+            <div className="text-center py-8 md:py-12">
+              <AlertTriangle className="h-12 w-12 md:h-16 md:w-16 text-red-500 mx-auto mb-4" />
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
                 Error Loading Admission
               </h1>
               <p className="text-muted-foreground mb-6">
@@ -542,18 +543,18 @@ export default function AdmissionMedications() {
         <Sidebar />
         <div className="flex-1 flex flex-col overflow-hidden">
           <Header />
-          <main className="flex-1 overflow-y-auto p-6">
+          <main className="flex-1 overflow-y-auto p-4 md:p-6">
             <div className="space-y-6">
               <div className="flex items-center gap-4">
-                <Skeleton className="h-10 w-10 rounded" />
-                <Skeleton className="h-8 w-64" />
+                <Skeleton className="h-8 w-8 md:h-10 md:w-10 rounded" />
+                <Skeleton className="h-6 w-48 md:h-8 md:w-64" />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                 {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="h-32 rounded-lg" />
+                  <Skeleton key={i} className="h-24 md:h-32 rounded-lg" />
                 ))}
               </div>
-              <Skeleton className="h-96 rounded-lg" />
+              <Skeleton className="h-64 md:h-96 rounded-lg" />
             </div>
           </main>
         </div>
@@ -567,10 +568,10 @@ export default function AdmissionMedications() {
         <Sidebar />
         <div className="flex-1 flex flex-col overflow-hidden">
           <Header />
-          <main className="flex-1 overflow-y-auto p-6">
-            <div className="text-center py-12">
-              <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <main className="flex-1 overflow-y-auto p-4 md:p-6">
+            <div className="text-center py-8 md:py-12">
+              <AlertCircle className="h-12 w-12 md:h-16 md:w-16 text-red-500 mx-auto mb-4" />
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
                 Admission Not Found
               </h1>
               <p className="text-muted-foreground mb-6">
@@ -595,9 +596,17 @@ export default function AdmissionMedications() {
 
   return (
     <div className="flex h-screen bg-background">
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setSidebarOpen(true)}
+        className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-card border shadow-md"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform md:relative md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -608,31 +617,32 @@ export default function AdmissionMedications() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
 
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="space-y-6">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">
+          <div className="space-y-4 md:space-y-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-3">
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() =>
                     navigate(`/dashboard/admissions/${id}/details`)
                   }
+                  className="shrink-0"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
-                <div>
-                  <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent">
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-xl md:text-3xl font-bold bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent truncate">
                     Medication Management
                   </h1>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <User className="h-4 w-4" />
-                    <span className="font-medium">
+                  <div className="flex flex-wrap items-center gap-1 md:gap-2 text-sm text-muted-foreground">
+                    <User className="h-3 w-3 md:h-4 md:w-4 shrink-0" />
+                    <span className="font-medium truncate">
                       {patient?.user?.fullName}
                     </span>
-                    <span>•</span>
-                    <span>
+                    <span className="hidden md:inline">•</span>
+                    <span className="truncate">
                       Admission: {admission.reference?.substring(0, 5)}
                     </span>
                     <span>•</span>
@@ -644,12 +654,13 @@ export default function AdmissionMedications() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Button
                   variant="outline"
                   size="icon"
                   onClick={() => refetchMedications()}
                   disabled={isLoadingMedications}
+                  className="shrink-0"
                 >
                   <RefreshCw
                     className={`h-4 w-4 ${
@@ -662,77 +673,77 @@ export default function AdmissionMedications() {
                   onClick={() =>
                     navigate(`/dashboard/admissions/${id}/details`)
                   }
+                  className="flex-1 md:flex-none"
                 >
                   <Eye className="h-4 w-4 mr-2" />
-                  View Admission
+                  <span className="hidden sm:inline">View Admission</span>
+                  <span className="sm:hidden">Admission</span>
                 </Button>
 
-                {
-                  showAddButton && (
-  <Button
-                  onClick={() => setIsAddDialogOpen(true)}
-                  disabled={prescribeMutation.isPending}
-                  className="bg-gradient-primary hover:shadow-glow transition-all"
-                >
-                  {prescribeMutation.isPending ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Plus className="h-4 w-4 mr-2" />
-                  )}
-                  Prescribe Medication
-                </Button>
-                  )
-                }
-              
+                {showAddButton && (
+                  <Button
+                    onClick={() => setIsAddDialogOpen(true)}
+                    disabled={prescribeMutation.isPending}
+                    className="flex-1 md:flex-none bg-gradient-primary hover:shadow-glow transition-all"
+                  >
+                    {prescribeMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Plus className="h-4 w-4 mr-2" />
+                    )}
+                    <span className="hidden sm:inline">Prescribe Medication</span>
+                    <span className="sm:hidden">Prescribe</span>
+                  </Button>
+                )}
               </div>
             </div>
 
             {/* Stats Overview */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <Card>
-                <CardContent className="p-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+              <Card className="overflow-hidden">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-2xl font-bold text-primary">
+                      <div className="text-lg md:text-2xl font-bold text-primary">
                         {stats.active}
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        Active Medications
+                      <div className="text-xs md:text-sm text-muted-foreground">
+                        Active
                       </div>
                     </div>
-                    <div className="p-3 rounded-full bg-blue-100">
-                      <Pill className="h-6 w-6 text-blue-600" />
+                    <div className="p-2 md:p-3 rounded-full bg-blue-100">
+                      <Pill className="h-4 w-4 md:h-6 md:w-6 text-blue-600" />
                     </div>
                   </div>
                   <Progress
                     value={(stats.active / Math.max(stats.total, 1)) * 100}
-                    className="mt-2 h-1.5"
+                    className="mt-2 h-1"
                   />
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardContent className="p-6">
+              <Card className="overflow-hidden">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-2xl font-bold text-warning">
+                      <div className="text-lg md:text-2xl font-bold text-warning">
                         {stats.due}
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        Due for Administration
+                      <div className="text-xs md:text-sm text-muted-foreground">
+                        Due
                       </div>
                     </div>
-                    <div className="p-3 rounded-full bg-yellow-100">
-                      <Clock className="h-6 w-6 text-yellow-600" />
+                    <div className="p-2 md:p-3 rounded-full bg-yellow-100">
+                      <Clock className="h-4 w-4 md:h-6 md:w-6 text-yellow-600" />
                     </div>
                   </div>
                   {stats.due > 0 && (
                     <div className="mt-2">
                       <Badge
                         variant="outline"
-                        className="bg-yellow-50 text-yellow-700 border-yellow-200"
+                        className="bg-yellow-50 text-yellow-700 border-yellow-200 text-xs"
                       >
-                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        <AlertTriangle className="h-2 w-2 md:h-3 md:w-3 mr-1" />
                         Action Required
                       </Badge>
                     </div>
@@ -740,43 +751,43 @@ export default function AdmissionMedications() {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardContent className="p-6">
+              <Card className="overflow-hidden">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-2xl font-bold text-green-600">
+                      <div className="text-lg md:text-2xl font-bold text-green-600">
                         {stats.todayAdministered}
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        Administered Today
+                      <div className="text-xs md:text-sm text-muted-foreground">
+                        Today
                       </div>
                     </div>
-                    <div className="p-3 rounded-full bg-green-100">
-                      <CheckCircle className="h-6 w-6 text-green-600" />
+                    <div className="p-2 md:p-3 rounded-full bg-green-100">
+                      <CheckCircle className="h-4 w-4 md:h-6 md:w-6 text-green-600" />
                     </div>
                   </div>
-                  <div className="mt-2 text-xs text-muted-foreground">
+                  <div className="mt-2 text-xs text-muted-foreground hidden md:block">
                     {stats.administered} total administered
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardContent className="p-6">
+              <Card className="overflow-hidden">
+                <CardContent className="p-4 md:p-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <div className="text-2xl font-bold text-purple-600">
+                      <div className="text-lg md:text-2xl font-bold text-purple-600">
                         {stats.total}
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        Total Prescribed
+                      <div className="text-xs md:text-sm text-muted-foreground">
+                        Total
                       </div>
                     </div>
-                    <div className="p-3 rounded-full bg-purple-100">
-                      <BarChart3 className="h-6 w-6 text-purple-600" />
+                    <div className="p-2 md:p-3 rounded-full bg-purple-100">
+                      <BarChart3 className="h-4 w-4 md:h-6 md:w-6 text-purple-600" />
                     </div>
                   </div>
-                  <div className="mt-2 text-xs text-muted-foreground">
+                  <div className="mt-2 text-xs text-muted-foreground hidden md:block">
                     {stats.completed} completed • {stats.cancelled} cancelled
                   </div>
                 </CardContent>
@@ -784,51 +795,45 @@ export default function AdmissionMedications() {
             </div>
 
             {/* Main Content */}
-            <Tabs defaultValue="all" className="space-y-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <TabsList>
-                  <TabsTrigger value="all" className="flex items-center gap-2">
-                    <Pill className="h-4 w-4" />
-                    All Medications
+            <Tabs defaultValue="all" className="space-y-4 md:space-y-6">
+              <div className="flex flex-col gap-3">
+                <TabsList className="w-full flex-wrap h-auto">
+                  <TabsTrigger value="all" className="flex-1 md:flex-none">
+                    <Pill className="h-3 w-3 md:h-4 md:w-4 mr-1" />
+                    <span className="hidden sm:inline">All</span>
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="active"
-                    className="flex items-center gap-2"
-                  >
-                    <Clock className="h-4 w-4" />
-                    Active
+                  <TabsTrigger value="active" className="flex-1 md:flex-none">
+                    <Clock className="h-3 w-3 md:h-4 md:w-4 mr-1" />
+                    <span className="hidden sm:inline">Active</span>
                     {stats.active > 0 && (
                       <Badge
                         variant="secondary"
-                        className="ml-1 h-5 w-5 p-0 text-xs"
+                        className="ml-1 h-4 w-4 p-0 text-[10px] md:text-xs"
                       >
                         {stats.active}
                       </Badge>
                     )}
                   </TabsTrigger>
-                  <TabsTrigger value="due" className="flex items-center gap-2">
-                    <AlertTriangle className="h-4 w-4" />
-                    Due
+                  <TabsTrigger value="due" className="flex-1 md:flex-none">
+                    <AlertTriangle className="h-3 w-3 md:h-4 md:w-4 mr-1" />
+                    <span className="hidden sm:inline">Due</span>
                     {stats.due > 0 && (
                       <Badge
                         variant="destructive"
-                        className="ml-1 h-5 w-5 p-0 text-xs"
+                        className="ml-1 h-4 w-4 p-0 text-[10px] md:text-xs"
                       >
                         {stats.due}
                       </Badge>
                     )}
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="history"
-                    className="flex items-center gap-2"
-                  >
-                    <History className="h-4 w-4" />
-                    History
+                  <TabsTrigger value="history" className="flex-1 md:flex-none">
+                    <History className="h-3 w-3 md:h-4 md:w-4 mr-1" />
+                    <span className="hidden sm:inline">History</span>
                   </TabsTrigger>
                 </TabsList>
 
                 <div className="flex items-center gap-2">
-                  <div className="relative w-64">
+                  <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder="Search medications..."
@@ -842,6 +847,7 @@ export default function AdmissionMedications() {
                       variant="ghost"
                       size="sm"
                       onClick={() => setSearchQuery("")}
+                      className="shrink-0"
                     >
                       Clear
                     </Button>
@@ -852,26 +858,30 @@ export default function AdmissionMedications() {
               {/* All Medications Tab */}
               <TabsContent value="all">
                 <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
+                  <CardHeader className="p-4 md:p-6">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
                       <div>
-                        <CardTitle>Medication List</CardTitle>
-                        <CardDescription>
+                        <CardTitle className="text-lg md:text-xl">
+                          Medication List
+                        </CardTitle>
+                        <CardDescription className="text-sm">
                           All medications prescribed for this admission
                         </CardDescription>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline">{stats.total} total</Badge>
+                        <Badge variant="outline" className="text-xs">
+                          {stats.total} total
+                        </Badge>
                         <Badge
                           variant="outline"
-                          className="bg-blue-50 text-blue-700"
+                          className="bg-blue-50 text-blue-700 text-xs"
                         >
                           {stats.active} active
                         </Badge>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="p-4 md:p-6">
                     {isLoadingMedications ? (
                       <div className="space-y-3">
                         {[1, 2, 3].map((i) => (
@@ -887,12 +897,12 @@ export default function AdmissionMedications() {
                         </AlertDescription>
                       </Alert>
                     ) : filteredMedications?.length === 0 ? (
-                      <div className="text-center py-12">
-                        <Pill className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-medium mb-2">
+                      <div className="text-center py-8 md:py-12">
+                        <Pill className="h-8 w-8 md:h-12 md:w-12 text-muted-foreground mx-auto mb-4" />
+                        <h3 className="text-base md:text-lg font-medium mb-2">
                           No Medications Found
                         </h3>
-                        <p className="text-muted-foreground mb-4">
+                        <p className="text-muted-foreground mb-4 text-sm">
                           {searchQuery
                             ? "No medications match your search."
                             : "No medications have been prescribed for this patient."}
@@ -973,19 +983,19 @@ export default function AdmissionMedications() {
       )}
 
       {/* Add Medication Dialog */}
-        <AddMedicationDialog
-          isOpen={isAddDialogOpen}
-          onClose={() => {
-            setIsAddDialogOpen(false);
-            resetForm();
-          }}
-          formData={formData}
-          onFormChange={(key, value) =>
-            setFormData((prev) => ({ ...prev, [key]: value }))
-          }
-          onSubmit={handleAddMedication}
-          isLoading={prescribeMutation.isPending}
-        />
+      <AddMedicationDialog
+        isOpen={isAddDialogOpen}
+        onClose={() => {
+          setIsAddDialogOpen(false);
+          resetForm();
+        }}
+        formData={formData}
+        onFormChange={(key, value) =>
+          setFormData((prev) => ({ ...prev, [key]: value }))
+        }
+        onSubmit={handleAddMedication}
+        isLoading={prescribeMutation.isPending}
+      />
 
       {/* Administer Medication Dialog */}
       <AdministerMedicationDialog
@@ -1052,9 +1062,9 @@ function MedicationCard({
     <div className="border rounded-lg overflow-hidden transition-all duration-200 hover:shadow-md">
       <div className="p-4 bg-card">
         <div className="flex items-start justify-between">
-          <div className="flex items-start gap-4 flex-1">
+          <div className="flex items-start gap-3 flex-1 min-w-0">
             <div
-              className={`p-2 rounded-full ${
+              className={`p-2 rounded-full shrink-0 ${
                 medication.status === "prescribed"
                   ? "bg-blue-100 text-blue-600"
                   : medication.status === "administered"
@@ -1064,26 +1074,26 @@ function MedicationCard({
                   : "bg-red-100 text-red-600"
               }`}
             >
-              <Pill className="h-5 w-5" />
+              <Pill className="h-4 w-4 md:h-5 md:w-5" />
             </div>
-            <div className="flex-1">
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <h4 className="font-semibold text-lg">
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-2 mb-2">
+                <div className="min-w-0">
+                  <h4 className="font-semibold text-base md:text-lg truncate">
                     {medication.medicationName}
                   </h4>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                    <span className="font-medium">{medication.dosage}</span>
-                    <span>•</span>
-                    <span>
+                  <div className="flex flex-wrap items-center gap-1 md:gap-2 text-xs md:text-sm text-muted-foreground mt-1">
+                    <span className="font-medium truncate">{medication.dosage}</span>
+                    <span className="hidden md:inline">•</span>
+                    <span className="truncate">
                       {
                         FREQUENCIES.find(
                           (f) => f.value === medication.frequency
                         )?.label
                       }
                     </span>
-                    <span>•</span>
-                    <span>
+                    <span className="hidden md:inline">•</span>
+                    <span className="truncate">
                       {
                         MEDICATION_ROUTES.find(
                           (r) => r.value === medication.route
@@ -1093,8 +1103,10 @@ function MedicationCard({
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <MedicationStatusBadge status={medication.status} />
-                  <Button variant="ghost" size="icon" onClick={onToggleExpand}>
+                  <div className="hidden md:block">
+                    <MedicationStatusBadge status={medication.status} />
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={onToggleExpand} className="shrink-0">
                     {isExpanded ? (
                       <ChevronUp className="h-4 w-4" />
                     ) : (
@@ -1104,36 +1116,40 @@ function MedicationCard({
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div>
+              <div className="md:hidden mb-2">
+                <MedicationStatusBadge status={medication.status} />
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 text-xs md:text-sm">
+                <div className="truncate">
                   <span className="text-muted-foreground">Start:</span>
-                  <span className="font-medium ml-2">
+                  <span className="font-medium ml-1">
                     {formatDate(medication.startDate)}
                   </span>
                 </div>
                 {medication.endDate && (
-                  <div>
+                  <div className="truncate">
                     <span className="text-muted-foreground">End:</span>
-                    <span className="font-medium ml-2">
+                    <span className="font-medium ml-1">
                       {formatDate(medication.endDate)}
                     </span>
                   </div>
                 )}
-                <div>
-                  <span className="text-muted-foreground">Prescribed By:</span>
-                  <span className="font-medium ml-2">
+                <div className="truncate">
+                  <span className="text-muted-foreground">By:</span>
+                  <span className="font-medium ml-1 truncate">
                     {medication.prescriber?.fullName || "N/A"}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 truncate">
                   {medication.status === "administered" &&
                     medication.administeredAt && (
                       <>
-                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        <CheckCircle className="h-3 w-3 text-green-500 shrink-0" />
                         <span className="text-muted-foreground">
                           Administered:
                         </span>
-                        <span className="font-medium">
+                        <span className="font-medium ml-1 truncate">
                           {formatDate(medication.administeredAt)}
                         </span>
                       </>
@@ -1148,13 +1164,13 @@ function MedicationCard({
       {/* Expanded Details */}
       {isExpanded && (
         <div className="border-t p-4 bg-muted/30">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             <div className="space-y-4">
               <div>
-                <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                <Label className="text-xs md:text-sm font-medium text-muted-foreground mb-2 block">
                   Schedule Details
                 </Label>
-                <div className="space-y-2 text-sm">
+                <div className="space-y-2 text-xs md:text-sm">
                   <div className="flex justify-between">
                     <span>Frequency:</span>
                     <span className="font-medium">
@@ -1194,12 +1210,12 @@ function MedicationCard({
 
               {medication.prescriber && (
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  <Label className="text-xs md:text-sm font-medium text-muted-foreground mb-2 block">
                     Prescription Details
                   </Label>
                   <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm">
+                    <User className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground shrink-0" />
+                    <span className="text-xs md:text-sm truncate">
                       Prescribed by{" "}
                       <span className="font-medium">
                         {medication.prescriber.fullName}
@@ -1219,13 +1235,13 @@ function MedicationCard({
             <div className="space-y-4">
               {medication.administrator && (
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  <Label className="text-xs md:text-sm font-medium text-muted-foreground mb-2 block">
                     Administration Details
                   </Label>
-                  <div className="space-y-2 text-sm">
+                  <div className="space-y-2 text-xs md:text-sm">
                     <div className="flex justify-between">
                       <span>Administered By:</span>
-                      <span className="font-medium">
+                      <span className="font-medium truncate">
                         {medication.administrator.fullName}
                       </span>
                     </div>
@@ -1243,10 +1259,10 @@ function MedicationCard({
 
               {medication.notes && (
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  <Label className="text-xs md:text-sm font-medium text-muted-foreground mb-2 block">
                     Notes
                   </Label>
-                  <p className="text-sm bg-white p-3 rounded border">
+                  <p className="text-xs md:text-sm bg-white p-3 rounded border">
                     {medication.notes}
                   </p>
                 </div>
@@ -1254,12 +1270,12 @@ function MedicationCard({
 
               {medication.cancellationReason && (
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  <Label className="text-xs md:text-sm font-medium text-muted-foreground mb-2 block">
                     Cancellation Reason
                   </Label>
                   <Alert variant="destructive" className="py-2">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription className="text-sm">
+                    <AlertTriangle className="h-3 w-3 md:h-4 md:w-4" />
+                    <AlertDescription className="text-xs md:text-sm">
                       {medication.cancellationReason}
                     </AlertDescription>
                   </Alert>
@@ -1269,21 +1285,21 @@ function MedicationCard({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-2 mt-6 pt-4 border-t">
-            <Button variant="ghost" size="sm" onClick={onViewHistory}>
-              <History className="h-4 w-4 mr-2" />
-              View History
+          <div className="flex flex-wrap items-center justify-end gap-2 mt-4 md:mt-6 pt-4 border-t">
+            <Button variant="ghost" size="sm" onClick={onViewHistory} className="flex-1 md:flex-none">
+              <History className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+              <span className="text-xs md:text-sm">History</span>
             </Button>
 
             {medication.status === "prescribed" && (
               <>
-                <Button variant="default" size="sm" onClick={onAdminister}>
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Administer
+                <Button variant="default" size="sm" onClick={onAdminister} className="flex-1 md:flex-none">
+                  <CheckCircle className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                  <span className="text-xs md:text-sm">Administer</span>
                 </Button>
-                <Button variant="destructive" size="sm" onClick={onCancel}>
-                  <XCircle className="h-4 w-4 mr-2" />
-                  Cancel
+                <Button variant="destructive" size="sm" onClick={onCancel} className="flex-1 md:flex-none">
+                  <XCircle className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                  <span className="text-xs md:text-sm">Cancel</span>
                 </Button>
               </>
             )}
@@ -1318,11 +1334,11 @@ function ActiveMedicationsTab({
   if (!medications || medications.length === 0) {
     return (
       <Card>
-        <CardContent className="py-12">
+        <CardContent className="py-8 md:py-12">
           <div className="text-center">
-            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No Active Medications</h3>
-            <p className="text-muted-foreground">
+            <CheckCircle className="h-8 w-8 md:h-12 md:w-12 text-green-500 mx-auto mb-4" />
+            <h3 className="text-base md:text-lg font-medium mb-2">No Active Medications</h3>
+            <p className="text-muted-foreground text-sm">
               All medications have been administered, completed, or cancelled.
             </p>
           </div>
@@ -1333,71 +1349,118 @@ function ActiveMedicationsTab({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Active Medications</CardTitle>
-        <CardDescription>
+      <CardHeader className="p-4 md:p-6">
+        <CardTitle className="text-lg md:text-xl">Active Medications</CardTitle>
+        <CardDescription className="text-sm">
           Medications currently prescribed and active ({medications.length})
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Medication</TableHead>
-              <TableHead>Dosage</TableHead>
-              <TableHead>Schedule</TableHead>
-              <TableHead>Start Date</TableHead>
-              <TableHead>Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {medications.map((med: Medication) => (
-              <TableRow key={med.id}>
-                <TableCell className="font-medium">
+      <CardContent className="p-0 md:p-6">
+        <div className="md:hidden">
+          {medications.map((med: Medication) => (
+            <div key={med.id} className="border-b p-4 last:border-b-0">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Pill className="h-4 w-4 text-primary" />
-                    {med.medicationName}
+                    <span className="font-medium truncate">{med.medicationName}</span>
                   </div>
-                </TableCell>
-                <TableCell>{med.dosage}</TableCell>
-                <TableCell>
-                  <div className="flex flex-col">
-                    <span>
-                      {
-                        FREQUENCIES.find((f) => f.value === med.frequency)
-                          ?.label
-                      }
+                  <MedicationStatusBadge status={med.status} />
+                </div>
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Dosage:</span>
+                    <span className="font-medium ml-2">{med.dosage}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Schedule:</span>
+                    <span className="font-medium ml-2">
+                      {FREQUENCIES.find((f) => f.value === med.frequency)?.label}
                     </span>
-                    <span className="text-xs text-muted-foreground">
-                      {
-                        MEDICATION_ROUTES.find((r) => r.value === med.route)
-                          ?.label
-                      }
+                    <span className="text-muted-foreground ml-2">•</span>
+                    <span className="font-medium ml-2">
+                      {MEDICATION_ROUTES.find((r) => r.value === med.route)?.label}
                     </span>
                   </div>
-                </TableCell>
-                <TableCell>
-                  {formatDate(med.startDate)}
-                  {med.endDate && (
-                    <div className="text-xs text-muted-foreground">
-                      Ends: {formatDate(med.endDate)}
-                    </div>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Button
-                    size="sm"
-                    onClick={() => onAdminister(med)}
-                    className="w-full"
-                  >
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Administer
-                  </Button>
-                </TableCell>
+                  <div>
+                    <span className="text-muted-foreground">Start:</span>
+                    <span className="font-medium ml-2">
+                      {formatDate(med.startDate)}
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => onAdminister(med)}
+                  className="w-full"
+                >
+                  <CheckCircle className="h-3 w-3 md:h-4 md:w-4 mr-2" />
+                  Administer
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="hidden md:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Medication</TableHead>
+                <TableHead>Dosage</TableHead>
+                <TableHead>Schedule</TableHead>
+                <TableHead>Start Date</TableHead>
+                <TableHead>Action</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {medications.map((med: Medication) => (
+                <TableRow key={med.id}>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center gap-2">
+                      <Pill className="h-4 w-4 text-primary" />
+                      {med.medicationName}
+                    </div>
+                  </TableCell>
+                  <TableCell>{med.dosage}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-col">
+                      <span>
+                        {
+                          FREQUENCIES.find((f) => f.value === med.frequency)
+                            ?.label
+                        }
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {
+                          MEDICATION_ROUTES.find((r) => r.value === med.route)
+                            ?.label
+                        }
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {formatDate(med.startDate)}
+                    {med.endDate && (
+                      <div className="text-xs text-muted-foreground">
+                        Ends: {formatDate(med.endDate)}
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      size="sm"
+                      onClick={() => onAdminister(med)}
+                      className="w-full"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Administer
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );
@@ -1427,13 +1490,12 @@ function DueMedicationsTab({
   if (!medications || medications.length === 0) {
     return (
       <Card>
-        <CardContent className="py-12">
+        <CardContent className="py-8 md:py-12">
           <div className="text-center">
-            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No Due Medications</h3>
-            <p className="text-muted-foreground">
-              All medications are up to date. Next doses will appear here when
-              due.
+            <CheckCircle className="h-8 w-8 md:h-12 md:w-12 text-green-500 mx-auto mb-4" />
+            <h3 className="text-base md:text-lg font-medium mb-2">No Due Medications</h3>
+            <p className="text-muted-foreground text-sm">
+              All medications are up to date. Next doses will appear here when due.
             </p>
           </div>
         </CardContent>
@@ -1443,52 +1505,52 @@ function DueMedicationsTab({
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
+      <CardHeader className="p-4 md:p-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
           <div>
-            <CardTitle>Due for Administration</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-lg md:text-xl">Due for Administration</CardTitle>
+            <CardDescription className="text-sm">
               Medications scheduled for administration now or soon
             </CardDescription>
           </div>
-          <Badge variant="destructive">
+          <Badge variant="destructive" className="self-start md:self-auto">
             <AlertTriangle className="h-3 w-3 mr-1" />
             {medications.length} Due
           </Badge>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
+      <CardContent className="p-4 md:p-6">
+        <div className="space-y-3 md:space-y-4">
           {medications.map((med: Medication) => (
             <div
               key={med.id}
               className="border rounded-lg p-4 border-yellow-200 bg-yellow-50 hover:bg-yellow-100 transition-colors"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="p-2 rounded-full bg-yellow-100 text-yellow-600">
-                    <Clock className="h-5 w-5" />
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div className="flex items-start md:items-center gap-3">
+                  <div className="p-2 rounded-full bg-yellow-100 text-yellow-600 shrink-0">
+                    <Clock className="h-4 w-4 md:h-5 md:w-5" />
                   </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-semibold">{med.medicationName}</h4>
+                  <div className="min-w-0">
+                    <div className="flex flex-col md:flex-row md:items-center gap-2">
+                      <h4 className="font-semibold truncate">{med.medicationName}</h4>
                       <Badge
                         variant="outline"
-                        className="bg-yellow-100 text-yellow-700"
+                        className="bg-yellow-100 text-yellow-700 self-start md:self-auto"
                       >
                         Due Now
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                    <div className="flex flex-wrap items-center gap-1 md:gap-2 text-xs md:text-sm text-muted-foreground mt-1">
                       <span>{med.dosage}</span>
-                      <span>•</span>
+                      <span className="hidden md:inline">•</span>
                       <span>
                         {
                           FREQUENCIES.find((f) => f.value === med.frequency)
                             ?.label
                         }
                       </span>
-                      <span>•</span>
+                      <span className="hidden md:inline">•</span>
                       <span>
                         {
                           MEDICATION_ROUTES.find((r) => r.value === med.route)
@@ -1500,28 +1562,29 @@ function DueMedicationsTab({
                 </div>
                 <Button
                   onClick={() => onAdminister(med)}
-                  className="bg-yellow-600 hover:bg-yellow-700"
+                  className="bg-yellow-600 hover:bg-yellow-700 md:self-start"
                 >
                   <Syringe className="h-4 w-4 mr-2" />
-                  Mark as Administered
+                  <span className="hidden md:inline">Mark as Administered</span>
+                  <span className="md:hidden">Administer</span>
                 </Button>
               </div>
-              <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="mt-3 md:mt-4 grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 text-xs md:text-sm">
                 <div>
                   <span className="text-muted-foreground">Started:</span>
-                  <span className="font-medium ml-2">
+                  <span className="font-medium ml-1 md:ml-2">
                     {formatDate(med.startDate)}
                   </span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Frequency:</span>
-                  <span className="font-medium ml-2">
+                  <span className="font-medium ml-1 md:ml-2">
                     {FREQUENCIES.find((f) => f.value === med.frequency)?.label}
                   </span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Route:</span>
-                  <span className="font-medium ml-2">
+                  <span className="font-medium ml-1 md:ml-2">
                     {
                       MEDICATION_ROUTES.find((r) => r.value === med.route)
                         ?.label
@@ -1530,7 +1593,9 @@ function DueMedicationsTab({
                 </div>
                 <div>
                   <span className="text-muted-foreground">Status:</span>
-                  <MedicationStatusBadge status={med.status} />
+                  <div className="inline-block ml-1 md:ml-2">
+                    <MedicationStatusBadge status={med.status} />
+                  </div>
                 </div>
               </div>
             </div>
@@ -1550,11 +1615,11 @@ function MedicationHistoryTab({
   if (!medications || medications.length === 0) {
     return (
       <Card>
-        <CardContent className="py-12">
+        <CardContent className="py-8 md:py-12">
           <div className="text-center">
-            <History className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No Medication History</h3>
-            <p className="text-muted-foreground">
+            <History className="h-8 w-8 md:h-12 md:w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-base md:text-lg font-medium mb-2">No Medication History</h3>
+            <p className="text-muted-foreground text-sm">
               No medication history available for this admission.
             </p>
           </div>
@@ -1565,23 +1630,23 @@ function MedicationHistoryTab({
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Medication History</CardTitle>
-        <CardDescription>
+      <CardHeader className="p-4 md:p-6">
+        <CardTitle className="text-lg md:text-xl">Medication History</CardTitle>
+        <CardDescription className="text-sm">
           Complete history of all medications for this admission
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
+      <CardContent className="p-4 md:p-6">
+        <div className="space-y-4 md:space-y-6">
           {medications.map((med: any) => (
             <Card key={med.id} className="overflow-hidden">
-              <CardHeader className="bg-muted/50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="text-lg">
+              <CardHeader className="bg-muted/50 p-4 md:p-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <CardTitle className="text-base md:text-lg truncate">
                       {med.medicationName}
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-sm truncate">
                       {med.dosage} •{" "}
                       {
                         FREQUENCIES.find((f) => f.value === med.frequency)
@@ -1591,18 +1656,20 @@ function MedicationHistoryTab({
                   </div>
                   <div className="flex items-center gap-2">
                     <MedicationStatusBadge status={med.status} />
-                    <Badge variant="outline">{formatDate(med.startDate)}</Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {formatDate(med.startDate)}
+                    </Badge>
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <CardContent className="pt-4 md:pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                      <Label className="text-xs md:text-sm font-medium text-muted-foreground mb-2 block">
                         Prescription Details
                       </Label>
-                      <div className="space-y-2 text-sm">
+                      <div className="space-y-2 text-xs md:text-sm">
                         <div className="flex justify-between">
                           <span>Route:</span>
                           <span className="font-medium">
@@ -1639,11 +1706,11 @@ function MedicationHistoryTab({
 
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                      <Label className="text-xs md:text-sm font-medium text-muted-foreground mb-2 block">
                         Administration History
                       </Label>
                       {med.administrator ? (
-                        <div className="space-y-2 text-sm">
+                        <div className="space-y-2 text-xs md:text-sm">
                           <div className="flex justify-between">
                             <span>Administered By:</span>
                             <span className="font-medium">
@@ -1660,7 +1727,7 @@ function MedicationHistoryTab({
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs md:text-sm text-muted-foreground">
                           Not administered
                         </p>
                       )}
@@ -1668,10 +1735,10 @@ function MedicationHistoryTab({
 
                     {med.notes && (
                       <div>
-                        <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                        <Label className="text-xs md:text-sm font-medium text-muted-foreground mb-2 block">
                           Notes
                         </Label>
-                        <p className="text-sm bg-white p-3 rounded border">
+                        <p className="text-xs md:text-sm bg-white p-3 rounded border">
                           {med.notes}
                         </p>
                       </div>
@@ -1679,12 +1746,12 @@ function MedicationHistoryTab({
 
                     {med.cancellationReason && (
                       <div>
-                        <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                        <Label className="text-xs md:text-sm font-medium text-muted-foreground mb-2 block">
                           Cancellation Reason
                         </Label>
                         <Alert variant="destructive" className="py-2">
-                          <AlertTriangle className="h-4 w-4" />
-                          <AlertDescription className="text-sm">
+                          <AlertTriangle className="h-3 w-3 md:h-4 md:w-4" />
+                          <AlertDescription className="text-xs md:text-sm">
                             {med.cancellationReason}
                           </AlertDescription>
                         </Alert>
@@ -1701,7 +1768,7 @@ function MedicationHistoryTab({
   );
 }
 
-// Add Medication Dialog Component
+// Add Medication Dialog Component (already responsive)
 function AddMedicationDialog({
   isOpen,
   onClose,
@@ -1717,24 +1784,24 @@ function AddMedicationDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl w-[95vw] md:w-full mx-2 md:mx-0">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Plus className="h-5 w-5" />
+          <DialogTitle className="flex items-center gap-2 text-lg md:text-xl">
+            <Plus className="h-4 w-4 md:h-5 md:w-5" />
             Prescribe New Medication
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm md:text-base">
             Add a new medication to the patient's treatment plan
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="space-y-6 py-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4 md:space-y-6 py-2 md:py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
               <div className="space-y-2">
                 <Label
                   htmlFor="medicationName"
-                  className="flex items-center gap-1"
+                  className="flex items-center gap-1 text-sm md:text-base"
                 >
                   Medication Name <span className="text-red-500">*</span>
                 </Label>
@@ -1747,11 +1814,12 @@ function AddMedicationDialog({
                   }
                   required
                   disabled={isLoading}
+                  className="text-sm md:text-base"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="dosage" className="flex items-center gap-1">
+                <Label htmlFor="dosage" className="flex items-center gap-1 text-sm md:text-base">
                   Dosage <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -1761,11 +1829,12 @@ function AddMedicationDialog({
                   onChange={(e) => onFormChange("dosage", e.target.value)}
                   required
                   disabled={isLoading}
+                  className="text-sm md:text-base"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="frequency" className="flex items-center gap-1">
+                <Label htmlFor="frequency" className="flex items-center gap-1 text-sm md:text-base">
                   Frequency <span className="text-red-500">*</span>
                 </Label>
                 <Select
@@ -1773,12 +1842,12 @@ function AddMedicationDialog({
                   onValueChange={(value) => onFormChange("frequency", value)}
                   disabled={isLoading}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="text-sm md:text-base">
                     <SelectValue placeholder="Select frequency" />
                   </SelectTrigger>
                   <SelectContent>
                     {FREQUENCIES.map((freq) => (
-                      <SelectItem key={freq.value} value={freq.value}>
+                      <SelectItem key={freq.value} value={freq.value} className="text-sm md:text-base">
                         {freq.label}
                       </SelectItem>
                     ))}
@@ -1787,7 +1856,7 @@ function AddMedicationDialog({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="route" className="flex items-center gap-1">
+                <Label htmlFor="route" className="flex items-center gap-1 text-sm md:text-base">
                   Route of Administration{" "}
                   <span className="text-red-500">*</span>
                 </Label>
@@ -1796,12 +1865,12 @@ function AddMedicationDialog({
                   onValueChange={(value) => onFormChange("route", value)}
                   disabled={isLoading}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="text-sm md:text-base">
                     <SelectValue placeholder="Select route" />
                   </SelectTrigger>
                   <SelectContent>
                     {MEDICATION_ROUTES.map((route) => (
-                      <SelectItem key={route.value} value={route.value}>
+                      <SelectItem key={route.value} value={route.value} className="text-sm md:text-base">
                         {route.label}
                       </SelectItem>
                     ))}
@@ -1810,7 +1879,7 @@ function AddMedicationDialog({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="startDate" className="flex items-center gap-1">
+                <Label htmlFor="startDate" className="flex items-center gap-1 text-sm md:text-base">
                   Start Date <span className="text-red-500">*</span>
                 </Label>
                 <Input
@@ -1820,11 +1889,12 @@ function AddMedicationDialog({
                   onChange={(e) => onFormChange("startDate", e.target.value)}
                   required
                   disabled={isLoading}
+                  className="text-sm md:text-base"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="endDate">End Date (Optional)</Label>
+                <Label htmlFor="endDate" className="text-sm md:text-base">End Date (Optional)</Label>
                 <Input
                   id="endDate"
                   type="date"
@@ -1832,12 +1902,13 @@ function AddMedicationDialog({
                   onChange={(e) => onFormChange("endDate", e.target.value)}
                   min={formData.startDate}
                   disabled={isLoading}
+                  className="text-sm md:text-base"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes (Optional)</Label>
+              <Label htmlFor="notes" className="text-sm md:text-base">Notes (Optional)</Label>
               <Textarea
                 id="notes"
                 placeholder="Special instructions, contraindications, or additional information"
@@ -1845,23 +1916,25 @@ function AddMedicationDialog({
                 onChange={(e) => onFormChange("notes", e.target.value)}
                 rows={3}
                 disabled={isLoading}
+                className="text-sm md:text-base"
               />
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
             <Button
               variant="outline"
               onClick={onClose}
               type="button"
               disabled={isLoading}
+              className="w-full sm:w-auto order-2 sm:order-1"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isLoading}
-              className="bg-gradient-primary hover:shadow-glow transition-all"
+              className="w-full sm:w-auto order-1 sm:order-2 bg-gradient-primary hover:shadow-glow transition-all"
             >
               {isLoading ? (
                 <>
@@ -1902,27 +1975,27 @@ function AdministerMedicationDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md w-[95vw] md:w-full mx-2 md:mx-0">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-600" />
+          <DialogTitle className="flex items-center gap-2 text-lg md:text-xl">
+            <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-600" />
             Administer Medication
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm md:text-base">
             Confirm administration of {medication.medicationName}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="space-y-6 py-4">
+          <div className="space-y-4 md:space-y-6 py-2 md:py-4">
             <div className="rounded-lg border p-4 bg-green-50 border-green-200">
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-2 rounded-full bg-green-100">
-                  <Pill className="h-5 w-5 text-green-600" />
+                  <Pill className="h-4 w-4 md:h-5 md:w-5 text-green-600" />
                 </div>
-                <div>
-                  <h4 className="font-semibold">{medication.medicationName}</h4>
-                  <p className="text-sm text-muted-foreground">
+                <div className="min-w-0">
+                  <h4 className="font-semibold truncate">{medication.medicationName}</h4>
+                  <p className="text-xs md:text-sm text-muted-foreground truncate">
                     {medication.dosage} •{" "}
                     {
                       FREQUENCIES.find((f) => f.value === medication.frequency)
@@ -1932,7 +2005,7 @@ function AdministerMedicationDialog({
                 </div>
               </div>
 
-              <div className="space-y-2 text-sm">
+              <div className="space-y-2 text-xs md:text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Route:</span>
                   <span className="font-medium">
@@ -1957,7 +2030,7 @@ function AdministerMedicationDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="administer-notes">
+              <Label htmlFor="administer-notes" className="text-sm md:text-base">
                 Administration Notes (Optional)
               </Label>
               <Textarea
@@ -1967,12 +2040,13 @@ function AdministerMedicationDialog({
                 onChange={(e) => onNotesChange(e.target.value)}
                 rows={2}
                 disabled={isLoading}
+                className="text-sm md:text-base"
               />
             </div>
 
             <Alert>
               <AlertCircle className="h-4 w-4" />
-              <AlertDescription className="text-sm">
+              <AlertDescription className="text-xs md:text-sm">
                 This action will mark the medication as administered at the
                 current time. Please verify the medication, dosage, and patient
                 before proceeding.
@@ -1980,19 +2054,20 @@ function AdministerMedicationDialog({
             </Alert>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
             <Button
               variant="outline"
               onClick={onClose}
               type="button"
               disabled={isLoading}
+              className="w-full sm:w-auto order-2 sm:order-1"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isLoading}
-              className="bg-green-600 hover:bg-green-700"
+              className="w-full sm:w-auto order-1 sm:order-2 bg-green-600 hover:bg-green-700"
             >
               {isLoading ? (
                 <>
@@ -2033,28 +2108,27 @@ function CancelMedicationDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md w-[95vw] md:w-full mx-2 md:mx-0">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <XCircle className="h-5 w-5 text-red-600" />
+          <DialogTitle className="flex items-center gap-2 text-lg md:text-xl">
+            <XCircle className="h-4 w-4 md:h-5 md:w-5 text-red-600" />
             Cancel Medication
           </DialogTitle>
-          <DialogDescription>
-            This action cannot be undone. Please provide a reason for
-            cancellation.
+          <DialogDescription className="text-sm md:text-base">
+            This action cannot be undone. Please provide a reason for cancellation.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="space-y-6 py-4">
+          <div className="space-y-4 md:space-y-6 py-2 md:py-4">
             <div className="rounded-lg border p-4 bg-red-50 border-red-200">
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-2 rounded-full bg-red-100">
-                  <Pill className="h-5 w-5 text-red-600" />
+                  <Pill className="h-4 w-4 md:h-5 md:w-5 text-red-600" />
                 </div>
-                <div>
-                  <h4 className="font-semibold">{medication.medicationName}</h4>
-                  <p className="text-sm text-muted-foreground">
+                <div className="min-w-0">
+                  <h4 className="font-semibold truncate">{medication.medicationName}</h4>
+                  <p className="text-xs md:text-sm text-muted-foreground truncate">
                     {medication.dosage} •{" "}
                     {
                       FREQUENCIES.find((f) => f.value === medication.frequency)
@@ -2064,7 +2138,7 @@ function CancelMedicationDialog({
                 </div>
               </div>
 
-              <div className="space-y-2 text-sm">
+              <div className="space-y-2 text-xs md:text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Status:</span>
                   <MedicationStatusBadge status={medication.status} />
@@ -2081,7 +2155,7 @@ function CancelMedicationDialog({
             <div className="space-y-2">
               <Label
                 htmlFor="cancel-reason"
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 text-sm md:text-base"
               >
                 Reason for Cancellation <span className="text-red-500">*</span>
               </Label>
@@ -2093,6 +2167,7 @@ function CancelMedicationDialog({
                 rows={3}
                 required
                 disabled={isLoading}
+                className="text-sm md:text-base"
               />
               <p className="text-xs text-muted-foreground">
                 This reason will be recorded in the medication history.
@@ -2101,20 +2176,21 @@ function CancelMedicationDialog({
 
             <Alert variant="destructive">
               <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Warning</AlertTitle>
-              <AlertDescription className="text-sm">
+              <AlertTitle className="text-sm md:text-base">Warning</AlertTitle>
+              <AlertDescription className="text-xs md:text-sm">
                 Cancelling a medication is a permanent action. This will stop
                 all future administrations and cannot be undone.
               </AlertDescription>
             </Alert>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
             <Button
               variant="outline"
               onClick={onClose}
               type="button"
               disabled={isLoading}
+              className="w-full sm:w-auto order-2 sm:order-1"
             >
               Go Back
             </Button>
@@ -2122,6 +2198,7 @@ function CancelMedicationDialog({
               type="submit"
               disabled={isLoading || !reason.trim()}
               variant="destructive"
+              className="w-full sm:w-auto order-1 sm:order-2"
             >
               {isLoading ? (
                 <>
@@ -2155,29 +2232,29 @@ function MedicationHistoryDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[80vh] w-[95vw] md:w-full mx-2 md:mx-0">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <History className="h-5 w-5" />
-            Medication History: {medication.medicationName}
+          <DialogTitle className="flex items-center gap-2 text-lg md:text-xl">
+            <History className="h-4 w-4 md:h-5 md:w-5" />
+            <span className="truncate">Medication History: {medication.medicationName}</span>
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm md:text-base">
             Complete history of actions for this medication
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 py-4">
+        <div className="space-y-4 md:space-y-6 py-2 md:py-4">
           {/* Medication Summary */}
           <Card>
-            <CardContent className="p-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <CardContent className="p-3 md:p-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 text-xs md:text-sm">
                 <div>
                   <span className="text-muted-foreground">Dosage:</span>
-                  <span className="font-medium ml-2">{medication.dosage}</span>
+                  <span className="font-medium ml-1 md:ml-2">{medication.dosage}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Frequency:</span>
-                  <span className="font-medium ml-2">
+                  <span className="font-medium ml-1 md:ml-2">
                     {
                       FREQUENCIES.find((f) => f.value === medication.frequency)
                         ?.label
@@ -2186,7 +2263,7 @@ function MedicationHistoryDialog({
                 </div>
                 <div>
                   <span className="text-muted-foreground">Route:</span>
-                  <span className="font-medium ml-2">
+                  <span className="font-medium ml-1 md:ml-2">
                     {
                       MEDICATION_ROUTES.find(
                         (r) => r.value === medication.route
@@ -2196,7 +2273,9 @@ function MedicationHistoryDialog({
                 </div>
                 <div>
                   <span className="text-muted-foreground">Current Status:</span>
-                  <MedicationStatusBadge status={medication.status} />
+                  <div className="inline-block ml-1 md:ml-2">
+                    <MedicationStatusBadge status={medication.status} />
+                  </div>
                 </div>
               </div>
             </CardContent>
@@ -2204,27 +2283,27 @@ function MedicationHistoryDialog({
 
           {/* History Timeline */}
           <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold">Activity Timeline</h3>
-              <Badge variant="outline">{history.length} events</Badge>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+              <h3 className="font-semibold text-base md:text-lg">Activity Timeline</h3>
+              <Badge variant="outline" className="self-start md:self-auto">{history.length} events</Badge>
             </div>
 
             {history.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
+              <div className="text-center py-6 md:py-8 text-muted-foreground text-sm">
                 No history available for this medication
               </div>
             ) : (
               <div className="relative">
                 {/* Timeline line */}
-                <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border" />
+                <div className="absolute left-5 md:left-6 top-0 bottom-0 w-0.5 bg-border" />
 
                 {history.map((item: any, index: number) => (
                   <div
                     key={item.id || index}
-                    className="relative flex items-start gap-4 mb-6 last:mb-0"
+                    className="relative flex items-start gap-3 md:gap-4 mb-4 md:mb-6 last:mb-0"
                   >
                     <div
-                      className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full ${
+                      className={`relative z-10 flex h-8 w-8 md:h-12 md:w-12 items-center justify-center rounded-full shrink-0 ${
                         item.action === "prescribed"
                           ? "bg-blue-100"
                           : item.action === "administered"
@@ -2235,34 +2314,34 @@ function MedicationHistoryDialog({
                       }`}
                     >
                       {item.action === "prescribed" ? (
-                        <Plus className="h-6 w-6 text-blue-600" />
+                        <Plus className="h-4 w-4 md:h-6 md:w-6 text-blue-600" />
                       ) : item.action === "administered" ? (
-                        <CheckCircle className="h-6 w-6 text-green-600" />
+                        <CheckCircle className="h-4 w-4 md:h-6 md:w-6 text-green-600" />
                       ) : item.action === "adjusted" ? (
-                        <Edit className="h-6 w-6 text-yellow-600" />
+                        <Edit className="h-4 w-4 md:h-6 md:w-6 text-yellow-600" />
                       ) : (
-                        <XCircle className="h-6 w-6 text-red-600" />
+                        <XCircle className="h-4 w-4 md:h-6 md:w-6 text-red-600" />
                       )}
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h4 className="font-semibold capitalize">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-1 md:gap-2">
+                        <div className="min-w-0">
+                          <h4 className="font-semibold capitalize text-sm md:text-base">
                             {item.action}
                           </h4>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs md:text-sm text-muted-foreground truncate">
                             By{" "}
                             {item.performer?.fullName ||
                               item.user?.fullName ||
                               `User`}
                           </p>
                         </div>
-                        <time className="text-sm text-muted-foreground">
+                        <time className="text-xs md:text-sm text-muted-foreground">
                           {formatDateTime(item.createdAt)}
                         </time>
                       </div>
                       {item.notes && (
-                        <p className="mt-2 text-sm bg-muted p-3 rounded">
+                        <p className="mt-2 text-xs md:text-sm bg-muted p-2 md:p-3 rounded">
                           {item.notes}
                         </p>
                       )}
@@ -2275,7 +2354,7 @@ function MedicationHistoryDialog({
         </div>
 
         <DialogFooter>
-          <Button onClick={onClose}>Close</Button>
+          <Button onClick={onClose} className="w-full sm:w-auto">Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
