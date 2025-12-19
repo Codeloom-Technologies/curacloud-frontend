@@ -109,7 +109,7 @@ export default function AdmissionDetails() {
     queryFn: () => fetchAdmissionById(id!),
     enabled: !!id,
   });
-    console.log(admission)
+    console.log({admission})
     
   // Fetch admission statistics
   const { data: stats } = useQuery({
@@ -731,12 +731,12 @@ function MedicalInfoTab({ admission }: any) {
           <div className="space-y-4">
             <div>
               <Label className="text-sm font-medium text-muted-foreground">Diagnosis</Label>
-              <p className="font-medium text-lg">{admission?.admission?.diagnosis || "Not specified"}</p>
+              <p className="font-medium text-lg">{admission?.diagnosis || "Not specified"}</p>
             </div>
             <div>
               <Label className="text-sm font-medium text-muted-foreground">Symptoms</Label>
               <div className="flex flex-wrap gap-2 mt-2">
-                {admission?.admission?.symptoms?.map((symptom: string, index: number) => (
+                {admission?.symptoms?.map((symptom: string, index: number) => (
                   <Badge key={index} variant="outline" className="text-xs">
                     {symptom}
                   </Badge>
@@ -746,7 +746,7 @@ function MedicalInfoTab({ admission }: any) {
             <div>
               <Label className="text-sm font-medium text-muted-foreground">Medical History</Label>
               <p className="text-sm text-muted-foreground">
-                {admission?.admission?.notes || "No additional notes"}
+                {admission?.notes || "No additional notes"}
               </p>
             </div>
           </div>
@@ -766,9 +766,9 @@ function MedicalInfoTab({ admission }: any) {
             <div>
               <Label className="text-sm font-medium text-muted-foreground">Current Medications</Label>
               <div className="mt-2">
-                {admission?.admission?.medications?.length > 0 ? (
+                {admission?.medications?.length > 0 ? (
                   <ul className="list-disc pl-5 space-y-1">
-                    {admission?.admission?.medications.map((med: any, index: number) => (
+                    {admission?.medications.map((med: any, index: number) => (
                       <li key={index} className="text-sm">
                         <span className="font-medium">{med.name}</span> - {med.dosage} ({med.frequency})
                       </li>
@@ -782,9 +782,9 @@ function MedicalInfoTab({ admission }: any) {
             <div>
               <Label className="text-sm font-medium text-muted-foreground">Procedures</Label>
               <div className="mt-2">
-                {admission?.admission?.procedures?.length > 0 ? (
+                {admission?.procedures?.length > 0 ? (
                   <ul className="list-disc pl-5 space-y-1">
-                    {admission?.admission?.procedures.map((proc: any, index: number) => (
+                    {admission?.procedures.map((proc: any, index: number) => (
                       <li key={index} className="text-sm">
                         {proc?.name} - {new Date(proc?.date).toLocaleDateString()}
                       </li>
@@ -811,31 +811,31 @@ function MedicalInfoTab({ admission }: any) {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
               <div className="text-3xl font-bold text-blue-600">
-                {admission?.admission?.vitals?.bloodPressure || "--"}
+                {admission?.vitalSign[0]?.bloodPressure || "--"}
               </div>
               <div className="text-sm text-muted-foreground">Blood Pressure</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-green-600">
-                {admission?.admission?.vitals?.heartRate || "--"}
+                {admission?.vitalSign[0]?.heartRate || "--"}
               </div>
               <div className="text-sm text-muted-foreground">Heart Rate</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-red-600">
-                {admission?.admission?.vitals?.temperature || "--"}°C
+                {admission?.vitalSign[0]?.temperature || "--"}°C
               </div>
               <div className="text-sm text-muted-foreground">Temperature</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-purple-600">
-                {admission?.admission?.vitals?.oxygenSaturation || "--"}%
+                {admission?.vitalSign[0]?.oxygenSaturation || "--"}%
               </div>
               <div className="text-sm text-muted-foreground">O₂ Saturation</div>
             </div>
           </div>
           <div className="mt-4 text-sm text-muted-foreground">
-            Last updated: {new Date(admission?.admission?.vitals?.timestamp).toLocaleString()}
+            Last updated: {new Date(admission?.vitalSign[0]?.recordedAt).toLocaleString()}
           </div>
         </CardContent>
       </Card>
