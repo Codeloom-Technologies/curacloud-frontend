@@ -12,12 +12,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -98,9 +93,14 @@ import {
   getMedicationStats,
 } from "@/services/medication";
 import { fetchAdmissionById } from "@/services/admission";
+import { useUserRole } from "@/hooks/useUserRole";
 
 // Medication Status Badge
-const MedicationStatusBadge = ({ status }: { status: Medication['status'] }) => {
+const MedicationStatusBadge = ({
+  status,
+}: {
+  status: Medication["status"];
+}) => {
   const variants = {
     prescribed: "bg-blue-100 text-blue-700 hover:bg-blue-100",
     administered: "bg-green-100 text-green-700 hover:bg-green-100",
@@ -160,7 +160,7 @@ export default function AdmissionMedications() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // State
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -168,19 +168,25 @@ export default function AdmissionMedications() {
   const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
-  const [selectedMedicationHistory, setSelectedMedicationHistory] = useState<any[]>([]);
+  const [selectedMedication, setSelectedMedication] =
+    useState<Medication | null>(null);
+  const [selectedMedicationHistory, setSelectedMedicationHistory] = useState<
+    any[]
+  >([]);
   const [expandedMedications, setExpandedMedications] = useState<number[]>([]);
   const [cancelReason, setCancelReason] = useState("");
   const [administerNotes, setAdministerNotes] = useState("");
-  
+  const { isHealthcare, isDoctor } = useUserRole();
+
+  const showAddButton = isHealthcare || isDoctor;
+
   // Form state
   const [formData, setFormData] = useState({
     medicationName: "",
     dosage: "",
     frequency: "once_daily",
     route: "oral",
-    startDate: new Date().toISOString().split('T')[0],
+    startDate: new Date().toISOString().split("T")[0],
     endDate: "",
     notes: "",
   });
@@ -192,17 +198,17 @@ export default function AdmissionMedications() {
       dosage: "",
       frequency: "once_daily",
       route: "oral",
-      startDate: new Date().toISOString().split('T')[0],
+      startDate: new Date().toISOString().split("T")[0],
       endDate: "",
       notes: "",
     });
   };
 
   // Fetch admission details
-  const { 
-    data: admission, 
+  const {
+    data: admission,
     isLoading: isLoadingAdmission,
-    error: admissionError 
+    error: admissionError,
   } = useQuery({
     queryKey: ["admission", id],
     queryFn: () => fetchAdmissionById(id!),
@@ -218,37 +224,31 @@ export default function AdmissionMedications() {
   } = useQuery({
     queryKey: ["medications", admission?.id],
     queryFn: () => getAdmissionMedications(admission?.id!),
-      enabled: !!admission?.id,
-      refetchInterval: 30000,
+    enabled: !!admission?.id,
+    refetchInterval: 30000,
     refetchOnWindowFocus: true,
     staleTime: 60000,
   });
 
   // Fetch active medications
-  const { 
-    data: activeMedications,
-    isLoading: isLoadingActiveMedications 
-  } = useQuery({
-    queryKey: ["active-medications", admission?.id],
-    queryFn: () => getActiveMedications(admission?.id!),
-    enabled: !!admission?.id,
-  });
+  const { data: activeMedications, isLoading: isLoadingActiveMedications } =
+    useQuery({
+      queryKey: ["active-medications", admission?.id],
+      queryFn: () => getActiveMedications(admission?.id!),
+      enabled: !!admission?.id,
+    });
 
   // Fetch due medications
-  const { 
-    data: dueMedications,
-    isLoading: isLoadingDueMedications 
-  } = useQuery({
-    queryKey: ["due-medications", admission?.id],
-    queryFn: () => getDueMedications(admission?.id!),
-    enabled: !!admission?.id,
-  });
+  const { data: dueMedications, isLoading: isLoadingDueMedications } = useQuery(
+    {
+      queryKey: ["due-medications", admission?.id],
+      queryFn: () => getDueMedications(admission?.id!),
+      enabled: !!admission?.id,
+    }
+  );
 
   // Fetch medication statistics
-  const { 
-    data: medicationStats,
-    isLoading: isLoadingStats 
-  } = useQuery({
+  const { data: medicationStats, isLoading: isLoadingStats } = useQuery({
     queryKey: ["medication-stats", admission?.id],
     queryFn: () => getMedicationStats(admission?.id!),
     enabled: !!admission?.id,
@@ -265,10 +265,18 @@ export default function AdmissionMedications() {
       });
       setIsAddDialogOpen(false);
       resetForm();
-      queryClient.invalidateQueries({ queryKey: ["medications", admission?.id] });
-      queryClient.invalidateQueries({ queryKey: ["active-medications", admission?.id] });
-      queryClient.invalidateQueries({ queryKey: ["due-medications", admission?.id] });
-      queryClient.invalidateQueries({ queryKey: ["medication-stats", admission?.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["medications", admission?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["active-medications", admission?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["due-medications", admission?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["medication-stats", admission?.id],
+      });
     },
     onError: (error: Error) => {
       toast({
@@ -280,8 +288,13 @@ export default function AdmissionMedications() {
   });
 
   const administerMutation = useMutation({
-    mutationFn: ({ medicationId, notes }: { medicationId: number; notes?: string }) =>
-      administerMedication(medicationId, notes as  any),
+    mutationFn: ({
+      medicationId,
+      notes,
+    }: {
+      medicationId: number;
+      notes?: string;
+    }) => administerMedication(medicationId, notes as any),
     onSuccess: () => {
       toast({
         title: "Success",
@@ -290,9 +303,15 @@ export default function AdmissionMedications() {
       });
       setIsAdministerDialogOpen(false);
       setAdministerNotes("");
-      queryClient.invalidateQueries({ queryKey: ["medications", admission?.id] });
-      queryClient.invalidateQueries({ queryKey: ["due-medications", admission?.id] });
-      queryClient.invalidateQueries({ queryKey: ["medication-stats", admission?.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["medications", admission?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["due-medications", admission?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["medication-stats", admission?.id],
+      });
     },
     onError: (error: Error) => {
       toast({
@@ -304,8 +323,13 @@ export default function AdmissionMedications() {
   });
 
   const cancelMutation = useMutation({
-    mutationFn: ({ medicationId, reason }: { medicationId: number; reason: string }) =>
-      cancelMedication(medicationId, reason),
+    mutationFn: ({
+      medicationId,
+      reason,
+    }: {
+      medicationId: number;
+      reason: string;
+    }) => cancelMedication(medicationId, reason),
     onSuccess: () => {
       toast({
         title: "Success",
@@ -314,9 +338,15 @@ export default function AdmissionMedications() {
       });
       setIsCancelDialogOpen(false);
       setCancelReason("");
-      queryClient.invalidateQueries({ queryKey: ["medications", admission?.id] });
-      queryClient.invalidateQueries({ queryKey: ["active-medications", admission?.id] });
-      queryClient.invalidateQueries({ queryKey: ["medication-stats", admission?.id] });
+      queryClient.invalidateQueries({
+        queryKey: ["medications", admission?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["active-medications", admission?.id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["medication-stats", admission?.id],
+      });
     },
     onError: (error: Error) => {
       toast({
@@ -331,7 +361,7 @@ export default function AdmissionMedications() {
   const handleAddMedication = () => {
     if (!admission?.id) return;
 
-    const medicationData:any = {
+    const medicationData: any = {
       admissionId: admission.id,
       medicationName: formData.medicationName.trim(),
       dosage: formData.dosage.trim(),
@@ -372,9 +402,9 @@ export default function AdmissionMedications() {
   const handleConfirmAdminister = () => {
     if (!selectedMedication?.id) return;
 
-    administerMutation.mutate({ 
-      medicationId: selectedMedication.id, 
-      notes: administerNotes || undefined 
+    administerMutation.mutate({
+      medicationId: selectedMedication.id,
+      notes: administerNotes || undefined,
     });
   };
 
@@ -408,61 +438,73 @@ export default function AdmissionMedications() {
       return;
     }
 
-    cancelMutation.mutate({ 
-      medicationId: selectedMedication.id, 
-      reason: cancelReason 
+    cancelMutation.mutate({
+      medicationId: selectedMedication.id,
+      reason: cancelReason,
     });
   };
 
   const toggleMedicationDetails = (medicationId: number) => {
-    setExpandedMedications(prev =>
+    setExpandedMedications((prev) =>
       prev.includes(medicationId)
-        ? prev.filter(id => id !== medicationId)
+        ? prev.filter((id) => id !== medicationId)
         : [...prev, medicationId]
     );
   };
 
   // Filter medications based on search
-  const filteredMedications = medications?.filter((med: Medication) =>
-    med.medicationName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    med.dosage.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    med.notes?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredMedications = medications?.filter(
+    (med: Medication) =>
+      med.medicationName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      med.dosage.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      med.notes?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Calculate stats for display
   const stats = {
     total: medications?.length || 0,
-    prescribed: medications?.filter((m: Medication) => m.status === 'prescribed').length || 0,
-    administered: medications?.filter((m: Medication) => m.status === 'administered').length || 0,
-    completed: medications?.filter((m: Medication) => m.status === 'completed').length || 0,
-    cancelled: medications?.filter((m: Medication) => m.status === 'cancelled').length || 0,
+    prescribed:
+      medications?.filter((m: Medication) => m.status === "prescribed")
+        .length || 0,
+    administered:
+      medications?.filter((m: Medication) => m.status === "administered")
+        .length || 0,
+    completed:
+      medications?.filter((m: Medication) => m.status === "completed").length ||
+      0,
+    cancelled:
+      medications?.filter((m: Medication) => m.status === "cancelled").length ||
+      0,
     active: activeMedications?.length || 0,
     due: dueMedications?.length || 0,
-    todayAdministered: medications?.filter((m: Medication) => 
-      m.status === 'administered' && 
-      m.administeredAt && 
-      new Date(m.administeredAt).toDateString() === new Date().toDateString()
-    ).length || 0,
+    todayAdministered:
+      medications?.filter(
+        (m: Medication) =>
+          m.status === "administered" &&
+          m.administeredAt &&
+          new Date(m.administeredAt).toDateString() ===
+            new Date().toDateString()
+      ).length || 0,
   };
 
   // Format date for display
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
   const formatDateTime = (dateString: string) => {
     if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Date(dateString).toLocaleString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -547,15 +589,18 @@ export default function AdmissionMedications() {
 
   const patient = admission.patient;
   const daysAdmitted = Math.floor(
-    (new Date().getTime() - new Date(admission.admissionDate).getTime()) / (1000 * 3600 * 24)
+    (new Date().getTime() - new Date(admission.admissionDate).getTime()) /
+      (1000 * 3600 * 24)
   );
 
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform md:relative md:translate-x-0 ${
-        sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      }`}>
+      <div
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-card border-r transform transition-transform md:relative md:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
         <Sidebar />
       </div>
 
@@ -571,7 +616,9 @@ export default function AdmissionMedications() {
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => navigate(`/dashboard/admissions/${id}/details`)}
+                  onClick={() =>
+                    navigate(`/dashboard/admissions/${id}/details`)
+                  }
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
@@ -581,9 +628,13 @@ export default function AdmissionMedications() {
                   </h1>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <User className="h-4 w-4" />
-                    <span className="font-medium">{patient?.user?.fullName}</span>
+                    <span className="font-medium">
+                      {patient?.user?.fullName}
+                    </span>
                     <span>•</span>
-                    <span>Admission: {admission.reference?.substring(0,5)}</span>
+                    <span>
+                      Admission: {admission.reference?.substring(0, 5)}
+                    </span>
                     <span>•</span>
                     <span className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
@@ -600,11 +651,17 @@ export default function AdmissionMedications() {
                   onClick={() => refetchMedications()}
                   disabled={isLoadingMedications}
                 >
-                  <RefreshCw className={`h-4 w-4 ${isLoadingMedications ? 'animate-spin' : ''}`} />
+                  <RefreshCw
+                    className={`h-4 w-4 ${
+                      isLoadingMedications ? "animate-spin" : ""
+                    }`}
+                  />
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => navigate(`/dashboard/admissions/${id}/details`)}
+                  onClick={() =>
+                    navigate(`/dashboard/admissions/${id}/details`)
+                  }
                 >
                   <Eye className="h-4 w-4 mr-2" />
                   View Admission
@@ -641,9 +698,9 @@ export default function AdmissionMedications() {
                       <Pill className="h-6 w-6 text-blue-600" />
                     </div>
                   </div>
-                  <Progress 
-                    value={(stats.active / Math.max(stats.total, 1)) * 100} 
-                    className="mt-2 h-1.5" 
+                  <Progress
+                    value={(stats.active / Math.max(stats.total, 1)) * 100}
+                    className="mt-2 h-1.5"
                   />
                 </CardContent>
               </Card>
@@ -665,7 +722,10 @@ export default function AdmissionMedications() {
                   </div>
                   {stats.due > 0 && (
                     <div className="mt-2">
-                      <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+                      <Badge
+                        variant="outline"
+                        className="bg-yellow-50 text-yellow-700 border-yellow-200"
+                      >
                         <AlertTriangle className="h-3 w-3 mr-1" />
                         Action Required
                       </Badge>
@@ -725,11 +785,17 @@ export default function AdmissionMedications() {
                     <Pill className="h-4 w-4" />
                     All Medications
                   </TabsTrigger>
-                  <TabsTrigger value="active" className="flex items-center gap-2">
+                  <TabsTrigger
+                    value="active"
+                    className="flex items-center gap-2"
+                  >
                     <Clock className="h-4 w-4" />
                     Active
                     {stats.active > 0 && (
-                      <Badge variant="secondary" className="ml-1 h-5 w-5 p-0 text-xs">
+                      <Badge
+                        variant="secondary"
+                        className="ml-1 h-5 w-5 p-0 text-xs"
+                      >
                         {stats.active}
                       </Badge>
                     )}
@@ -738,12 +804,18 @@ export default function AdmissionMedications() {
                     <AlertTriangle className="h-4 w-4" />
                     Due
                     {stats.due > 0 && (
-                      <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 text-xs">
+                      <Badge
+                        variant="destructive"
+                        className="ml-1 h-5 w-5 p-0 text-xs"
+                      >
                         {stats.due}
                       </Badge>
                     )}
                   </TabsTrigger>
-                  <TabsTrigger value="history" className="flex items-center gap-2">
+                  <TabsTrigger
+                    value="history"
+                    className="flex items-center gap-2"
+                  >
                     <History className="h-4 w-4" />
                     History
                   </TabsTrigger>
@@ -783,10 +855,11 @@ export default function AdmissionMedications() {
                         </CardDescription>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline">
-                          {stats.total} total
-                        </Badge>
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                        <Badge variant="outline">{stats.total} total</Badge>
+                        <Badge
+                          variant="outline"
+                          className="bg-blue-50 text-blue-700"
+                        >
                           {stats.active} active
                         </Badge>
                       </div>
@@ -810,9 +883,13 @@ export default function AdmissionMedications() {
                     ) : filteredMedications?.length === 0 ? (
                       <div className="text-center py-12">
                         <Pill className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-medium mb-2">No Medications Found</h3>
+                        <h3 className="text-lg font-medium mb-2">
+                          No Medications Found
+                        </h3>
                         <p className="text-muted-foreground mb-4">
-                          {searchQuery ? "No medications match your search." : "No medications have been prescribed for this patient."}
+                          {searchQuery
+                            ? "No medications match your search."
+                            : "No medications have been prescribed for this patient."}
                         </p>
                         {!searchQuery && (
                           <Button onClick={() => setIsAddDialogOpen(true)}>
@@ -827,9 +904,15 @@ export default function AdmissionMedications() {
                           <MedicationCard
                             key={medication.id}
                             medication={medication}
-                            isExpanded={expandedMedications.includes(medication.id!)}
-                            onToggleExpand={() => toggleMedicationDetails(medication.id!)}
-                            onAdminister={() => handleAdministerMedication(medication)}
+                            isExpanded={expandedMedications.includes(
+                              medication.id!
+                            )}
+                            onToggleExpand={() =>
+                              toggleMedicationDetails(medication.id!)
+                            }
+                            onAdminister={() =>
+                              handleAdministerMedication(medication)
+                            }
                             onViewHistory={() => handleViewHistory(medication)}
                             onCancel={() => handleCancelMedication(medication)}
                             formatDate={formatDate}
@@ -864,8 +947,8 @@ export default function AdmissionMedications() {
 
               {/* History Tab */}
               <TabsContent value="history">
-                <MedicationHistoryTab 
-                  medications={medications} 
+                <MedicationHistoryTab
+                  medications={medications}
                   formatDate={formatDate}
                   formatDateTime={formatDateTime}
                 />
@@ -884,17 +967,21 @@ export default function AdmissionMedications() {
       )}
 
       {/* Add Medication Dialog */}
-      <AddMedicationDialog
-        isOpen={isAddDialogOpen}
-        onClose={() => {
-          setIsAddDialogOpen(false);
-          resetForm();
-        }}
-        formData={formData}
-        onFormChange={(key, value) => setFormData(prev => ({ ...prev, [key]: value }))}
-        onSubmit={handleAddMedication}
-        isLoading={prescribeMutation.isPending}
-      />
+      {showAddButton && (
+        <AddMedicationDialog
+          isOpen={isAddDialogOpen}
+          onClose={() => {
+            setIsAddDialogOpen(false);
+            resetForm();
+          }}
+          formData={formData}
+          onFormChange={(key, value) =>
+            setFormData((prev) => ({ ...prev, [key]: value }))
+          }
+          onSubmit={handleAddMedication}
+          isLoading={prescribeMutation.isPending}
+        />
+      )}
 
       {/* Administer Medication Dialog */}
       <AdministerMedicationDialog
@@ -913,19 +1000,21 @@ export default function AdmissionMedications() {
       />
 
       {/* Cancel Medication Dialog */}
-      <CancelMedicationDialog
-        isOpen={isCancelDialogOpen}
-        onClose={() => {
-          setIsCancelDialogOpen(false);
-          setSelectedMedication(null);
-          setCancelReason("");
-        }}
-        medication={selectedMedication}
-        reason={cancelReason}
-        onReasonChange={setCancelReason}
-        onConfirm={handleConfirmCancel}
-        isLoading={cancelMutation.isPending}
-      />
+      {showAddButton && (
+        <CancelMedicationDialog
+          isOpen={isCancelDialogOpen}
+          onClose={() => {
+            setIsCancelDialogOpen(false);
+            setSelectedMedication(null);
+            setCancelReason("");
+          }}
+          medication={selectedMedication}
+          reason={cancelReason}
+          onReasonChange={setCancelReason}
+          onConfirm={handleConfirmCancel}
+          isLoading={cancelMutation.isPending}
+        />
+      )}
 
       {/* Medication History Dialog */}
       <MedicationHistoryDialog
@@ -945,48 +1034,63 @@ export default function AdmissionMedications() {
 }
 
 // Reusable Medication Card Component
-function MedicationCard({ 
-  medication, 
-  isExpanded, 
-  onToggleExpand, 
-  onAdminister, 
-  onViewHistory, 
+function MedicationCard({
+  medication,
+  isExpanded,
+  onToggleExpand,
+  onAdminister,
+  onViewHistory,
   onCancel,
   formatDate,
-  formatDateTime 
+  formatDateTime,
 }: any) {
   return (
     <div className="border rounded-lg overflow-hidden transition-all duration-200 hover:shadow-md">
       <div className="p-4 bg-card">
         <div className="flex items-start justify-between">
           <div className="flex items-start gap-4 flex-1">
-            <div className={`p-2 rounded-full ${
-              medication.status === 'prescribed' ? 'bg-blue-100 text-blue-600' :
-              medication.status === 'administered' ? 'bg-green-100 text-green-600' :
-              medication.status === 'completed' ? 'bg-purple-100 text-purple-600' :
-              'bg-red-100 text-red-600'
-            }`}>
+            <div
+              className={`p-2 rounded-full ${
+                medication.status === "prescribed"
+                  ? "bg-blue-100 text-blue-600"
+                  : medication.status === "administered"
+                  ? "bg-green-100 text-green-600"
+                  : medication.status === "completed"
+                  ? "bg-purple-100 text-purple-600"
+                  : "bg-red-100 text-red-600"
+              }`}
+            >
               <Pill className="h-5 w-5" />
             </div>
             <div className="flex-1">
               <div className="flex items-start justify-between mb-2">
                 <div>
-                  <h4 className="font-semibold text-lg">{medication.medicationName}</h4>
+                  <h4 className="font-semibold text-lg">
+                    {medication.medicationName}
+                  </h4>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                     <span className="font-medium">{medication.dosage}</span>
                     <span>•</span>
-                    <span>{FREQUENCIES.find(f => f.value === medication.frequency)?.label}</span>
+                    <span>
+                      {
+                        FREQUENCIES.find(
+                          (f) => f.value === medication.frequency
+                        )?.label
+                      }
+                    </span>
                     <span>•</span>
-                    <span>{MEDICATION_ROUTES.find(r => r.value === medication.route)?.label}</span>
+                    <span>
+                      {
+                        MEDICATION_ROUTES.find(
+                          (r) => r.value === medication.route
+                        )?.label
+                      }
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <MedicationStatusBadge status={medication.status} />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={onToggleExpand}
-                  >
+                  <Button variant="ghost" size="icon" onClick={onToggleExpand}>
                     {isExpanded ? (
                       <ChevronUp className="h-4 w-4" />
                     ) : (
@@ -995,115 +1099,160 @@ function MedicationCard({
                   </Button>
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="text-muted-foreground">Start:</span>
-                  <span className="font-medium ml-2">{formatDate(medication.startDate)}</span>
+                  <span className="font-medium ml-2">
+                    {formatDate(medication.startDate)}
+                  </span>
                 </div>
                 {medication.endDate && (
                   <div>
                     <span className="text-muted-foreground">End:</span>
-                    <span className="font-medium ml-2">{formatDate(medication.endDate)}</span>
+                    <span className="font-medium ml-2">
+                      {formatDate(medication.endDate)}
+                    </span>
                   </div>
                 )}
                 <div>
                   <span className="text-muted-foreground">Prescribed By:</span>
-                  <span className="font-medium ml-2">{medication.prescriber?.fullName || 'N/A'}</span>
+                  <span className="font-medium ml-2">
+                    {medication.prescriber?.fullName || "N/A"}
+                  </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  {medication.status === 'administered' && medication.administeredAt && (
-                    <>
-                      <CheckCircle className="h-3 w-3 text-green-500" />
-                      <span className="text-muted-foreground">Administered:</span>
-                      <span className="font-medium">{formatDate(medication.administeredAt)}</span>
-                    </>
-                  )}
+                  {medication.status === "administered" &&
+                    medication.administeredAt && (
+                      <>
+                        <CheckCircle className="h-3 w-3 text-green-500" />
+                        <span className="text-muted-foreground">
+                          Administered:
+                        </span>
+                        <span className="font-medium">
+                          {formatDate(medication.administeredAt)}
+                        </span>
+                      </>
+                    )}
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
+
       {/* Expanded Details */}
       {isExpanded && (
         <div className="border-t p-4 bg-muted/30">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <Label className="text-sm font-medium text-muted-foreground mb-2 block">Schedule Details</Label>
+                <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  Schedule Details
+                </Label>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Frequency:</span>
                     <span className="font-medium">
-                      {FREQUENCIES.find(f => f.value === medication.frequency)?.label}
+                      {
+                        FREQUENCIES.find(
+                          (f) => f.value === medication.frequency
+                        )?.label
+                      }
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Route:</span>
                     <span className="font-medium">
-                      {MEDICATION_ROUTES.find(r => r.value === medication.route)?.label}
+                      {
+                        MEDICATION_ROUTES.find(
+                          (r) => r.value === medication.route
+                        )?.label
+                      }
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Start Date:</span>
-                    <span className="font-medium">{formatDate(medication.startDate)}</span>
+                    <span className="font-medium">
+                      {formatDate(medication.startDate)}
+                    </span>
                   </div>
                   {medication.endDate && (
                     <div className="flex justify-between">
                       <span>End Date:</span>
-                      <span className="font-medium">{formatDate(medication.endDate)}</span>
+                      <span className="font-medium">
+                        {formatDate(medication.endDate)}
+                      </span>
                     </div>
                   )}
                 </div>
               </div>
-              
+
               {medication.prescriber && (
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">Prescription Details</Label>
+                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                    Prescription Details
+                  </Label>
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm">
-                      Prescribed by <span className="font-medium">{medication.prescriber.fullName}</span>
+                      Prescribed by{" "}
+                      <span className="font-medium">
+                        {medication.prescriber.fullName}
+                      </span>
                       {medication.prescriber.role && (
-                        <span className="text-muted-foreground"> ({medication.prescriber.role})</span>
+                        <span className="text-muted-foreground">
+                          {" "}
+                          ({medication.prescriber.role})
+                        </span>
                       )}
                     </span>
                   </div>
                 </div>
               )}
             </div>
-            
+
             <div className="space-y-4">
               {medication.administrator && (
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">Administration Details</Label>
+                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                    Administration Details
+                  </Label>
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>Administered By:</span>
-                      <span className="font-medium">{medication.administrator.fullName}</span>
+                      <span className="font-medium">
+                        {medication.administrator.fullName}
+                      </span>
                     </div>
                     {medication.administeredAt && (
                       <div className="flex justify-between">
                         <span>Administered At:</span>
-                        <span className="font-medium">{formatDateTime(medication.administeredAt)}</span>
+                        <span className="font-medium">
+                          {formatDateTime(medication.administeredAt)}
+                        </span>
                       </div>
                     )}
                   </div>
                 </div>
               )}
-              
+
               {medication.notes && (
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">Notes</Label>
-                  <p className="text-sm bg-white p-3 rounded border">{medication.notes}</p>
+                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                    Notes
+                  </Label>
+                  <p className="text-sm bg-white p-3 rounded border">
+                    {medication.notes}
+                  </p>
                 </div>
               )}
-              
+
               {medication.cancellationReason && (
                 <div>
-                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">Cancellation Reason</Label>
+                  <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                    Cancellation Reason
+                  </Label>
                   <Alert variant="destructive" className="py-2">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertDescription className="text-sm">
@@ -1114,33 +1263,21 @@ function MedicationCard({
               )}
             </div>
           </div>
-          
+
           {/* Action Buttons */}
           <div className="flex items-center justify-end gap-2 mt-6 pt-4 border-t">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onViewHistory}
-            >
+            <Button variant="ghost" size="sm" onClick={onViewHistory}>
               <History className="h-4 w-4 mr-2" />
               View History
             </Button>
-            
-            {medication.status === 'prescribed' && (
+
+            {medication.status === "prescribed" && (
               <>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={onAdminister}
-                >
+                <Button variant="default" size="sm" onClick={onAdminister}>
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Administer
                 </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={onCancel}
-                >
+                <Button variant="destructive" size="sm" onClick={onCancel}>
                   <XCircle className="h-4 w-4 mr-2" />
                   Cancel
                 </Button>
@@ -1154,7 +1291,12 @@ function MedicationCard({
 }
 
 // Component for Active Medications Tab
-function ActiveMedicationsTab({ medications, isLoading, onAdminister, formatDate }: any) {
+function ActiveMedicationsTab({
+  medications,
+  isLoading,
+  onAdminister,
+  formatDate,
+}: any) {
   if (isLoading) {
     return (
       <Card>
@@ -1216,9 +1358,17 @@ function ActiveMedicationsTab({ medications, isLoading, onAdminister, formatDate
                 <TableCell>{med.dosage}</TableCell>
                 <TableCell>
                   <div className="flex flex-col">
-                    <span>{FREQUENCIES.find(f => f.value === med.frequency)?.label}</span>
+                    <span>
+                      {
+                        FREQUENCIES.find((f) => f.value === med.frequency)
+                          ?.label
+                      }
+                    </span>
                     <span className="text-xs text-muted-foreground">
-                      {MEDICATION_ROUTES.find(r => r.value === med.route)?.label}
+                      {
+                        MEDICATION_ROUTES.find((r) => r.value === med.route)
+                          ?.label
+                      }
                     </span>
                   </div>
                 </TableCell>
@@ -1250,7 +1400,12 @@ function ActiveMedicationsTab({ medications, isLoading, onAdminister, formatDate
 }
 
 // Component for Due Medications Tab
-function DueMedicationsTab({ medications, isLoading, onAdminister, formatDate }: any) {
+function DueMedicationsTab({
+  medications,
+  isLoading,
+  onAdminister,
+  formatDate,
+}: any) {
   if (isLoading) {
     return (
       <Card>
@@ -1273,7 +1428,8 @@ function DueMedicationsTab({ medications, isLoading, onAdminister, formatDate }:
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
             <h3 className="text-lg font-medium mb-2">No Due Medications</h3>
             <p className="text-muted-foreground">
-              All medications are up to date. Next doses will appear here when due.
+              All medications are up to date. Next doses will appear here when
+              due.
             </p>
           </div>
         </CardContent>
@@ -1312,20 +1468,33 @@ function DueMedicationsTab({ medications, isLoading, onAdminister, formatDate }:
                   <div>
                     <div className="flex items-center gap-2">
                       <h4 className="font-semibold">{med.medicationName}</h4>
-                      <Badge variant="outline" className="bg-yellow-100 text-yellow-700">
+                      <Badge
+                        variant="outline"
+                        className="bg-yellow-100 text-yellow-700"
+                      >
                         Due Now
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                       <span>{med.dosage}</span>
                       <span>•</span>
-                      <span>{FREQUENCIES.find(f => f.value === med.frequency)?.label}</span>
+                      <span>
+                        {
+                          FREQUENCIES.find((f) => f.value === med.frequency)
+                            ?.label
+                        }
+                      </span>
                       <span>•</span>
-                      <span>{MEDICATION_ROUTES.find(r => r.value === med.route)?.label}</span>
+                      <span>
+                        {
+                          MEDICATION_ROUTES.find((r) => r.value === med.route)
+                            ?.label
+                        }
+                      </span>
                     </div>
                   </div>
                 </div>
-                <Button 
+                <Button
                   onClick={() => onAdminister(med)}
                   className="bg-yellow-600 hover:bg-yellow-700"
                 >
@@ -1336,15 +1505,24 @@ function DueMedicationsTab({ medications, isLoading, onAdminister, formatDate }:
               <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="text-muted-foreground">Started:</span>
-                  <span className="font-medium ml-2">{formatDate(med.startDate)}</span>
+                  <span className="font-medium ml-2">
+                    {formatDate(med.startDate)}
+                  </span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Frequency:</span>
-                  <span className="font-medium ml-2">{FREQUENCIES.find(f => f.value === med.frequency)?.label}</span>
+                  <span className="font-medium ml-2">
+                    {FREQUENCIES.find((f) => f.value === med.frequency)?.label}
+                  </span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Route:</span>
-                  <span className="font-medium ml-2">{MEDICATION_ROUTES.find(r => r.value === med.route)?.label}</span>
+                  <span className="font-medium ml-2">
+                    {
+                      MEDICATION_ROUTES.find((r) => r.value === med.route)
+                        ?.label
+                    }
+                  </span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Status:</span>
@@ -1360,7 +1538,11 @@ function DueMedicationsTab({ medications, isLoading, onAdminister, formatDate }:
 }
 
 // Component for Medication History Tab
-function MedicationHistoryTab({ medications, formatDate, formatDateTime }: any) {
+function MedicationHistoryTab({
+  medications,
+  formatDate,
+  formatDateTime,
+}: any) {
   if (!medications || medications.length === 0) {
     return (
       <Card>
@@ -1392,16 +1574,20 @@ function MedicationHistoryTab({ medications, formatDate, formatDateTime }: any) 
               <CardHeader className="bg-muted/50">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-lg">{med.medicationName}</CardTitle>
+                    <CardTitle className="text-lg">
+                      {med.medicationName}
+                    </CardTitle>
                     <CardDescription>
-                      {med.dosage} • {FREQUENCIES.find(f => f.value === med.frequency)?.label}
+                      {med.dosage} •{" "}
+                      {
+                        FREQUENCIES.find((f) => f.value === med.frequency)
+                          ?.label
+                      }
                     </CardDescription>
                   </div>
                   <div className="flex items-center gap-2">
                     <MedicationStatusBadge status={med.status} />
-                    <Badge variant="outline">
-                      {formatDate(med.startDate)}
-                    </Badge>
+                    <Badge variant="outline">{formatDate(med.startDate)}</Badge>
                   </div>
                 </div>
               </CardHeader>
@@ -1409,63 +1595,89 @@ function MedicationHistoryTab({ medications, formatDate, formatDateTime }: any) 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground mb-2 block">Prescription Details</Label>
+                      <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                        Prescription Details
+                      </Label>
                       <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
                           <span>Route:</span>
                           <span className="font-medium">
-                            {MEDICATION_ROUTES.find(r => r.value === med.route)?.label}
+                            {
+                              MEDICATION_ROUTES.find(
+                                (r) => r.value === med.route
+                              )?.label
+                            }
                           </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Start Date:</span>
-                          <span className="font-medium">{formatDate(med.startDate)}</span>
+                          <span className="font-medium">
+                            {formatDate(med.startDate)}
+                          </span>
                         </div>
                         {med.endDate && (
                           <div className="flex justify-between">
                             <span>End Date:</span>
-                            <span className="font-medium">{formatDate(med.endDate)}</span>
+                            <span className="font-medium">
+                              {formatDate(med.endDate)}
+                            </span>
                           </div>
                         )}
                         <div className="flex justify-between">
                           <span>Prescribed By:</span>
-                          <span className="font-medium">{med.prescriber?.fullName || 'N/A'}</span>
+                          <span className="font-medium">
+                            {med.prescriber?.fullName || "N/A"}
+                          </span>
                         </div>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground mb-2 block">Administration History</Label>
+                      <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                        Administration History
+                      </Label>
                       {med.administrator ? (
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
                             <span>Administered By:</span>
-                            <span className="font-medium">{med.administrator?.fullName || 'N/A'}</span>
+                            <span className="font-medium">
+                              {med.administrator?.fullName || "N/A"}
+                            </span>
                           </div>
                           {med.administeredAt && (
                             <div className="flex justify-between">
                               <span>Administered At:</span>
-                              <span className="font-medium">{formatDateTime(med.administeredAt)}</span>
+                              <span className="font-medium">
+                                {formatDateTime(med.administeredAt)}
+                              </span>
                             </div>
                           )}
                         </div>
                       ) : (
-                        <p className="text-sm text-muted-foreground">Not administered</p>
+                        <p className="text-sm text-muted-foreground">
+                          Not administered
+                        </p>
                       )}
                     </div>
-                    
+
                     {med.notes && (
                       <div>
-                        <Label className="text-sm font-medium text-muted-foreground mb-2 block">Notes</Label>
-                        <p className="text-sm bg-white p-3 rounded border">{med.notes}</p>
+                        <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                          Notes
+                        </Label>
+                        <p className="text-sm bg-white p-3 rounded border">
+                          {med.notes}
+                        </p>
                       </div>
                     )}
-                    
+
                     {med.cancellationReason && (
                       <div>
-                        <Label className="text-sm font-medium text-muted-foreground mb-2 block">Cancellation Reason</Label>
+                        <Label className="text-sm font-medium text-muted-foreground mb-2 block">
+                          Cancellation Reason
+                        </Label>
                         <Alert variant="destructive" className="py-2">
                           <AlertTriangle className="h-4 w-4" />
                           <AlertDescription className="text-sm">
@@ -1516,14 +1728,19 @@ function AddMedicationDialog({
           <div className="space-y-6 py-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label htmlFor="medicationName" className="flex items-center gap-1">
+                <Label
+                  htmlFor="medicationName"
+                  className="flex items-center gap-1"
+                >
                   Medication Name <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="medicationName"
                   placeholder="e.g., Amoxicillin, Paracetamol"
                   value={formData.medicationName}
-                  onChange={(e) => onFormChange('medicationName', e.target.value)}
+                  onChange={(e) =>
+                    onFormChange("medicationName", e.target.value)
+                  }
                   required
                   disabled={isLoading}
                 />
@@ -1537,7 +1754,7 @@ function AddMedicationDialog({
                   id="dosage"
                   placeholder="e.g., 500mg, 10ml"
                   value={formData.dosage}
-                  onChange={(e) => onFormChange('dosage', e.target.value)}
+                  onChange={(e) => onFormChange("dosage", e.target.value)}
                   required
                   disabled={isLoading}
                 />
@@ -1549,7 +1766,7 @@ function AddMedicationDialog({
                 </Label>
                 <Select
                   value={formData.frequency}
-                  onValueChange={(value) => onFormChange('frequency', value)}
+                  onValueChange={(value) => onFormChange("frequency", value)}
                   disabled={isLoading}
                 >
                   <SelectTrigger>
@@ -1567,11 +1784,12 @@ function AddMedicationDialog({
 
               <div className="space-y-2">
                 <Label htmlFor="route" className="flex items-center gap-1">
-                  Route of Administration <span className="text-red-500">*</span>
+                  Route of Administration{" "}
+                  <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={formData.route}
-                  onValueChange={(value) => onFormChange('route', value)}
+                  onValueChange={(value) => onFormChange("route", value)}
                   disabled={isLoading}
                 >
                   <SelectTrigger>
@@ -1595,7 +1813,7 @@ function AddMedicationDialog({
                   id="startDate"
                   type="date"
                   value={formData.startDate}
-                  onChange={(e) => onFormChange('startDate', e.target.value)}
+                  onChange={(e) => onFormChange("startDate", e.target.value)}
                   required
                   disabled={isLoading}
                 />
@@ -1607,7 +1825,7 @@ function AddMedicationDialog({
                   id="endDate"
                   type="date"
                   value={formData.endDate}
-                  onChange={(e) => onFormChange('endDate', e.target.value)}
+                  onChange={(e) => onFormChange("endDate", e.target.value)}
                   min={formData.startDate}
                   disabled={isLoading}
                 />
@@ -1620,7 +1838,7 @@ function AddMedicationDialog({
                 id="notes"
                 placeholder="Special instructions, contraindications, or additional information"
                 value={formData.notes}
-                onChange={(e) => onFormChange('notes', e.target.value)}
+                onChange={(e) => onFormChange("notes", e.target.value)}
                 rows={3}
                 disabled={isLoading}
               />
@@ -1628,17 +1846,17 @@ function AddMedicationDialog({
           </div>
 
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={onClose} 
+            <Button
+              variant="outline"
+              onClick={onClose}
               type="button"
               disabled={isLoading}
             >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              disabled={isLoading} 
+            <Button
+              type="submit"
+              disabled={isLoading}
               className="bg-gradient-primary hover:shadow-glow transition-all"
             >
               {isLoading ? (
@@ -1701,32 +1919,43 @@ function AdministerMedicationDialog({
                 <div>
                   <h4 className="font-semibold">{medication.medicationName}</h4>
                   <p className="text-sm text-muted-foreground">
-                    {medication.dosage} • {FREQUENCIES.find(f => f.value === medication.frequency)?.label}
+                    {medication.dosage} •{" "}
+                    {
+                      FREQUENCIES.find((f) => f.value === medication.frequency)
+                        ?.label
+                    }
                   </p>
                 </div>
               </div>
-              
+
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Route:</span>
                   <span className="font-medium">
-                    {MEDICATION_ROUTES.find(r => r.value === medication.route)?.label}
+                    {
+                      MEDICATION_ROUTES.find(
+                        (r) => r.value === medication.route
+                      )?.label
+                    }
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Last Administered:</span>
+                  <span className="text-muted-foreground">
+                    Last Administered:
+                  </span>
                   <span className="font-medium">
-                    {medication.administeredAt 
+                    {medication.administeredAt
                       ? formatDateTime(medication.administeredAt)
-                      : 'Never'
-                    }
+                      : "Never"}
                   </span>
                 </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="administer-notes">Administration Notes (Optional)</Label>
+              <Label htmlFor="administer-notes">
+                Administration Notes (Optional)
+              </Label>
               <Textarea
                 id="administer-notes"
                 placeholder="Any observations or special instructions..."
@@ -1740,22 +1969,23 @@ function AdministerMedicationDialog({
             <Alert>
               <AlertCircle className="h-4 w-4" />
               <AlertDescription className="text-sm">
-                This action will mark the medication as administered at the current time.
-                Please verify the medication, dosage, and patient before proceeding.
+                This action will mark the medication as administered at the
+                current time. Please verify the medication, dosage, and patient
+                before proceeding.
               </AlertDescription>
             </Alert>
           </div>
 
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={onClose} 
+            <Button
+              variant="outline"
+              onClick={onClose}
               type="button"
               disabled={isLoading}
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               type="submit"
               disabled={isLoading}
               className="bg-green-600 hover:bg-green-700"
@@ -1806,7 +2036,8 @@ function CancelMedicationDialog({
             Cancel Medication
           </DialogTitle>
           <DialogDescription>
-            This action cannot be undone. Please provide a reason for cancellation.
+            This action cannot be undone. Please provide a reason for
+            cancellation.
           </DialogDescription>
         </DialogHeader>
 
@@ -1820,11 +2051,15 @@ function CancelMedicationDialog({
                 <div>
                   <h4 className="font-semibold">{medication.medicationName}</h4>
                   <p className="text-sm text-muted-foreground">
-                    {medication.dosage} • {FREQUENCIES.find(f => f.value === medication.frequency)?.label}
+                    {medication.dosage} •{" "}
+                    {
+                      FREQUENCIES.find((f) => f.value === medication.frequency)
+                        ?.label
+                    }
                   </p>
                 </div>
               </div>
-              
+
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Status:</span>
@@ -1840,7 +2075,10 @@ function CancelMedicationDialog({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="cancel-reason" className="flex items-center gap-1">
+              <Label
+                htmlFor="cancel-reason"
+                className="flex items-center gap-1"
+              >
                 Reason for Cancellation <span className="text-red-500">*</span>
               </Label>
               <Textarea
@@ -1861,22 +2099,22 @@ function CancelMedicationDialog({
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>Warning</AlertTitle>
               <AlertDescription className="text-sm">
-                Cancelling a medication is a permanent action. This will stop all future administrations
-                and cannot be undone.
+                Cancelling a medication is a permanent action. This will stop
+                all future administrations and cannot be undone.
               </AlertDescription>
             </Alert>
           </div>
 
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={onClose} 
+            <Button
+              variant="outline"
+              onClick={onClose}
               type="button"
               disabled={isLoading}
             >
               Go Back
             </Button>
-            <Button 
+            <Button
               type="submit"
               disabled={isLoading || !reason.trim()}
               variant="destructive"
@@ -1936,13 +2174,20 @@ function MedicationHistoryDialog({
                 <div>
                   <span className="text-muted-foreground">Frequency:</span>
                   <span className="font-medium ml-2">
-                    {FREQUENCIES.find(f => f.value === medication.frequency)?.label}
+                    {
+                      FREQUENCIES.find((f) => f.value === medication.frequency)
+                        ?.label
+                    }
                   </span>
                 </div>
                 <div>
                   <span className="text-muted-foreground">Route:</span>
                   <span className="font-medium ml-2">
-                    {MEDICATION_ROUTES.find(r => r.value === medication.route)?.label}
+                    {
+                      MEDICATION_ROUTES.find(
+                        (r) => r.value === medication.route
+                      )?.label
+                    }
                   </span>
                 </div>
                 <div>
@@ -1957,11 +2202,9 @@ function MedicationHistoryDialog({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="font-semibold">Activity Timeline</h3>
-              <Badge variant="outline">
-                {history.length} events
-              </Badge>
+              <Badge variant="outline">{history.length} events</Badge>
             </div>
-            
+
             {history.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 No history available for this medication
@@ -1970,20 +2213,28 @@ function MedicationHistoryDialog({
               <div className="relative">
                 {/* Timeline line */}
                 <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border" />
-                
+
                 {history.map((item: any, index: number) => (
-                  <div key={item.id || index} className="relative flex items-start gap-4 mb-6 last:mb-0">
-                    <div className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full ${
-                      item.action === 'prescribed' ? 'bg-blue-100' :
-                      item.action === 'administered' ? 'bg-green-100' :
-                      item.action === 'adjusted' ? 'bg-yellow-100' :
-                      'bg-red-100'
-                    }`}>
-                      {item.action === 'prescribed' ? (
+                  <div
+                    key={item.id || index}
+                    className="relative flex items-start gap-4 mb-6 last:mb-0"
+                  >
+                    <div
+                      className={`relative z-10 flex h-12 w-12 items-center justify-center rounded-full ${
+                        item.action === "prescribed"
+                          ? "bg-blue-100"
+                          : item.action === "administered"
+                          ? "bg-green-100"
+                          : item.action === "adjusted"
+                          ? "bg-yellow-100"
+                          : "bg-red-100"
+                      }`}
+                    >
+                      {item.action === "prescribed" ? (
                         <Plus className="h-6 w-6 text-blue-600" />
-                      ) : item.action === 'administered' ? (
+                      ) : item.action === "administered" ? (
                         <CheckCircle className="h-6 w-6 text-green-600" />
-                      ) : item.action === 'adjusted' ? (
+                      ) : item.action === "adjusted" ? (
                         <Edit className="h-6 w-6 text-yellow-600" />
                       ) : (
                         <XCircle className="h-6 w-6 text-red-600" />
@@ -1992,9 +2243,14 @@ function MedicationHistoryDialog({
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
                         <div>
-                          <h4 className="font-semibold capitalize">{item.action}</h4>
+                          <h4 className="font-semibold capitalize">
+                            {item.action}
+                          </h4>
                           <p className="text-sm text-muted-foreground">
-                            By {item.performer?.fullName || item.user?.fullName || `User`}
+                            By{" "}
+                            {item.performer?.fullName ||
+                              item.user?.fullName ||
+                              `User`}
                           </p>
                         </div>
                         <time className="text-sm text-muted-foreground">
@@ -2002,7 +2258,9 @@ function MedicationHistoryDialog({
                         </time>
                       </div>
                       {item.notes && (
-                        <p className="mt-2 text-sm bg-muted p-3 rounded">{item.notes}</p>
+                        <p className="mt-2 text-sm bg-muted p-3 rounded">
+                          {item.notes}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -2013,9 +2271,7 @@ function MedicationHistoryDialog({
         </div>
 
         <DialogFooter>
-          <Button onClick={onClose}>
-            Close
-          </Button>
+          <Button onClick={onClose}>Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
