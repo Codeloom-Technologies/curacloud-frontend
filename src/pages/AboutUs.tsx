@@ -153,7 +153,7 @@ const milestones = [
 // Stats data
 const companyStats = [
   { number: "1+", label: "Healthcare Facilities", icon: Building2 },
-  { number: "200+", label: "Patients Served", icon: Users },
+  { number: "500+", label: "Patients Served", icon: Users },
   { number: "99.9%", label: "System Uptime", icon: Clock },
   { number: "24/7", label: "Support Coverage", icon: UserCheck },
 ];

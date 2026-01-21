@@ -144,7 +144,7 @@ const testimonials = [
 
 const stats = [
   { number: "1+", label: "Healthcare Facilities" },
-  { number: "200+", label: "Patients Served" },
+  { number: "500+", label: "Patients Served" },
   { number: "99.9%", label: "Uptime Reliability" },
   { number: "24/7", label: "Support Coverage" },
 ];
