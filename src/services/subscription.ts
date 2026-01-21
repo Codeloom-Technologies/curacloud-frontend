@@ -78,7 +78,7 @@ export const  createSubscription= async(data: CreateSubscriptionData) =>{
   
   export const  getSubscriptionsHistory=async(page:number, perPage:number) =>{
     const response = await apiClient('/subscriptions/subscription-history');
-const { data, meta } = response;
+   const { data, meta } = response;
     return { histories: data, meta };
   }
 
