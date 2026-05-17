@@ -143,7 +143,7 @@ const SubscriptionManagementMvp = () => {
   const accountDetails = {
     bankName: "Opay",
     accountName: "OBED MATHIAS GAIYA",
-    accountNumber: "6141825641",
+    accountNumber: "07058149795",
     amount: selectedPlan?.price || 0,
     reference: `SUB-${selectedPlan?.name || 'USER'}-${Date.now().toString().slice(-4)}`,
   };
