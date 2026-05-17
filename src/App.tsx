@@ -64,10 +64,19 @@ import AdmissionDetails from "./pages/admission/AdmissionDetails";
 import AdmissionMedications from "./pages/admission/AdmissionMedications";
 import PatientAdmissionVitals from "./pages/admission/PatientAdmissionVitals";
 
+import MaintenancePage from "./pages/MaintenancePage";
+
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
+const isMaintenanceMode = true; // Set this to false to disable maintenance mode
+
+const App = () => {
+  if (isMaintenanceMode) {
+    return <MaintenancePage />;
+  }
+
+  return (
+    <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -255,6 +264,7 @@ const App = () => (
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
-);
+  );
+};
 
 export default App;
